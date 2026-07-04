@@ -1,0 +1,40 @@
+{
+  "build": {
+    "beforeBuildCommand": "",
+    "beforeDevCommand": "",
+    "devPath": "./src/dist",
+    "distDir": "./src/dist"
+  },
+  "package": {
+    "productName": "NoCapEdit",
+    "version": "0.1.0"
+  },
+  "tauri": {
+    "allowlist": {
+      "all": false,
+      "shell": {
+        "all": false,
+        "open": true
+      },
+      "dialog": {
+        "all": false,
+        "save": true,
+        "open": true
+      }
+    },
+    "windows": [
+      {
+        "fullscreen": false,
+        "height": 600,
+        "resizable": true,
+        "title": "NoCapEdit",
+        "width": 900,
+        "minHeight": 300,
+        "minWidth": 400
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  }
+}

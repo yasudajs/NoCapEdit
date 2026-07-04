@@ -1,1 +1,6 @@
 /target
+/src-tauri/target
+Cargo.lock
+*.log
+.DS_Store
+
