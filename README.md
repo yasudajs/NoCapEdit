@@ -70,6 +70,15 @@ cargo run
 cargo tauri build
 ```
 
+また、ポータブル版（ZIP形式）を作成する場合は、以下のコマンドを実行して `target/release/bundle` 配下に ZIP アーカイブを出力します。
+
+```powershell
+# ポータブル版のビルドとZIPアーカイブの作成
+cargo build --release
+New-Item -ItemType Directory -Force -Path "target/release/bundle"
+Compress-Archive -Path "target/release/NoCapEdit.exe" -DestinationPath "target/release/bundle/NoCapEdit_v0.1.5_portable.zip" -Force
+```
+
 ---
 
 ## 📁 データと設定の保存場所
