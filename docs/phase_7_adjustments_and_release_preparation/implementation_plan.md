@@ -1,24 +1,29 @@
-# Phase 7: 調整とリリース準備の実装計画
+# Phase 7: 調整とリリース準備の実装計画 (アプリアイコン追加対応版)
 
 本計画では、機能実装およびテストが完了した NoCapEdit の配布パッケージ（インストーラー）を構築し、本番環境向けのコードクリーンアップとリリース検証を行います。
+また、**実行ファイル（.exe）にアプリアイコン（透過アイコン）が適用されない問題**に対処するため、ビルドスクリプトの修正を行います。
 
 ## User Review Required
 
 > [!IMPORTANT]
-> **プロダクションビルドの実行**:
-> `cargo tauri build` を実行し、Windows 向けのインストーラー（`.msi`）が正常に生成されるかを確認します。このビルド時に透過アイコンが実行ファイルやインストーラーに正しく埋め込まれます。
+> **build.rs の修正（Tauriビルドプロセスの有効化）**
+> 現在の `build.rs` が空の `main` 関数になっているため、Windowsの実行ファイルリソース（アプリアイコンなど）がコンパイル時に埋め込まれていません。
+> `build.rs` で `tauri_build::build()` を呼び出すように修正し、リリースビルド時に自動で `icons/icon.ico` が実行ファイルに埋め込まれるようにします。
 
-> [!NOTE]
-> **コードのクリーンアップ**:
-> 開発中に差し込んだ不要な `console.log` や一時的なデバッグ用コードを整理し、本番リリースの品質に仕上げます。
+> [!IMPORTANT]
+> **プロダクションビルドの再実行**:
+> `build.rs` の修正後、`npx.cmd @tauri-apps/cli@^1 build` を再実行して、生成された `NoCapEdit.exe` に透過アイコンが適用されていることを確認します。
 
 ## Proposed Changes
 
-### リリース検証・クリーンアップ
+### リースリソース・クリーンアップ
 
 ---
 
-#### [NEW] [implementation_plan.md](file:///c:/work/NoCapEdit/docs/phase_7_adjustments_and_release_preparation/implementation_plan.md)
+#### [MODIFY] [build.rs](file:///c:/work/NoCapEdit/build.rs)
+- コメントアウトまたは省略されている `tauri_build::build()` の呼び出しを有効化します。
+
+#### [MODIFY] [implementation_plan.md](file:///c:/work/NoCapEdit/docs/phase_7_adjustments_and_release_preparation/implementation_plan.md)
 - 本計画書をプロジェクト配下へ追加。
 
 #### [MODIFY] [main.js](file:///c:/work/NoCapEdit/src/dist/main.js)
@@ -31,8 +36,6 @@
 
 ### Release Verification Checklist
 1. **インストーラーのビルド成功**:
-   - `cargo tauri build` コマンドがエラーなく完了すること。
-2. **インストーラーの動作確認**:
-   - 生成された `.msi` ファイルを用いてアプリのインストール・起動ができること。
-3. **メタデータの適用確認**:
-   - インストール後の起動ショートカット、タスクバー、タイトルバー、および実行ファイルのプロパティで、製品名「NoCapEdit」と「透過アプリアイコン」が正しく表示されること。
+   - `npx.cmd @tauri-apps/cli@^1 build` コマンドがエラーなく完了すること。
+2. **実行ファイルアプリアイコンの埋め込み確認**:
+   - 生成された `target/release/NoCapEdit.exe` のアイコンが、Windows のエクスプローラー上で透過アプリアイコン（丸い「nce」のマーク）に変化していることを確認します。

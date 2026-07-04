@@ -5,4 +5,7 @@
 - `[x]` Task 7-2: `.gitignore` の最終確認
   - `[x]` `.gitignore` に一時ファイル `*.tmp` などの除外ルールを追加・確認
 - `[x]` Task 7-3: リリースビルドの実行と成果物の確認
-  - `[x]` `cargo tauri build` を実行し、インストーラー（.msi）がビルドできることを確認
+  - `[x]` `cargo tauri build` を実行し、実行ファイル（.exe）がビルドできることを確認
+- `[x]` Task 7-4: build.rs の修正とアイコン埋め込みの再ビルド
+  - `[x]` `build.rs` 内で `tauri_build::build()` を呼び出すように修正
+  - `[x]` リリースビルドの再実行とアプリアイコンの反映確認
