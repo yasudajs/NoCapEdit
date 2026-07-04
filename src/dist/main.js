@@ -12,6 +12,7 @@ let appState = {
     currentTab: null,
     tabs: [],
     homeFolder: null,
+    theme: 'dark',
     isDirty: false,
     autosaveTimer: null,
     initialized: false,
@@ -40,6 +41,7 @@ const elements = {
     app: document.getElementById('app'),
     tabsContainer: document.getElementById('tabsContainer'),
     addTabBtn: document.getElementById('addTabBtn'),
+    themeToggleBtn: document.getElementById('themeToggleBtn'),
     editor: document.getElementById('editor'),
     statusText: document.getElementById('statusText'),
     statusFile: document.getElementById('statusFile'),
@@ -322,6 +324,15 @@ async function init() {
         // 設定を取得
         const settings = await invoke('get_settings');
         appState.homeFolder = settings.home_folder;
+        appState.theme = settings.theme || 'dark';
+        
+        // テーマを適用
+        applyThemeUI(appState.theme);
+        try {
+            await invoke('apply_theme', { theme: appState.theme });
+        } catch (themeError) {
+            console.error('Failed to apply theme during init:', themeError);
+        }
         
         // 初回起動チェック
         const isFirstLaunch = !!settings.is_first_launch;
@@ -390,7 +401,7 @@ async function saveSettings() {
             return;
         }
 
-        await invoke('save_settings', { homeFolder });
+        await invoke('save_settings', { homeFolder, theme: appState.theme });
         appState.homeFolder = homeFolder;
         elements.settingsDialog.classList.add('hidden');
         updateStatus('準備完了');
@@ -407,6 +418,39 @@ function getCurrentUsername() {
     return 'User'; // 実装では环境変数から取得
 }
 
+// テーマの適用 (UI表示の切替)
+function applyThemeUI(theme) {
+    if (theme === 'light') {
+        document.body.classList.add('light-theme');
+        const iconEl = elements.themeToggleBtn.querySelector('.theme-icon');
+        if (iconEl) iconEl.textContent = '☀';
+    } else {
+        document.body.classList.remove('light-theme');
+        const iconEl = elements.themeToggleBtn.querySelector('.theme-icon');
+        if (iconEl) iconEl.textContent = '🌙';
+    }
+}
+
+// テーマのトグル切り替え
+async function toggleTheme() {
+    const newTheme = appState.theme === 'dark' ? 'light' : 'dark';
+    appState.theme = newTheme;
+    
+    applyThemeUI(newTheme);
+    
+    try {
+        await invoke('apply_theme', { theme: newTheme });
+    } catch (error) {
+        console.error('Failed to apply theme to window:', error);
+    }
+    
+    try {
+        await invoke('save_settings', { homeFolder: appState.homeFolder, theme: newTheme });
+    } catch (error) {
+        console.error('Failed to save settings during theme toggle:', error);
+    }
+}
+
 // UI イベントリスナー設定
 function setupUIEventListeners() {
     if (appState.initialized) {
@@ -414,6 +458,7 @@ function setupUIEventListeners() {
     }
 
     elements.addTabBtn.addEventListener('click', createNewTab);
+    elements.themeToggleBtn.addEventListener('click', toggleTheme);
     elements.editor.addEventListener('input', onEditorInput);
     elements.editor.addEventListener('click', updateEditorMetrics);
     elements.editor.addEventListener('keyup', updateEditorMetrics);

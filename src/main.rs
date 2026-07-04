@@ -11,11 +11,18 @@ use chrono::Local;
 #[derive(Debug, Serialize, Deserialize, Clone)]
 struct AppSettings {
     home_folder: PathBuf,
+    #[serde(default = "default_theme")]
+    theme: String,
+}
+
+fn default_theme() -> String {
+    "dark".to_string()
 }
 
 #[derive(Debug, Serialize)]
 struct SettingsResponse {
     home_folder: String,
+    theme: String,
     is_first_launch: bool,
     home_folder_exists: bool,
 }
@@ -62,6 +69,7 @@ impl Default for AppSettings {
             .unwrap_or_else(|| PathBuf::from(env!("USERPROFILE")));
         Self {
             home_folder: documents.join("nce"),
+            theme: default_theme(),
         }
     }
 }
@@ -99,15 +107,17 @@ fn get_settings() -> SettingsResponse {
     let settings = AppSettings::load();
     SettingsResponse {
         home_folder: settings.home_folder.to_string_lossy().to_string(),
+        theme: settings.theme,
         is_first_launch: !AppSettings::exists(),
         home_folder_exists: settings.home_folder.exists(),
     }
 }
 
 #[tauri::command]
-fn save_settings(home_folder: PathBuf) -> Result<(), String> {
+fn save_settings(home_folder: PathBuf, theme: String) -> Result<(), String> {
     let settings = AppSettings {
         home_folder: home_folder.clone(),
+        theme,
     };
     
     // ホームフォルダが存在しなければ作成
@@ -180,6 +190,32 @@ fn get_launch_file() -> Option<String> {
     None
 }
 
+#[tauri::command]
+fn apply_theme(window: tauri::Window, theme: String) -> Result<(), String> {
+    let is_dark = theme != "light";
+    
+    #[cfg(target_os = "windows")]
+    {
+        use windows_sys::Win32::Graphics::Dwm::{DwmSetWindowAttribute, DWMWA_USE_IMMERSIVE_DARK_MODE};
+        use windows_sys::Win32::Foundation::HWND;
+
+        if let Ok(hwnd) = window.hwnd() {
+            let hwnd_raw = hwnd.0 as HWND;
+            let value = if is_dark { 1i32 } else { 0i32 };
+            unsafe {
+                DwmSetWindowAttribute(
+                    hwnd_raw,
+                    DWMWA_USE_IMMERSIVE_DARK_MODE as u32,
+                    &value as *const _ as *const _,
+                    std::mem::size_of::<i32>() as u32,
+                );
+            }
+        }
+    }
+    
+    Ok(())
+}
+
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
@@ -190,7 +226,8 @@ fn main() {
             save_text_file,
             delete_text_file,
             exit_app,
-            get_launch_file
+            get_launch_file,
+            apply_theme
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

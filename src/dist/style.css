@@ -6,16 +6,31 @@
 }
 
 :root {
-    --bg-primary: #1e1e1e;
-    --bg-secondary: #2d2d2d;
-    --bg-tertiary: #3d3d3d;
-    --text-primary: #e0e0e0;
-    --text-secondary: #a0a0a0;
+    /* ダークモード (完全な黒ベース) */
+    --bg-primary: #000000;
+    --bg-secondary: #0c0c0c;
+    --bg-tertiary: #1a1a1a;
+    --text-primary: #f0f0f0;
+    --text-secondary: #888888;
     --accent: #5a9fd4;
     --accent-hover: #7cb3db;
-    --border: #404040;
+    --border: #222222;
     --status-success: #4ec9b0;
     --status-error: #f48771;
+}
+
+body.light-theme {
+    /* ライトモード */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f3f3f3;
+    --bg-tertiary: #e5e5e5;
+    --text-primary: #1a1a1a;
+    --text-secondary: #666666;
+    --accent: #0066cc;
+    --accent-hover: #0052a3;
+    --border: #dcdcdc;
+    --status-success: #107c41;
+    --status-error: #a80000;
 }
 
 body {
@@ -127,7 +142,7 @@ body {
     justify-content: center;
     width: 32px;
     height: 32px;
-    margin: 4px 4px 4px 8px;
+    margin: 4px 4px 4px 4px;
     background-color: transparent;
     border: 1px solid var(--border);
     color: var(--text-secondary);
@@ -138,6 +153,30 @@ body {
 }
 
 .add-tab-btn:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    border-color: var(--accent);
+}
+
+/* テーマ切り替えボタン */
+.theme-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    margin: 4px 4px 4px 8px;
+    background-color: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    font-size: 14px;
+}
+
+.theme-toggle-btn:hover {
     background-color: var(--bg-tertiary);
     color: var(--text-primary);
     border-color: var(--accent);
