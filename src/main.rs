@@ -7,6 +7,47 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
 use chrono::Local;
+use tauri::Manager;
+use std::io::{Read, Write};
+use std::net::{TcpListener, TcpStream};
+use std::thread;
+
+const SINGLE_INSTANCE_PORT: u16 = 49423;
+
+fn send_to_existing_instance(path: &str) -> bool {
+    if let Ok(mut stream) = TcpStream::connect(format!("127.0.0.1:{}", SINGLE_INSTANCE_PORT)) {
+        let _ = stream.write_all(path.as_bytes());
+        true
+    } else {
+        false
+    }
+}
+
+fn start_instance_listener(app_handle: tauri::AppHandle) {
+    thread::spawn(move || {
+        if let Ok(listener) = TcpListener::bind(format!("127.0.0.1:{}", SINGLE_INSTANCE_PORT)) {
+            for stream in listener.incoming() {
+                if let Ok(mut stream) = stream {
+                    let mut buffer = [0; 1024];
+                    if let Ok(size) = stream.read(&mut buffer) {
+                        if size > 0 {
+                            if let Ok(path) = std::str::from_utf8(&buffer[..size]) {
+                                let path_str = path.to_string();
+                                if let Some(window) = app_handle.get_window("main") {
+                                    let _ = window.unminimize();
+                                    let _ = window.set_focus();
+                                    if !path_str.is_empty() {
+                                        let _ = window.emit("single-instance-file", path_str);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 struct AppSettings {
@@ -262,7 +303,85 @@ fn apply_theme(window: tauri::Window, theme: String) -> Result<(), String> {
 }
 
 fn main() {
+    let args: Vec<String> = std::env::args().collect();
+    let file_arg = if args.len() > 1 {
+        let path = &args[1];
+        let path_buf = std::path::Path::new(path);
+        let abs_path = if path_buf.is_absolute() {
+            path_buf.to_path_buf()
+        } else if let Ok(cwd) = std::env::current_dir() {
+            cwd.join(path_buf)
+        } else {
+            path_buf.to_path_buf()
+        };
+        
+        if abs_path.is_file() {
+            Some(abs_path.to_string_lossy().to_string())
+        } else {
+            None
+        }
+    } else {
+        None
+    };
+
+    // ポートバインドを試みて重複起動を判定
+    let is_primary = match TcpListener::bind(format!("127.0.0.1:{}", SINGLE_INSTANCE_PORT)) {
+        Ok(_) => true,
+        Err(_) => false,
+    };
+
+    if !is_primary {
+        if let Some(path) = file_arg {
+            send_to_existing_instance(&path);
+        } else {
+            send_to_existing_instance("");
+        }
+        std::process::exit(0);
+    }
+
     tauri::Builder::default()
+        .setup(|app| {
+            let app_handle = app.handle();
+            start_instance_listener(app_handle);
+
+            let window = tauri::WindowBuilder::new(
+                app,
+                "main",
+                tauri::WindowUrl::App("index.html".into())
+            )
+            .title("NoCapEdit [ Ver 0.1.5 ]")
+            .inner_size(900.0, 600.0)
+            .min_inner_size(400.0, 300.0)
+            .resizable(true)
+            .fullscreen(false)
+            .build()?;
+            
+            // 起動時のテーマを適用
+            let settings = AppSettings::load();
+            let theme = settings.theme;
+            let is_dark = theme != "light";
+            
+            #[cfg(target_os = "windows")]
+            {
+                use windows_sys::Win32::Graphics::Dwm::{DwmSetWindowAttribute, DWMWA_USE_IMMERSIVE_DARK_MODE};
+                use windows_sys::Win32::Foundation::HWND;
+
+                if let Ok(hwnd) = window.hwnd() {
+                    let hwnd_raw = hwnd.0 as HWND;
+                    let value = if is_dark { 1i32 } else { 0i32 };
+                    unsafe {
+                        DwmSetWindowAttribute(
+                            hwnd_raw,
+                            DWMWA_USE_IMMERSIVE_DARK_MODE as u32,
+                            &value as *const _ as *const _,
+                            std::mem::size_of::<i32>() as u32,
+                        );
+                    }
+                }
+            }
+            
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             get_settings,
             save_settings,

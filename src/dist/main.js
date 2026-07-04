@@ -4,6 +4,7 @@ const invoke = tauriApi?.tauri?.invoke || tauriApi?.invoke || null;
 const openDialog = tauriApi?.dialog?.open || null;
 const saveDialog = tauriApi?.dialog?.save || null;
 const appWindow = tauriApi?.window?.appWindow || null;
+const listen = tauriApi?.event?.listen || null;
 
 const AUTOSAVE_DELAY_MS = 3000;
 
@@ -286,6 +287,13 @@ function updateStatus(message, status = 'normal') {
 
 // 初期化
 async function openExistingFile(filePath) {
+    // 既に同じファイルが開いている場合は、切り替えるだけ
+    const existingTab = appState.tabs.find((t) => t.filePath === filePath);
+    if (existingTab) {
+        await switchTab(existingTab.id);
+        return;
+    }
+
     try {
         updateStatus('ファイルを読み込み中...', 'saving');
         if (!ensureTauriApi()) return;
@@ -514,6 +522,16 @@ function setupUIEventListeners() {
             }
         }
     });
+
+    // シングルインスタンス動作でのファイル通知の購読
+    if (listen) {
+        listen('single-instance-file', async (event) => {
+            const filePath = event.payload;
+            if (filePath) {
+                await openExistingFile(filePath);
+            }
+        });
+    }
 
     appState.initialized = true;
 }

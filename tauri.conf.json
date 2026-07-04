@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "NoCapEdit",
-    "version": "0.1.4"
+    "version": "0.1.5"
   },
   "tauri": {
     "bundle": {
@@ -44,17 +44,7 @@
         "open": true
       }
     },
-    "windows": [
-      {
-        "fullscreen": false,
-        "height": 600,
-        "resizable": true,
-        "title": "NoCapEdit [ Ver 0.1.4 ]",
-        "width": 900,
-        "minHeight": 300,
-        "minWidth": 400
-      }
-    ],
+    "windows": [],
     "security": {
       "csp": null
     }
