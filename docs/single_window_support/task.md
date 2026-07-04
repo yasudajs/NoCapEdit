@@ -1,0 +1,7 @@
+- [x] `Cargo.toml` に `tauri-plugin-single-instance` を追加 (のちにTCP自前実装へ切り替え)
+- [x] `src/main.rs` にプラグインのインポートと初期化コードを追加 (TCPポート判定による自前実装に変更)
+- [x] `src/main.rs` に起動中のインスタンスへのイベント送信とウィンドウフォーカス処理を追加
+- [x] `src/dist/main.js` に `single-instance-file` イベントをリッスンする処理を追加
+- [x] `src/dist/main.js` にイベント受信時のファイル読み込み・タブ追加処理を実装
+- [x] `cargo check` によるビルドと検証
+- [x] 手動検証による動作テスト
