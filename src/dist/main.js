@@ -1,6 +1,8 @@
-// Tauri API
-const { invoke } = window.__TAURI__.tauri;
-const { ask, open } = window.__TAURI__.dialog;
+// Tauri API (環境差異を吸収)
+const tauriApi = window.__TAURI__ || null;
+const invoke = tauriApi?.tauri?.invoke || tauriApi?.invoke || null;
+const ask = tauriApi?.dialog?.ask || null;
+const openDialog = tauriApi?.dialog?.open || null;
 
 // アプリケーション状態
 let appState = {
@@ -11,6 +13,22 @@ let appState = {
     autosaveTimer: null,
     initialized: false,
 };
+
+function generateTabId() {
+    if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+        return window.crypto.randomUUID();
+    }
+    return 'tab-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+}
+
+function ensureTauriApi() {
+    if (!invoke) {
+        console.error('Tauri invoke API is not available.', window.__TAURI__);
+        updateStatus('Tauri API 初期化失敗', 'error');
+        return false;
+    }
+    return true;
+}
 
 // DOM要素キャッシュ
 const elements = {
@@ -43,6 +61,10 @@ function updateStatus(message, status = 'normal') {
 // 初期化
 async function init() {
     console.log('NoCapEdit initializing...');
+
+    if (!ensureTauriApi()) {
+        return;
+    }
     
     try {
         // 設定を取得
@@ -73,8 +95,12 @@ function showSettingsDialog() {
     elements.settingsDialog.classList.remove('hidden');
 
     elements.browseFolderBtn.onclick = async () => {
+        if (!openDialog) {
+            return;
+        }
+
         try {
-            const selected = await open({ directory: true, multiple: false });
+            const selected = await openDialog({ directory: true, multiple: false });
             if (typeof selected === 'string' && selected.trim() !== '') {
                 elements.homeFolderInput.value = selected;
             }
@@ -98,6 +124,10 @@ async function saveSettings() {
     }
     
     try {
+        if (!ensureTauriApi()) {
+            return;
+        }
+
         await invoke('save_settings', { homeFolder });
         appState.homeFolder = homeFolder;
         elements.settingsDialog.classList.add('hidden');
@@ -134,6 +164,10 @@ async function createNewTab() {
     }
 
     try {
+        if (!ensureTauriApi()) {
+            return;
+        }
+
         updateStatus('新規ファイル作成中...', 'saving');
 
         const file = await invoke('create_auto_file', {
@@ -141,7 +175,7 @@ async function createNewTab() {
         });
 
         const tab = {
-            id: crypto.randomUUID(),
+            id: generateTabId(),
             fileName: file.file_name,
             filePath: file.file_path,
             content: '',
@@ -163,28 +197,37 @@ async function createNewTab() {
 
 // タブ切り替え
 async function switchTab(tabId) {
-    // 前のタブを保存
-    if (appState.currentTab) {
-        const currentIdx = appState.tabs.findIndex(t => t.id === appState.currentTab);
-        if (currentIdx !== -1) {
-            appState.tabs[currentIdx].content = elements.editor.value;
-            await saveTabIfDirty(appState.tabs[currentIdx]);
+    try {
+        // 前のタブを保存
+        if (appState.currentTab) {
+            const currentIdx = appState.tabs.findIndex(t => t.id === appState.currentTab);
+            if (currentIdx !== -1) {
+                appState.tabs[currentIdx].content = elements.editor.value;
+                await saveTabIfDirty(appState.tabs[currentIdx]);
+            }
         }
-    }
     
-    // 新しいタブに切り替え
-    appState.currentTab = tabId;
-    const tab = appState.tabs.find(t => t.id === tabId);
+        // 新しいタブに切り替え
+        appState.currentTab = tabId;
+        const tab = appState.tabs.find(t => t.id === tabId);
     
-    if (tab) {
-        elements.editor.value = tab.content;
-        renderTabs();
-        updateStatus(tab.fileName + ' - 準備完了');
+        if (tab) {
+            elements.editor.value = tab.content;
+            renderTabs();
+            updateStatus(tab.fileName + ' - 準備完了');
+        }
+    } catch (error) {
+        console.error('Failed to switch tab:', error);
+        updateStatus('タブ切替失敗', 'error');
     }
 }
 
 async function saveTabIfDirty(tab) {
     if (!tab || !tab.isDirty) {
+        return;
+    }
+
+    if (!ensureTauriApi()) {
         return;
     }
 
@@ -225,7 +268,9 @@ async function closeTab(tabId) {
     
     // ファイルを保存してから削除
     if (tab.isDirty) {
-        const confirmed = await ask('保存されていない変更があります。保存しますか？');
+        const confirmed = ask
+            ? await ask('保存されていない変更があります。保存しますか？')
+            : true;
         if (confirmed) {
             await saveTabIfDirty(tab);
         }

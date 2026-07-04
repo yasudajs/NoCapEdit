@@ -3,7 +3,8 @@
     "beforeBuildCommand": "",
     "beforeDevCommand": "",
     "devPath": "./src/dist",
-    "distDir": "./src/dist"
+    "distDir": "./src/dist",
+    "withGlobalTauri": true
   },
   "package": {
     "productName": "NoCapEdit",
