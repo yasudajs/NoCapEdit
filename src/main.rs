@@ -77,9 +77,9 @@ fn next_available_file_path(home_folder: &PathBuf) -> Result<(String, PathBuf), 
 
     loop {
         let file_name = if index == 0 {
-            format!("{}.txt", base)
+            format!("{}.nctx", base)
         } else {
-            format!("{}_{:02}.txt", base, index)
+            format!("{}_{:02}.nctx", base, index)
         };
 
         let file_path = home_folder.join(&file_name);
@@ -168,6 +168,18 @@ fn exit_app(app: tauri::AppHandle) {
     app.exit(0);
 }
 
+#[tauri::command]
+fn get_launch_file() -> Option<String> {
+    let args: Vec<String> = std::env::args().collect();
+    if args.len() > 1 {
+        let path = &args[1];
+        if std::path::Path::new(path).is_file() {
+            return Some(path.clone());
+        }
+    }
+    None
+}
+
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
@@ -177,7 +189,8 @@ fn main() {
             read_text_file,
             save_text_file,
             delete_text_file,
-            exit_app
+            exit_app,
+            get_launch_file
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

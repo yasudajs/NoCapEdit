@@ -139,7 +139,15 @@ async function saveTabAs(tab) {
         throw new Error('別名保存ダイアログを利用できません');
     }
 
-    const targetPath = await saveDialog({ defaultPath: tab.filePath });
+    const targetPath = await saveDialog({
+        defaultPath: tab.filePath,
+        filters: [
+            { name: 'NoCapEdit Text (*.nctx)', extensions: ['nctx'] },
+            { name: 'NoCapEdit Markdown (*.ncmd)', extensions: ['ncmd'] },
+            { name: 'Text Files (*.txt)', extensions: ['txt'] },
+            { name: 'All Files (*.*)', extensions: ['*'] }
+        ]
+    });
     if (!targetPath || typeof targetPath !== 'string') {
         return false;
     }
@@ -272,6 +280,37 @@ function updateStatus(message, status = 'normal') {
 }
 
 // 初期化
+async function openExistingFile(filePath) {
+    try {
+        updateStatus('ファイルを読み込み中...', 'saving');
+        if (!ensureTauriApi()) return;
+        const content = await invoke('read_text_file', { filePath });
+        const fileName = getFileNameFromPath(filePath);
+
+        const tab = {
+            id: generateTabId(),
+            fileName: fileName,
+            filePath: filePath,
+            content: content,
+            isDirty: false,
+            isAutoCreated: false,
+            createdInCurrentSession: true,
+            hasNonWhitespaceInput: content.trim() !== '',
+            isSaving: false,
+            savePromise: null,
+        };
+
+        appState.tabs.push(tab);
+        await switchTab(tab.id);
+        renderTabs();
+        updateStatus(tab.fileName + ' を開きました', 'saved');
+    } catch (error) {
+        console.error('Failed to open file:', error);
+        updateStatus('ファイル読み込み失敗', 'error');
+        await createNewTab();
+    }
+}
+
 async function init() {
     console.log('NoCapEdit initializing...');
 
@@ -293,7 +332,14 @@ async function init() {
         } else {
             updateStatus('準備完了');
             setupUIEventListeners();
-            await createNewTab();
+            
+            // 起動時引数のチェック
+            const launchFile = await invoke('get_launch_file');
+            if (launchFile) {
+                await openExistingFile(launchFile);
+            } else {
+                await createNewTab();
+            }
         }
     } catch (error) {
         console.error('Failed to initialize:', error);
