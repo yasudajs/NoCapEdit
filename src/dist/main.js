@@ -4,6 +4,7 @@ const invoke = tauriApi?.tauri?.invoke || tauriApi?.invoke || null;
 const openDialog = tauriApi?.dialog?.open || null;
 const saveDialog = tauriApi?.dialog?.save || null;
 const appWindow = tauriApi?.window?.appWindow || null;
+const appWindow = tauriApi?.window?.appWindow || null;
 
 const AUTOSAVE_DELAY_MS = 3000;
 
@@ -15,6 +16,7 @@ let appState = {
     isDirty: false,
     autosaveTimer: null,
     initialized: false,
+    closeGuard: false,
 };
 
 function generateTabId() {
@@ -85,6 +87,18 @@ function getFileNameFromPath(path) {
     const normalized = path.replace(/\\/g, '/');
     const chunks = normalized.split('/');
     return chunks[chunks.length - 1] || '';
+}
+
+function syncCurrentEditorToState() {
+    const tab = getCurrentTab();
+    if (!tab) {
+        return;
+    }
+
+    tab.content = elements.editor.value;
+    if (elements.editor.value.trim() !== '') {
+        tab.hasNonWhitespaceInput = true;
+    }
 }
 
 function showSaveErrorDialog(message) {
@@ -200,6 +214,49 @@ async function persistTabWithRecovery(tab, contextLabel) {
     }
 }
 
+async function persistAllTabsBeforeExit() {
+    syncCurrentEditorToState();
+    clearTimeout(appState.autosaveTimer);
+
+    for (const tab of [...appState.tabs]) {
+        const ok = await persistTabWithRecovery(tab, 'app-exit');
+        if (!ok) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+function registerCloseHandler() {
+    if (!appWindow || typeof appWindow.onCloseRequested !== 'function') {
+        return;
+    }
+
+    appWindow.onCloseRequested(async (event) => {
+        if (appState.closeGuard) {
+            return;
+        }
+
+        event.preventDefault();
+        appState.closeGuard = true;
+
+        try {
+            const ok = await persistAllTabsBeforeExit();
+            if (!ok) {
+                appState.closeGuard = false;
+                return;
+            }
+
+            await appWindow.close();
+        } catch (error) {
+            console.error('Failed while processing app close:', error);
+            updateStatus('終了処理失敗', 'error');
+            appState.closeGuard = false;
+        }
+    });
+}
+
 // ステータス更新
 function updateStatus(message, status = 'normal') {
     elements.statusText.textContent = message;
@@ -309,6 +366,7 @@ function setupUIEventListeners() {
     elements.editor.addEventListener('input', onEditorInput);
     elements.editor.addEventListener('click', updateEditorMetrics);
     elements.editor.addEventListener('keyup', updateEditorMetrics);
+    registerCloseHandler();
     appState.initialized = true;
 }
 
@@ -528,10 +586,3 @@ document.addEventListener('DOMContentLoaded', () => {
     updateEditorMetrics();
 });
 
-// ウィンドウクローズ前の処理
-window.addEventListener('beforeunload', (e) => {
-    const tab = getCurrentTab();
-    if (tab) {
-        tab.content = elements.editor.value;
-    }
-});
