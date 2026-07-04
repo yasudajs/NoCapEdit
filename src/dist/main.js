@@ -17,6 +17,7 @@ let appState = {
     initialized: false,
     closeGuard: false,
     allowNativeClose: false,
+    forceClosing: false,
 };
 
 function generateTabId() {
@@ -234,6 +235,10 @@ function registerCloseHandler() {
     }
 
     appWindow.onCloseRequested(async (event) => {
+        if (appState.forceClosing) {
+            return;
+        }
+
         if (appState.allowNativeClose) {
             return;
         }
@@ -252,23 +257,22 @@ function registerCloseHandler() {
                 return;
             }
 
+            appState.forceClosing = true;
+
+            if (typeof appWindow.destroy === 'function') {
+                await appWindow.destroy();
+                return;
+            }
+
             appState.allowNativeClose = true;
             appState.closeGuard = false;
-
-            setTimeout(async () => {
-                try {
-                    await appWindow.close();
-                } catch (error) {
-                    console.error('Failed to close app window:', error);
-                    updateStatus('終了処理失敗', 'error');
-                    appState.allowNativeClose = false;
-                }
-            }, 0);
+            await appWindow.close();
         } catch (error) {
             console.error('Failed while processing app close:', error);
             updateStatus('終了処理失敗', 'error');
             appState.closeGuard = false;
             appState.allowNativeClose = false;
+            appState.forceClosing = false;
         }
     });
 }
