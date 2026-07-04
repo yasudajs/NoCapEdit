@@ -163,6 +163,11 @@ fn delete_text_file(file_path: PathBuf) -> Result<(), String> {
     Ok(())
 }
 
+#[tauri::command]
+fn exit_app(app: tauri::AppHandle) {
+    app.exit(0);
+}
+
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
@@ -171,7 +176,8 @@ fn main() {
             create_auto_file,
             read_text_file,
             save_text_file,
-            delete_text_file
+            delete_text_file,
+            exit_app
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

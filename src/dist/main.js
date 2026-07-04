@@ -16,7 +16,6 @@ let appState = {
     autosaveTimer: null,
     initialized: false,
     closeGuard: false,
-    allowNativeClose: false,
     forceClosing: false,
 };
 
@@ -239,10 +238,6 @@ function registerCloseHandler() {
             return;
         }
 
-        if (appState.allowNativeClose) {
-            return;
-        }
-
         event.preventDefault();
 
         if (appState.closeGuard) {
@@ -258,20 +253,11 @@ function registerCloseHandler() {
             }
 
             appState.forceClosing = true;
-
-            if (typeof appWindow.destroy === 'function') {
-                await appWindow.destroy();
-                return;
-            }
-
-            appState.allowNativeClose = true;
-            appState.closeGuard = false;
-            await appWindow.close();
+            await invoke('exit_app');
         } catch (error) {
             console.error('Failed while processing app close:', error);
             updateStatus('終了処理失敗', 'error');
             appState.closeGuard = false;
-            appState.allowNativeClose = false;
             appState.forceClosing = false;
         }
     });
