@@ -262,7 +262,6 @@ function registerCloseHandler() {
         }
     });
 }
-
 // ステータス更新
 function updateStatus(message, status = 'normal') {
     elements.statusText.textContent = message;
@@ -403,6 +402,8 @@ async function createNewTab() {
             isAutoCreated: true,
             createdInCurrentSession: true,
             hasNonWhitespaceInput: false,
+            isSaving: false,
+            savePromise: null,
         };
 
         appState.tabs.push(tab);
@@ -452,16 +453,33 @@ async function saveTabIfDirty(tab) {
         return;
     }
 
+    if (tab.isSaving) {
+        if (tab.savePromise) {
+            await tab.savePromise;
+        }
+        return;
+    }
+
     if (!ensureTauriApi()) {
         return;
     }
 
-    await invoke('save_text_file', {
-        filePath: tab.filePath,
-        content: tab.content,
-    });
-    tab.isDirty = false;
-    renderTabs();
+    tab.isSaving = true;
+    tab.savePromise = (async () => {
+        try {
+            await invoke('save_text_file', {
+                filePath: tab.filePath,
+                content: tab.content,
+            });
+            tab.isDirty = false;
+            renderTabs();
+        } finally {
+            tab.isSaving = false;
+            tab.savePromise = null;
+        }
+    })();
+
+    await tab.savePromise;
 }
 
 // タブを削除
