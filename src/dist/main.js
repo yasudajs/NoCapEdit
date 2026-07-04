@@ -3,6 +3,7 @@ const tauriApi = window.__TAURI__ || null;
 const invoke = tauriApi?.tauri?.invoke || tauriApi?.invoke || null;
 const openDialog = tauriApi?.dialog?.open || null;
 const saveDialog = tauriApi?.dialog?.save || null;
+const appWindow = tauriApi?.window?.appWindow || null;
 
 const AUTOSAVE_DELAY_MS = 3000;
 
@@ -14,9 +15,6 @@ let appState = {
     isDirty: false,
     autosaveTimer: null,
     initialized: false,
-    closeHandlerRegistered: false,
-    isHandlingClose: false,
-    allowClose: false,
 };
 
 function generateTabId() {
@@ -87,14 +85,6 @@ function getFileNameFromPath(path) {
     const normalized = path.replace(/\\/g, '/');
     const chunks = normalized.split('/');
     return chunks[chunks.length - 1] || '';
-}
-
-function syncActiveTabContent() {
-    const tab = getCurrentTab();
-    if (!tab) {
-        return;
-    }
-    tab.content = elements.editor.value;
 }
 
 function showSaveErrorDialog(message) {
@@ -210,53 +200,6 @@ async function persistTabWithRecovery(tab, contextLabel) {
     }
 }
 
-async function handleAppCloseRequested(closeEvent) {
-    if (appState.allowClose) {
-        return;
-    }
-
-    closeEvent?.preventDefault?.();
-
-    if (appState.isHandlingClose) {
-        return;
-    }
-
-    appState.isHandlingClose = true;
-    syncActiveTabContent();
-    clearTimeout(appState.autosaveTimer);
-
-    try {
-        for (const tab of [...appState.tabs]) {
-            const ok = await persistTabWithRecovery(tab, 'app-exit');
-            if (!ok) {
-                appState.isHandlingClose = false;
-                return;
-            }
-        }
-
-        appState.allowClose = true;
-        setTimeout(() => {
-            window.close();
-        }, 0);
-    } catch (error) {
-        console.error('Failed while processing app close:', error);
-        updateStatus('終了処理失敗', 'error');
-        appState.isHandlingClose = false;
-    }
-}
-
-function registerCloseHandlerOnce() {
-    if (appState.closeHandlerRegistered) {
-        return;
-    }
-
-    if (appWindow && typeof appWindow.onCloseRequested === 'function') {
-        appWindow.onCloseRequested(handleAppCloseRequested);
-    }
-
-    appState.closeHandlerRegistered = true;
-}
-
 // ステータス更新
 function updateStatus(message, status = 'normal') {
     elements.statusText.textContent = message;
@@ -363,7 +306,6 @@ function setupUIEventListeners() {
     elements.editor.addEventListener('input', onEditorInput);
     elements.editor.addEventListener('click', updateEditorMetrics);
     elements.editor.addEventListener('keyup', updateEditorMetrics);
-    registerCloseHandlerOnce();
     appState.initialized = true;
 }
 
@@ -585,5 +527,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ウィンドウクローズ前の処理
 window.addEventListener('beforeunload', (e) => {
-    syncActiveTabContent();
+    const tab = getCurrentTab();
+    if (tab) {
+        tab.content = elements.editor.value;
+    }
 });
