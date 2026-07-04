@@ -1,6 +1,6 @@
 // Tauri API
 const { invoke } = window.__TAURI__.tauri;
-const { ask } = window.__TAURI__.dialog;
+const { ask, open } = window.__TAURI__.dialog;
 
 // アプリケーション状態
 let appState = {
@@ -9,6 +9,7 @@ let appState = {
     homeFolder: null,
     isDirty: false,
     autosaveTimer: null,
+    initialized: false,
 };
 
 // DOM要素キャッシュ
@@ -49,13 +50,14 @@ async function init() {
         appState.homeFolder = settings.home_folder;
         
         // 初回起動チェック
-        const isFirstLaunch = !settings.home_folder || settings.home_folder === '';
+        const isFirstLaunch = !!settings.is_first_launch;
         
         if (isFirstLaunch) {
             showSettingsDialog();
         } else {
             updateStatus('準備完了');
             setupUIEventListeners();
+            await createNewTab();
         }
     } catch (error) {
         console.error('Failed to initialize:', error);
@@ -66,9 +68,20 @@ async function init() {
 // 初回設定ダイアログ表示
 function showSettingsDialog() {
     const defaultPath = 'C:\\Users\\' + getCurrentUsername() + '\\Documents\\nce';
-    elements.homeFolderInput.value = defaultPath;
+    elements.homeFolderInput.value = appState.homeFolder || defaultPath;
     elements.folderHint.textContent = 'ここにテキストファイルが保存されます';
     elements.settingsDialog.classList.remove('hidden');
+
+    elements.browseFolderBtn.onclick = async () => {
+        try {
+            const selected = await open({ directory: true, multiple: false });
+            if (typeof selected === 'string' && selected.trim() !== '') {
+                elements.homeFolderInput.value = selected;
+            }
+        } catch (error) {
+            console.error('Folder browse failed:', error);
+        }
+    };
     
     elements.confirmSettingsBtn.onclick = async () => {
         await saveSettings();
@@ -90,6 +103,7 @@ async function saveSettings() {
         elements.settingsDialog.classList.add('hidden');
         updateStatus('準備完了');
         setupUIEventListeners();
+        await createNewTab();
     } catch (error) {
         console.error('Failed to save settings:', error);
         updateStatus('設定保存エラー', 'error');
@@ -103,39 +117,58 @@ function getCurrentUsername() {
 
 // UI イベントリスナー設定
 function setupUIEventListeners() {
+    if (appState.initialized) {
+        return;
+    }
+
     elements.addTabBtn.addEventListener('click', createNewTab);
     elements.editor.addEventListener('input', onEditorInput);
+    appState.initialized = true;
 }
 
 // 新規タブ作成
-function createNewTab() {
-    const timestamp = new Date().toISOString()
-        .replace(/[-:]/g, '').replace(/\.\d+Z/, '');
-    const fileName = timestamp + '.txt';
-    
-    const tab = {
-        id: Math.random().toString(36).substr(2, 9),
-        fileName: fileName,
-        filePath: appState.homeFolder + '\\' + fileName,
-        content: '',
-        isDirty: false,
-        isAutoCreated: true,
-        createdInCurrentSession: true,
-        hasNonWhitespaceInput: false,
-    };
-    
-    appState.tabs.push(tab);
-    switchTab(tab.id);
-    renderTabs();
+async function createNewTab() {
+    if (!appState.homeFolder) {
+        updateStatus('ホームフォルダ未設定', 'error');
+        return;
+    }
+
+    try {
+        updateStatus('新規ファイル作成中...', 'saving');
+
+        const file = await invoke('create_auto_file', {
+            homeFolder: appState.homeFolder,
+        });
+
+        const tab = {
+            id: crypto.randomUUID(),
+            fileName: file.file_name,
+            filePath: file.file_path,
+            content: '',
+            isDirty: false,
+            isAutoCreated: true,
+            createdInCurrentSession: true,
+            hasNonWhitespaceInput: false,
+        };
+
+        appState.tabs.push(tab);
+        await switchTab(tab.id);
+        renderTabs();
+        updateStatus(tab.fileName + ' を作成', 'saved');
+    } catch (error) {
+        console.error('Failed to create new file:', error);
+        updateStatus('新規ファイル作成失敗', 'error');
+    }
 }
 
 // タブ切り替え
-function switchTab(tabId) {
+async function switchTab(tabId) {
     // 前のタブを保存
     if (appState.currentTab) {
         const currentIdx = appState.tabs.findIndex(t => t.id === appState.currentTab);
         if (currentIdx !== -1) {
             appState.tabs[currentIdx].content = elements.editor.value;
+            await saveTabIfDirty(appState.tabs[currentIdx]);
         }
     }
     
@@ -150,6 +183,18 @@ function switchTab(tabId) {
     }
 }
 
+async function saveTabIfDirty(tab) {
+    if (!tab || !tab.isDirty) {
+        return;
+    }
+
+    await invoke('save_text_file', {
+        filePath: tab.filePath,
+        content: tab.content,
+    });
+    tab.isDirty = false;
+}
+
 // タブを削除
 async function closeTab(tabId) {
     const idx = appState.tabs.findIndex(t => t.id === tabId);
@@ -160,12 +205,18 @@ async function closeTab(tabId) {
     
     // 空白のみなら削除
     if (shouldDeleteEmptyFile(tab)) {
+        try {
+            await invoke('delete_text_file', { filePath: tab.filePath });
+        } catch (error) {
+            console.error('Failed to delete empty file:', error);
+        }
+
         appState.tabs.splice(idx, 1);
         if (appState.currentTab === tabId) {
             if (appState.tabs.length > 0) {
-                switchTab(appState.tabs[0].id);
+                await switchTab(appState.tabs[0].id);
             } else {
-                createNewTab();
+                await createNewTab();
             }
         }
         renderTabs();
@@ -176,7 +227,7 @@ async function closeTab(tabId) {
     if (tab.isDirty) {
         const confirmed = await ask('保存されていない変更があります。保存しますか？');
         if (confirmed) {
-            // 将来の実装：ファイル保存
+            await saveTabIfDirty(tab);
         }
     }
     
@@ -184,9 +235,9 @@ async function closeTab(tabId) {
     
     if (appState.currentTab === tabId) {
         if (appState.tabs.length > 0) {
-            switchTab(appState.tabs[0].id);
+            await switchTab(appState.tabs[0].id);
         } else {
-            createNewTab();
+            await createNewTab();
         }
     }
     
@@ -266,12 +317,9 @@ async function autoSave() {
     
     try {
         updateStatus('保存中...', 'saving');
+
+        await saveTabIfDirty(tab);
         
-        // 将来の実装：ファイル保存
-        // 現在はシミュレーション
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        tab.isDirty = false;
         updateStatus('保存済み', 'saved');
     } catch (error) {
         console.error('Auto-save failed:', error);
