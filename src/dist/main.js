@@ -224,9 +224,10 @@ async function init() {
         
         // 初回起動チェック
         const isFirstLaunch = !!settings.is_first_launch;
+        const isHomeFolderMissing = settings.home_folder_exists === false;
         
-        if (isFirstLaunch) {
-            showSettingsDialog();
+        if (isFirstLaunch || isHomeFolderMissing) {
+            showSettingsDialog(isHomeFolderMissing);
         } else {
             updateStatus('準備完了');
             setupUIEventListeners();
@@ -239,10 +240,12 @@ async function init() {
 }
 
 // 初回設定ダイアログ表示
-function showSettingsDialog() {
+function showSettingsDialog(isMissingFolder = false) {
     const defaultPath = 'C:\\Users\\' + getCurrentUsername() + '\\Documents\\nce';
     elements.homeFolderInput.value = appState.homeFolder || defaultPath;
-    elements.folderHint.textContent = 'ここにテキストファイルが保存されます';
+    elements.folderHint.textContent = isMissingFolder
+        ? '保存先フォルダが見つからないため、再設定してください'
+        : 'ここにテキストファイルが保存されます';
     elements.settingsDialog.classList.remove('hidden');
 
     elements.browseFolderBtn.onclick = async () => {

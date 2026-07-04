@@ -17,6 +17,7 @@ struct AppSettings {
 struct SettingsResponse {
     home_folder: String,
     is_first_launch: bool,
+    home_folder_exists: bool,
 }
 
 #[derive(Debug, Serialize)]
@@ -99,6 +100,7 @@ fn get_settings() -> SettingsResponse {
     SettingsResponse {
         home_folder: settings.home_folder.to_string_lossy().to_string(),
         is_first_launch: !AppSettings::exists(),
+        home_folder_exists: settings.home_folder.exists(),
     }
 }
 
