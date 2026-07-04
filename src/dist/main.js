@@ -3,7 +3,6 @@ const tauriApi = window.__TAURI__ || null;
 const invoke = tauriApi?.tauri?.invoke || tauriApi?.invoke || null;
 const openDialog = tauriApi?.dialog?.open || null;
 const saveDialog = tauriApi?.dialog?.save || null;
-const appWindow = tauriApi?.window?.appWindow || null;
 
 const AUTOSAVE_DELAY_MS = 3000;
 
@@ -236,11 +235,9 @@ async function handleAppCloseRequested(closeEvent) {
         }
 
         appState.allowClose = true;
-        if (appWindow && typeof appWindow.close === 'function') {
-            await appWindow.close();
-            return;
-        }
-        window.close();
+        setTimeout(() => {
+            window.close();
+        }, 0);
     } catch (error) {
         console.error('Failed while processing app close:', error);
         updateStatus('終了処理失敗', 'error');
