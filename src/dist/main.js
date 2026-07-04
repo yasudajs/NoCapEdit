@@ -37,6 +37,8 @@ const elements = {
     addTabBtn: document.getElementById('addTabBtn'),
     editor: document.getElementById('editor'),
     statusText: document.getElementById('statusText'),
+    statusFile: document.getElementById('statusFile'),
+    statusMetrics: document.getElementById('statusMetrics'),
     settingsDialog: document.getElementById('settingsDialog'),
     homeFolderInput: document.getElementById('homeFolderInput'),
     browseFolderBtn: document.getElementById('browseFolderBtn'),
@@ -48,6 +50,30 @@ const elements = {
     cancelExitBtn: document.getElementById('cancelExitBtn'),
     folderHint: document.getElementById('folderHint'),
 };
+
+function getCurrentTab() {
+    if (!appState.currentTab) {
+        return null;
+    }
+    return appState.tabs.find((t) => t.id === appState.currentTab) || null;
+}
+
+function updateEditorMetrics() {
+    const value = elements.editor.value || '';
+    const chars = value.length;
+    const caret = elements.editor.selectionStart || 0;
+    const before = value.slice(0, caret);
+    const lines = before.split('\n');
+    const line = lines.length;
+    const col = (lines[lines.length - 1] || '').length + 1;
+
+    elements.statusMetrics.textContent = `Ln ${line}, Col ${col} | ${chars} chars`;
+}
+
+function updateStatusFileLabel() {
+    const tab = getCurrentTab();
+    elements.statusFile.textContent = tab ? tab.fileName : '-';
+}
 
 // ステータス更新
 function updateStatus(message, status = 'normal') {
@@ -153,6 +179,8 @@ function setupUIEventListeners() {
 
     elements.addTabBtn.addEventListener('click', createNewTab);
     elements.editor.addEventListener('input', onEditorInput);
+    elements.editor.addEventListener('click', updateEditorMetrics);
+    elements.editor.addEventListener('keyup', updateEditorMetrics);
     appState.initialized = true;
 }
 
@@ -214,6 +242,8 @@ async function switchTab(tabId) {
         if (tab) {
             elements.editor.value = tab.content;
             renderTabs();
+            updateStatusFileLabel();
+            updateEditorMetrics();
             updateStatus(tab.fileName + ' - 準備完了');
         }
     } catch (error) {
@@ -236,6 +266,7 @@ async function saveTabIfDirty(tab) {
         content: tab.content,
     });
     tab.isDirty = false;
+    renderTabs();
 }
 
 // タブを削除
@@ -311,6 +342,9 @@ function renderTabs() {
         
         const nameEl = document.createElement('span');
         nameEl.className = 'tab-name';
+        if (tab.isDirty) {
+            nameEl.classList.add('dirty');
+        }
         nameEl.textContent = tab.fileName;
         
         const closeEl = document.createElement('span');
@@ -338,6 +372,9 @@ function onEditorInput(e) {
     
     tab.content = elements.editor.value;
     tab.isDirty = true;
+    renderTabs();
+    updateStatusFileLabel();
+    updateEditorMetrics();
     
     // 非空白文字を入力したか確認
     if (elements.editor.value.trim() !== '') {
@@ -375,6 +412,7 @@ async function autoSave() {
 // アプリケーション起動
 document.addEventListener('DOMContentLoaded', () => {
     init();
+    updateEditorMetrics();
 });
 
 // ウィンドウクローズ前の処理
