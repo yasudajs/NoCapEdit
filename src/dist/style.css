@@ -182,6 +182,44 @@ body {
     border-color: var(--accent);
 }
 
+/* フォント選択セレクトボックス */
+.font-select {
+    height: 32px;
+    max-width: 180px;
+    margin: 4px 0 4px 8px;
+    padding: 0 8px;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.font-select:hover {
+    border-color: var(--accent);
+    background-color: var(--bg-tertiary);
+}
+
+.font-select:focus {
+    border-color: var(--accent);
+}
+
+.font-select optgroup {
+    background-color: var(--bg-primary);
+    color: var(--text-secondary);
+    font-style: normal;
+    font-weight: bold;
+}
+
+.font-select option {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+}
+
 .plus-icon {
     font-size: 16px;
     font-weight: bold;

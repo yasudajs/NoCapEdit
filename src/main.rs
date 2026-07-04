@@ -15,6 +15,8 @@ struct AppSettings {
     theme: String,
     #[serde(default = "default_font_size")]
     font_size: u32,
+    #[serde(default = "default_font_family")]
+    font_family: String,
 }
 
 fn default_theme() -> String {
@@ -25,11 +27,16 @@ fn default_font_size() -> u32 {
     13
 }
 
+fn default_font_family() -> String {
+    "default".to_string()
+}
+
 #[derive(Debug, Serialize)]
 struct SettingsResponse {
     home_folder: String,
     theme: String,
     font_size: u32,
+    font_family: String,
     is_first_launch: bool,
     home_folder_exists: bool,
 }
@@ -78,6 +85,7 @@ impl Default for AppSettings {
             home_folder: documents.join("nce"),
             theme: default_theme(),
             font_size: default_font_size(),
+            font_family: default_font_family(),
         }
     }
 }
@@ -117,17 +125,19 @@ fn get_settings() -> SettingsResponse {
         home_folder: settings.home_folder.to_string_lossy().to_string(),
         theme: settings.theme,
         font_size: settings.font_size,
+        font_family: settings.font_family,
         is_first_launch: !AppSettings::exists(),
         home_folder_exists: settings.home_folder.exists(),
     }
 }
 
 #[tauri::command]
-fn save_settings(home_folder: PathBuf, theme: String, font_size: u32) -> Result<(), String> {
+fn save_settings(home_folder: PathBuf, theme: String, font_size: u32, font_family: String) -> Result<(), String> {
     let settings = AppSettings {
         home_folder: home_folder.clone(),
         theme,
         font_size,
+        font_family,
     };
     
     // ホームフォルダが存在しなければ作成
@@ -200,6 +210,31 @@ fn get_launch_file() -> Option<String> {
     None
 }
 
+#[derive(Debug, Serialize, Clone, PartialEq, Eq)]
+struct SystemFontInfo {
+    family: String,
+    is_monospace: bool,
+}
+
+#[tauri::command]
+fn get_system_fonts() -> Vec<SystemFontInfo> {
+    let mut db = fontdb::Database::new();
+    db.load_system_fonts();
+    
+    let mut fonts: Vec<SystemFontInfo> = db.faces()
+        .filter_map(|face| {
+            face.families.first().map(|(name, _)| SystemFontInfo {
+                family: name.clone(),
+                is_monospace: face.monospaced,
+            })
+        })
+        .collect();
+    
+    fonts.sort_by(|a, b| a.family.cmp(&b.family));
+    fonts.dedup_by(|a, b| a.family == b.family);
+    fonts
+}
+
 #[tauri::command]
 fn apply_theme(window: tauri::Window, theme: String) -> Result<(), String> {
     let is_dark = theme != "light";
@@ -237,7 +272,8 @@ fn main() {
             delete_text_file,
             exit_app,
             get_launch_file,
-            apply_theme
+            apply_theme,
+            get_system_fonts
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

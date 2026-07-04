@@ -14,6 +14,7 @@ let appState = {
     homeFolder: null,
     theme: 'dark',
     fontSize: 13,
+    fontFamily: 'default',
     isDirty: false,
     autosaveTimer: null,
     initialized: false,
@@ -43,6 +44,7 @@ const elements = {
     tabsContainer: document.getElementById('tabsContainer'),
     addTabBtn: document.getElementById('addTabBtn'),
     themeToggleBtn: document.getElementById('themeToggleBtn'),
+    fontFamilySelect: document.getElementById('fontFamilySelect'),
     editor: document.getElementById('editor'),
     statusText: document.getElementById('statusText'),
     statusFile: document.getElementById('statusFile'),
@@ -327,6 +329,7 @@ async function init() {
         appState.homeFolder = settings.home_folder;
         appState.theme = settings.theme || 'dark';
         appState.fontSize = settings.font_size || 13;
+        appState.fontFamily = settings.font_family || 'default';
         
         // テーマを適用
         applyThemeUI(appState.theme);
@@ -336,8 +339,10 @@ async function init() {
             console.error('Failed to apply theme during init:', themeError);
         }
         
-        // フォントサイズを適用
+        // フォント設定を適用
         applyFontSize();
+        applyFontFamily();
+        await loadSystemFonts();
         
         // 初回起動チェック
         const isFirstLaunch = !!settings.is_first_launch;
@@ -406,7 +411,12 @@ async function saveSettings() {
             return;
         }
 
-        await invoke('save_settings', { homeFolder, theme: appState.theme, fontSize: appState.fontSize });
+        await invoke('save_settings', {
+            homeFolder,
+            theme: appState.theme,
+            fontSize: appState.fontSize,
+            fontFamily: appState.fontFamily
+        });
         appState.homeFolder = homeFolder;
         elements.settingsDialog.classList.add('hidden');
         updateStatus('準備完了');
@@ -450,7 +460,12 @@ async function toggleTheme() {
     }
     
     try {
-        await invoke('save_settings', { homeFolder: appState.homeFolder, theme: newTheme, fontSize: appState.fontSize });
+        await invoke('save_settings', {
+            homeFolder: appState.homeFolder,
+            theme: newTheme,
+            fontSize: appState.fontSize,
+            fontFamily: appState.fontFamily
+        });
     } catch (error) {
         console.error('Failed to save settings during theme toggle:', error);
     }
@@ -464,6 +479,9 @@ function setupUIEventListeners() {
 
     elements.addTabBtn.addEventListener('click', createNewTab);
     elements.themeToggleBtn.addEventListener('click', toggleTheme);
+    if (elements.fontFamilySelect) {
+        elements.fontFamilySelect.addEventListener('change', onFontFamilyChange);
+    }
     elements.editor.addEventListener('input', onEditorInput);
     elements.editor.addEventListener('click', updateEditorMetrics);
     elements.editor.addEventListener('keyup', updateEditorMetrics);
@@ -498,6 +516,72 @@ function setupUIEventListeners() {
     });
 
     appState.initialized = true;
+}
+
+// システムフォントを取得してドロップダウンを構築
+async function loadSystemFonts() {
+    if (!elements.fontFamilySelect) return;
+
+    try {
+        if (!ensureTauriApi()) return;
+        updateStatus('システムフォントを読み込み中...');
+        const fonts = await invoke('get_system_fonts');
+        
+        // 既存の動的オプションをクリア (デフォルトの「デフォルト (Monospace)」は残す)
+        while (elements.fontFamilySelect.options.length > 1) {
+            elements.fontFamilySelect.remove(1);
+        }
+        
+        const monoGroup = document.createElement('optgroup');
+        monoGroup.label = '等幅フォント';
+        
+        const otherGroup = document.createElement('optgroup');
+        otherGroup.label = 'その他のフォント';
+        
+        fonts.forEach(font => {
+            const option = document.createElement('option');
+            option.value = font.family;
+            option.textContent = font.family;
+            
+            if (font.is_monospace) {
+                monoGroup.appendChild(option);
+            } else {
+                otherGroup.appendChild(option);
+            }
+        });
+        
+        if (monoGroup.children.length > 0) {
+            elements.fontFamilySelect.appendChild(monoGroup);
+        }
+        if (otherGroup.children.length > 0) {
+            elements.fontFamilySelect.appendChild(otherGroup);
+        }
+
+        // 現在値を選択
+        elements.fontFamilySelect.value = appState.fontFamily;
+        updateStatus('準備完了');
+    } catch (error) {
+        console.error('Failed to load system fonts:', error);
+        updateStatus('フォント読み込み失敗', 'error');
+    }
+}
+
+// フォントファミリーの適用
+function applyFontFamily() {
+    if (elements.editor) {
+        if (appState.fontFamily === 'default') {
+            elements.editor.style.fontFamily = "'Fira Code', 'Monaco', 'Menlo', monospace";
+        } else {
+            elements.editor.style.fontFamily = `"${appState.fontFamily}", 'Fira Code', 'Monaco', 'Menlo', monospace`;
+        }
+    }
+}
+
+// フォントファミリー変更時
+function onFontFamilyChange() {
+    appState.fontFamily = elements.fontFamilySelect.value;
+    applyFontFamily();
+    saveSettingsDelay();
 }
 
 // 新規タブ作成
@@ -746,7 +830,7 @@ window.addEventListener('unhandledrejection', (event) => {
 // ズーム（フォントサイズ変更）機能
 const MIN_FONT_SIZE = 8;
 const MAX_FONT_SIZE = 72;
-let fontSizeSaveTimer = null;
+let settingsSaveTimer = null;
 
 function zoomIn() {
     if (appState.fontSize < MAX_FONT_SIZE) {
@@ -766,22 +850,23 @@ function applyFontSize() {
     if (elements.editor) {
         elements.editor.style.fontSize = `${appState.fontSize}px`;
     }
-    saveFontSizeDelay();
+    saveSettingsDelay();
 }
 
-function saveFontSizeDelay() {
-    clearTimeout(fontSizeSaveTimer);
-    fontSizeSaveTimer = setTimeout(async () => {
+function saveSettingsDelay() {
+    clearTimeout(settingsSaveTimer);
+    settingsSaveTimer = setTimeout(async () => {
         try {
             if (ensureTauriApi() && appState.homeFolder) {
                 await invoke('save_settings', {
                     homeFolder: appState.homeFolder,
                     theme: appState.theme,
-                    fontSize: appState.fontSize
+                    fontSize: appState.fontSize,
+                    fontFamily: appState.fontFamily
                 });
             }
         } catch (error) {
-            console.error('Failed to save font size setting:', error);
+            console.error('Failed to save settings:', error);
         }
     }, 1000);
 }
