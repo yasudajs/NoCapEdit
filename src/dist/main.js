@@ -4,7 +4,6 @@ const invoke = tauriApi?.tauri?.invoke || tauriApi?.invoke || null;
 const openDialog = tauriApi?.dialog?.open || null;
 const saveDialog = tauriApi?.dialog?.save || null;
 const appWindow = tauriApi?.window?.appWindow || null;
-const appWindow = tauriApi?.window?.appWindow || null;
 
 const AUTOSAVE_DELAY_MS = 3000;
 
