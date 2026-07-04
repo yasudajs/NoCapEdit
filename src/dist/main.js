@@ -16,6 +16,7 @@ let appState = {
     autosaveTimer: null,
     initialized: false,
     closeGuard: false,
+    allowNativeClose: false,
 };
 
 function generateTabId() {
@@ -233,11 +234,15 @@ function registerCloseHandler() {
     }
 
     appWindow.onCloseRequested(async (event) => {
-        if (appState.closeGuard) {
+        if (appState.allowNativeClose) {
             return;
         }
 
         event.preventDefault();
+
+        if (appState.closeGuard) {
+            return;
+        }
         appState.closeGuard = true;
 
         try {
@@ -247,11 +252,23 @@ function registerCloseHandler() {
                 return;
             }
 
-            await appWindow.close();
+            appState.allowNativeClose = true;
+            appState.closeGuard = false;
+
+            setTimeout(async () => {
+                try {
+                    await appWindow.close();
+                } catch (error) {
+                    console.error('Failed to close app window:', error);
+                    updateStatus('終了処理失敗', 'error');
+                    appState.allowNativeClose = false;
+                }
+            }, 0);
         } catch (error) {
             console.error('Failed while processing app close:', error);
             updateStatus('終了処理失敗', 'error');
             appState.closeGuard = false;
+            appState.allowNativeClose = false;
         }
     });
 }
@@ -583,5 +600,13 @@ async function autoSave() {
 document.addEventListener('DOMContentLoaded', () => {
     init();
     updateEditorMetrics();
+});
+
+window.addEventListener('error', (event) => {
+    console.error('Unhandled window error:', event.error || event.message);
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+    console.error('Unhandled promise rejection:', event.reason);
 });
 
