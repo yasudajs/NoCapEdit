@@ -13,16 +13,23 @@ struct AppSettings {
     home_folder: PathBuf,
     #[serde(default = "default_theme")]
     theme: String,
+    #[serde(default = "default_font_size")]
+    font_size: u32,
 }
 
 fn default_theme() -> String {
     "dark".to_string()
 }
 
+fn default_font_size() -> u32 {
+    13
+}
+
 #[derive(Debug, Serialize)]
 struct SettingsResponse {
     home_folder: String,
     theme: String,
+    font_size: u32,
     is_first_launch: bool,
     home_folder_exists: bool,
 }
@@ -70,6 +77,7 @@ impl Default for AppSettings {
         Self {
             home_folder: documents.join("nce"),
             theme: default_theme(),
+            font_size: default_font_size(),
         }
     }
 }
@@ -108,16 +116,18 @@ fn get_settings() -> SettingsResponse {
     SettingsResponse {
         home_folder: settings.home_folder.to_string_lossy().to_string(),
         theme: settings.theme,
+        font_size: settings.font_size,
         is_first_launch: !AppSettings::exists(),
         home_folder_exists: settings.home_folder.exists(),
     }
 }
 
 #[tauri::command]
-fn save_settings(home_folder: PathBuf, theme: String) -> Result<(), String> {
+fn save_settings(home_folder: PathBuf, theme: String, font_size: u32) -> Result<(), String> {
     let settings = AppSettings {
         home_folder: home_folder.clone(),
         theme,
+        font_size,
     };
     
     // ホームフォルダが存在しなければ作成

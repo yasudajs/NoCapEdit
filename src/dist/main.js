@@ -13,6 +13,7 @@ let appState = {
     tabs: [],
     homeFolder: null,
     theme: 'dark',
+    fontSize: 13,
     isDirty: false,
     autosaveTimer: null,
     initialized: false,
@@ -325,6 +326,7 @@ async function init() {
         const settings = await invoke('get_settings');
         appState.homeFolder = settings.home_folder;
         appState.theme = settings.theme || 'dark';
+        appState.fontSize = settings.font_size || 13;
         
         // テーマを適用
         applyThemeUI(appState.theme);
@@ -333,6 +335,9 @@ async function init() {
         } catch (themeError) {
             console.error('Failed to apply theme during init:', themeError);
         }
+        
+        // フォントサイズを適用
+        applyFontSize();
         
         // 初回起動チェック
         const isFirstLaunch = !!settings.is_first_launch;
@@ -401,7 +406,7 @@ async function saveSettings() {
             return;
         }
 
-        await invoke('save_settings', { homeFolder, theme: appState.theme });
+        await invoke('save_settings', { homeFolder, theme: appState.theme, fontSize: appState.fontSize });
         appState.homeFolder = homeFolder;
         elements.settingsDialog.classList.add('hidden');
         updateStatus('準備完了');
@@ -445,7 +450,7 @@ async function toggleTheme() {
     }
     
     try {
-        await invoke('save_settings', { homeFolder: appState.homeFolder, theme: newTheme });
+        await invoke('save_settings', { homeFolder: appState.homeFolder, theme: newTheme, fontSize: appState.fontSize });
     } catch (error) {
         console.error('Failed to save settings during theme toggle:', error);
     }
@@ -463,6 +468,35 @@ function setupUIEventListeners() {
     elements.editor.addEventListener('click', updateEditorMetrics);
     elements.editor.addEventListener('keyup', updateEditorMetrics);
     registerCloseHandler();
+
+    // Ctrl + マウスホイールでフォントサイズ拡大縮小
+    window.addEventListener('wheel', (e) => {
+        if (e.ctrlKey) {
+            e.preventDefault();
+            if (e.deltaY < 0) {
+                zoomIn();
+            } else if (e.deltaY > 0) {
+                zoomOut();
+            }
+        }
+    }, { passive: false });
+
+    // Ctrl + +/- でフォントサイズ拡大縮小
+    window.addEventListener('keydown', (e) => {
+        if (e.ctrlKey) {
+            // 拡大条件: "+"キー、テンキーの"+", 英語配列の"=", 日本語配列の";" (Ctrl+;で拡大することも考慮)
+            if (e.key === '+' || e.key === '=' || e.key === ';' || e.code === 'NumpadAdd' || e.code === 'Equal' || (e.code === 'Semicolon' && e.shiftKey)) {
+                e.preventDefault();
+                zoomIn();
+            }
+            // 縮小条件: "-"キー、テンキーの"-", "_"キー
+            else if (e.key === '-' || e.key === '_' || e.code === 'NumpadSubtract' || e.code === 'Minus') {
+                e.preventDefault();
+                zoomOut();
+            }
+        }
+    });
+
     appState.initialized = true;
 }
 
@@ -708,4 +742,47 @@ window.addEventListener('error', (event) => {
 window.addEventListener('unhandledrejection', (event) => {
     console.error('Unhandled promise rejection:', event.reason);
 });
+
+// ズーム（フォントサイズ変更）機能
+const MIN_FONT_SIZE = 8;
+const MAX_FONT_SIZE = 72;
+let fontSizeSaveTimer = null;
+
+function zoomIn() {
+    if (appState.fontSize < MAX_FONT_SIZE) {
+        appState.fontSize = Math.min(MAX_FONT_SIZE, appState.fontSize + 1);
+        applyFontSize();
+    }
+}
+
+function zoomOut() {
+    if (appState.fontSize > MIN_FONT_SIZE) {
+        appState.fontSize = Math.max(MIN_FONT_SIZE, appState.fontSize - 1);
+        applyFontSize();
+    }
+}
+
+function applyFontSize() {
+    if (elements.editor) {
+        elements.editor.style.fontSize = `${appState.fontSize}px`;
+    }
+    saveFontSizeDelay();
+}
+
+function saveFontSizeDelay() {
+    clearTimeout(fontSizeSaveTimer);
+    fontSizeSaveTimer = setTimeout(async () => {
+        try {
+            if (ensureTauriApi() && appState.homeFolder) {
+                await invoke('save_settings', {
+                    homeFolder: appState.homeFolder,
+                    theme: appState.theme,
+                    fontSize: appState.fontSize
+                });
+            }
+        } catch (error) {
+            console.error('Failed to save font size setting:', error);
+        }
+    }, 1000);
+}
 
