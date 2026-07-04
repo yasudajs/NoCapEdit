@@ -92,3 +92,20 @@ Compress-Archive -Path "target/release/NoCapEdit.exe" -DestinationPath "target/r
 ## 📄 仕様詳細
 仕様の詳細は [docs/mvp-spec.md](docs/mvp-spec.md) をご参照ください。
 過去の作業履歴や実装履歴は Git のコミットログにて管理されています。
+
+---
+
+## 貢献 (Contributing)
+
+NoCapEditはオープンソースプロジェクトであり、皆様からの貢献を歓迎しています！
+バグ報告、機能の提案、ドキュメントの改善、プルリクエストなどを送る際は、事前に [貢献ガイドライン](CONTRIBUTING.md) をご確認ください。
+
+---
+
+## ライセンス
+
+このプロジェクトは **MIT License** のもとで公開されています。利用・改変・再配布にあたっては、著作権表示およびライセンス表示を含める必要があります。
+
+詳細は [LICENSE](LICENSE) ファイルをご覧ください。
+
+Copyright (c) 2026 安田情報システム
