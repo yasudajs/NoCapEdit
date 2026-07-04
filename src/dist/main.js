@@ -95,6 +95,10 @@ function getFileNameFromPath(path) {
     return chunks[chunks.length - 1] || '';
 }
 
+function isAutoCreatedFileName(fileName) {
+    return /^\d{8}_\d{6}(_\d{2})?\.nctx$/.test(fileName);
+}
+
 function syncCurrentEditorToState() {
     const tab = getCurrentTab();
     if (!tab) {
@@ -102,9 +106,6 @@ function syncCurrentEditorToState() {
     }
 
     tab.content = elements.editor.value;
-    if (elements.editor.value.trim() !== '') {
-        tab.hasNonWhitespaceInput = true;
-    }
 }
 
 function showSaveErrorDialog(message) {
@@ -165,8 +166,6 @@ async function saveTabAs(tab) {
 
     tab.filePath = targetPath;
     tab.fileName = getFileNameFromPath(targetPath);
-    tab.isAutoCreated = false;
-    tab.createdInCurrentSession = true;
     tab.isDirty = false;
     renderTabs();
     updateStatusFileLabel();
@@ -306,9 +305,6 @@ async function openExistingFile(filePath) {
             filePath: filePath,
             content: content,
             isDirty: false,
-            isAutoCreated: false,
-            createdInCurrentSession: true,
-            hasNonWhitespaceInput: content.trim() !== '',
             isSaving: false,
             savePromise: null,
         };
@@ -626,9 +622,6 @@ async function createNewTab() {
             filePath: file.file_path,
             content: '',
             isDirty: false,
-            isAutoCreated: true,
-            createdInCurrentSession: true,
-            hasNonWhitespaceInput: false,
             isSaving: false,
             savePromise: null,
         };
@@ -744,14 +737,11 @@ async function closeTab(tabId) {
 
 // 空白のみファイルを削除すべきか判定
 function shouldDeleteEmptyFile(tab) {
-    if (!tab.isAutoCreated || !tab.createdInCurrentSession) {
+    const trimmed = tab.content.trim();
+    if (trimmed !== '') {
         return false;
     }
-    
-    const content = tab.content;
-    const trimmed = content.trim();
-    
-    return trimmed === '' && !tab.hasNonWhitespaceInput;
+    return isAutoCreatedFileName(tab.fileName);
 }
 
 // タブを再描画
@@ -797,11 +787,6 @@ function onEditorInput(e) {
     renderTabs();
     updateStatusFileLabel();
     updateEditorMetrics();
-    
-    // 非空白文字を入力したか確認
-    if (elements.editor.value.trim() !== '') {
-        tab.hasNonWhitespaceInput = true;
-    }
     
     updateStatus('編集中...');
     
