@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NoCapEdit [ Ver 0.1.4 ]</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app" class="app-container">
+        <!-- タブバー -->
+        <div class="tab-bar">
+            <div class="tabs-container" id="tabsContainer"></div>
+            <select id="fontFamilySelect" class="font-select" title="フォントを変更">
+                <option value="default">デフォルト (Monospace)</option>
+            </select>
+            <button class="theme-toggle-btn" id="themeToggleBtn" title="テーマを切り替え">
+                <span class="theme-icon">🌙</span>
+            </button>
+            <button class="add-tab-btn" id="addTabBtn" title="新規タブを作成">
+                <span class="plus-icon">+</span>
+            </button>
+        </div>
+
+        <!-- エディタエリア -->
+        <div class="editor-container">
+            <textarea id="editor" class="editor" placeholder="ここに入力してください..."></textarea>
+        </div>
+
+        <!-- ステータスバー -->
+        <div class="status-bar">
+            <span class="status-text" id="statusText">準備中...</span>
+            <div class="status-meta">
+                <span class="status-file" id="statusFile">-</span>
+                <span class="status-metrics" id="statusMetrics">Ln 1, Col 1 | 0 chars</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 初回設定ダイアログ -->
+    <div id="settingsDialog" class="dialog-overlay hidden">
+        <div class="dialog-box">
+            <h2>NoCapEdit - 初期設定</h2>
+            <div class="dialog-content">
+                <label for="homeFolderInput">ホームフォルダを指定してください:</label>
+                <div class="folder-input-group">
+                    <input type="text" id="homeFolderInput" class="folder-input" readonly>
+                    <button id="browseFolderBtn" class="browse-btn">参照...</button>
+                </div>
+                <small id="folderHint" class="hint"></small>
+            </div>
+            <div class="dialog-actions">
+                <button id="confirmSettingsBtn" class="btn-primary">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 保存失敗ダイアログ -->
+    <div id="errorDialog" class="dialog-overlay hidden">
+        <div class="dialog-box">
+            <h2>エラー</h2>
+            <div class="dialog-content">
+                <p id="errorMessage"></p>
+            </div>
+            <div class="dialog-actions">
+                <button id="retryBtn" class="btn-secondary">再試行</button>
+                <button id="saveAsBtn" class="btn-secondary">別名で保存</button>
+                <button id="cancelExitBtn" class="btn-primary">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>

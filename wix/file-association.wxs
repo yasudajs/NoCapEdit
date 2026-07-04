@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+    <Fragment>
+        <DirectoryRef Id="INSTALLDIR">
+            <Component Id="FileAssociationComponent" Guid="5b9b760d-e976-5da1-a345-0d46f802c5e3">
+                <!-- ICE18 回避のための KeyPath -->
+                <RegistryValue Root="HKCU" Key="Software\nocapedit\NoCapEdit" Name="FileAssociations" Type="integer" Value="1" KeyPath="yes" />
+
+                <!-- .nctx 拡張子の登録 -->
+                <RegistryValue Root="HKCU" Key="Software\Classes\.nctx" Value="NoCapEdit.nctx" Type="string" />
+                <RegistryValue Root="HKCU" Key="Software\Classes\NoCapEdit.nctx" Value="NoCapEdit Text File" Type="string" />
+                <RegistryValue Root="HKCU" Key="Software\Classes\NoCapEdit.nctx\DefaultIcon" Value="[INSTALLDIR]NoCapEdit.exe,0" Type="string" />
+                <RegistryValue Root="HKCU" Key="Software\Classes\NoCapEdit.nctx\shell\open\command" Value="&quot;[INSTALLDIR]NoCapEdit.exe&quot; &quot;%1&quot;" Type="string" />
+
+                <!-- .ncmd 拡張子の登録 -->
+                <RegistryValue Root="HKCU" Key="Software\Classes\.ncmd" Value="NoCapEdit.ncmd" Type="string" />
+                <RegistryValue Root="HKCU" Key="Software\Classes\NoCapEdit.ncmd" Value="NoCapEdit Markdown File" Type="string" />
+                <RegistryValue Root="HKCU" Key="Software\Classes\NoCapEdit.ncmd\DefaultIcon" Value="[INSTALLDIR]NoCapEdit.exe,0" Type="string" />
+                <RegistryValue Root="HKCU" Key="Software\Classes\NoCapEdit.ncmd\shell\open\command" Value="&quot;[INSTALLDIR]NoCapEdit.exe&quot; &quot;%1&quot;" Type="string" />
+            </Component>
+        </DirectoryRef>
+    </Fragment>
+</Wix>
