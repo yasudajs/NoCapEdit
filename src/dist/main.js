@@ -1,8 +1,11 @@
 // Tauri API (環境差異を吸収)
 const tauriApi = window.__TAURI__ || null;
 const invoke = tauriApi?.tauri?.invoke || tauriApi?.invoke || null;
-const ask = tauriApi?.dialog?.ask || null;
 const openDialog = tauriApi?.dialog?.open || null;
+const saveDialog = tauriApi?.dialog?.save || null;
+const appWindow = tauriApi?.window?.appWindow || null;
+
+const AUTOSAVE_DELAY_MS = 3000;
 
 // アプリケーション状態
 let appState = {
@@ -12,6 +15,9 @@ let appState = {
     isDirty: false,
     autosaveTimer: null,
     initialized: false,
+    closeHandlerRegistered: false,
+    isHandlingClose: false,
+    allowClose: false,
 };
 
 function generateTabId() {
@@ -73,6 +79,185 @@ function updateEditorMetrics() {
 function updateStatusFileLabel() {
     const tab = getCurrentTab();
     elements.statusFile.textContent = tab ? tab.fileName : '-';
+}
+
+function getFileNameFromPath(path) {
+    if (!path) {
+        return '';
+    }
+    const normalized = path.replace(/\\/g, '/');
+    const chunks = normalized.split('/');
+    return chunks[chunks.length - 1] || '';
+}
+
+function syncActiveTabContent() {
+    const tab = getCurrentTab();
+    if (!tab) {
+        return;
+    }
+    tab.content = elements.editor.value;
+}
+
+function showSaveErrorDialog(message) {
+    return new Promise((resolve) => {
+        elements.errorMessage.textContent = message;
+        elements.errorDialog.classList.remove('hidden');
+
+        const onRetry = () => {
+            cleanup();
+            resolve('retry');
+        };
+
+        const onSaveAs = () => {
+            cleanup();
+            resolve('saveAs');
+        };
+
+        const onCancel = () => {
+            cleanup();
+            resolve('cancel');
+        };
+
+        function cleanup() {
+            elements.errorDialog.classList.add('hidden');
+            elements.retryBtn.removeEventListener('click', onRetry);
+            elements.saveAsBtn.removeEventListener('click', onSaveAs);
+            elements.cancelExitBtn.removeEventListener('click', onCancel);
+        }
+
+        elements.retryBtn.addEventListener('click', onRetry);
+        elements.saveAsBtn.addEventListener('click', onSaveAs);
+        elements.cancelExitBtn.addEventListener('click', onCancel);
+    });
+}
+
+async function saveTabAs(tab) {
+    if (!saveDialog) {
+        throw new Error('別名保存ダイアログを利用できません');
+    }
+
+    const targetPath = await saveDialog({ defaultPath: tab.filePath });
+    if (!targetPath || typeof targetPath !== 'string') {
+        return false;
+    }
+
+    await invoke('save_text_file', {
+        filePath: targetPath,
+        content: tab.content,
+    });
+
+    tab.filePath = targetPath;
+    tab.fileName = getFileNameFromPath(targetPath);
+    tab.isAutoCreated = false;
+    tab.createdInCurrentSession = true;
+    tab.isDirty = false;
+    renderTabs();
+    updateStatusFileLabel();
+    updateStatus('別名で保存済み', 'saved');
+    return true;
+}
+
+async function persistTabWithRecovery(tab, contextLabel) {
+    if (!tab) {
+        return true;
+    }
+
+    if (shouldDeleteEmptyFile(tab)) {
+        try {
+            await invoke('delete_text_file', { filePath: tab.filePath });
+        } catch (error) {
+            console.error('Failed to delete empty file:', error);
+            updateStatus('空ファイル削除失敗', 'error');
+            return false;
+        }
+        return true;
+    }
+
+    if (!tab.isDirty) {
+        return true;
+    }
+
+    while (true) {
+        try {
+            updateStatus('保存中...', 'saving');
+            await saveTabIfDirty(tab);
+            updateStatus('保存済み', 'saved');
+            return true;
+        } catch (error) {
+            console.error(`Save failed (${contextLabel}):`, error);
+            const choice = await showSaveErrorDialog(
+                `保存に失敗しました。\n対象: ${tab.fileName}\n理由: ${error}`
+            );
+
+            if (choice === 'retry') {
+                continue;
+            }
+
+            if (choice === 'saveAs') {
+                try {
+                    const saved = await saveTabAs(tab);
+                    if (saved) {
+                        return true;
+                    }
+                } catch (saveAsError) {
+                    console.error('Save As failed:', saveAsError);
+                }
+                continue;
+            }
+
+            updateStatus('処理を中止しました', 'error');
+            return false;
+        }
+    }
+}
+
+async function handleAppCloseRequested(closeEvent) {
+    if (appState.allowClose) {
+        return;
+    }
+
+    closeEvent?.preventDefault?.();
+
+    if (appState.isHandlingClose) {
+        return;
+    }
+
+    appState.isHandlingClose = true;
+    syncActiveTabContent();
+    clearTimeout(appState.autosaveTimer);
+
+    try {
+        for (const tab of [...appState.tabs]) {
+            const ok = await persistTabWithRecovery(tab, 'app-exit');
+            if (!ok) {
+                appState.isHandlingClose = false;
+                return;
+            }
+        }
+
+        appState.allowClose = true;
+        if (appWindow && typeof appWindow.close === 'function') {
+            await appWindow.close();
+            return;
+        }
+        window.close();
+    } catch (error) {
+        console.error('Failed while processing app close:', error);
+        updateStatus('終了処理失敗', 'error');
+        appState.isHandlingClose = false;
+    }
+}
+
+function registerCloseHandlerOnce() {
+    if (appState.closeHandlerRegistered) {
+        return;
+    }
+
+    if (appWindow && typeof appWindow.onCloseRequested === 'function') {
+        appWindow.onCloseRequested(handleAppCloseRequested);
+    }
+
+    appState.closeHandlerRegistered = true;
 }
 
 // ステータス更新
@@ -181,6 +366,7 @@ function setupUIEventListeners() {
     elements.editor.addEventListener('input', onEditorInput);
     elements.editor.addEventListener('click', updateEditorMetrics);
     elements.editor.addEventListener('keyup', updateEditorMetrics);
+    registerCloseHandlerOnce();
     appState.initialized = true;
 }
 
@@ -231,7 +417,10 @@ async function switchTab(tabId) {
             const currentIdx = appState.tabs.findIndex(t => t.id === appState.currentTab);
             if (currentIdx !== -1) {
                 appState.tabs[currentIdx].content = elements.editor.value;
-                await saveTabIfDirty(appState.tabs[currentIdx]);
+                const ok = await persistTabWithRecovery(appState.tabs[currentIdx], 'tab-switch');
+                if (!ok) {
+                    return;
+                }
             }
         }
     
@@ -276,48 +465,30 @@ async function closeTab(tabId) {
     if (idx === -1) return;
     
     const tab = appState.tabs[idx];
-    
-    // 空白のみなら削除
-    if (shouldDeleteEmptyFile(tab)) {
-        try {
-            await invoke('delete_text_file', { filePath: tab.filePath });
-        } catch (error) {
-            console.error('Failed to delete empty file:', error);
-        }
-
-        appState.tabs.splice(idx, 1);
-        if (appState.currentTab === tabId) {
-            if (appState.tabs.length > 0) {
-                await switchTab(appState.tabs[0].id);
-            } else {
-                await createNewTab();
-            }
-        }
-        renderTabs();
+    const ok = await persistTabWithRecovery(tab, 'tab-close');
+    if (!ok) {
         return;
     }
-    
-    // ファイルを保存してから削除
-    if (tab.isDirty) {
-        const confirmed = ask
-            ? await ask('保存されていない変更があります。保存しますか？')
-            : true;
-        if (confirmed) {
-            await saveTabIfDirty(tab);
-        }
-    }
-    
+
     appState.tabs.splice(idx, 1);
-    
+
     if (appState.currentTab === tabId) {
         if (appState.tabs.length > 0) {
-            await switchTab(appState.tabs[0].id);
+            appState.currentTab = appState.tabs[0].id;
+            const active = getCurrentTab();
+            if (active) {
+                elements.editor.value = active.content;
+            }
         } else {
+            appState.currentTab = null;
+            elements.editor.value = '';
             await createNewTab();
         }
     }
-    
+
     renderTabs();
+    updateStatusFileLabel();
+    updateEditorMetrics();
 }
 
 // 空白のみファイルを削除すべきか判定
@@ -387,7 +558,7 @@ function onEditorInput(e) {
     clearTimeout(appState.autosaveTimer);
     appState.autosaveTimer = setTimeout(() => {
         autoSave();
-    }, 3000); // 3秒
+    }, AUTOSAVE_DELAY_MS);
 }
 
 // 自動保存
@@ -416,7 +587,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ウィンドウクローズ前の処理
-window.addEventListener('beforeunload', async (e) => {
-    // 将来の実装：終了前の保存処理
-    // 現在は何もしない
+window.addEventListener('beforeunload', (e) => {
+    syncActiveTabContent();
 });
