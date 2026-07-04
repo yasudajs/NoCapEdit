@@ -26,6 +26,9 @@
         "wix": {
           "fragmentPaths": ["wix/file-association.wxs"],
           "componentRefs": ["FileAssociationComponent"]
+        },
+        "nsis": {
+          "template": "nsis/installer.nsi"
         }
       }
     },
