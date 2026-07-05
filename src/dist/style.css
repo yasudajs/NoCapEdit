@@ -308,12 +308,7 @@ body {
     color: var(--text-secondary);
 }
 
-.status-file {
-    max-width: 240px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
+
 
 .tab-name.dirty::after {
     content: ' *';

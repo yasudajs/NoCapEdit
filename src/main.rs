@@ -349,7 +349,7 @@ fn main() {
                 "main",
                 tauri::WindowUrl::App("index.html".into())
             )
-            .title("NoCapEdit [ Ver 0.1.7 ]")
+            .title("NoCapEdit [ Ver 0.1.8 ]")
             .inner_size(900.0, 600.0)
             .min_inner_size(400.0, 300.0)
             .resizable(true)

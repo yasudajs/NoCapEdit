@@ -16,11 +16,16 @@
 - 不要となった `.status-file` スタイルの定義を削除します。
 
 #### [MODIFY] [main.js](file:///c:/work/NoCapEdit/src/dist/main.js)
-- `elements` キャッシュから `statusFile` を削除します。
+- `elements` キャッシュから `statusFile` を削除します.
 - 不要となった `updateStatusFileLabel` 関数を削除します。
 - `updateStatusFileLabel()` の呼び出し箇所（ファイル保存、タブ切り替え、タブ削除、文字編集の計4箇所）を削除します。
 - `updateEditorMetrics()` 内のメトリクス文字列に、現在のフォントサイズである `| ${appState.fontSize} pt` を追加します。これにより `Ln X, Col Y | Z chars | xx pt` 形式で表示されます。
 - `applyFontSize()` の末尾で `updateEditorMetrics()` を呼び出し、フォントサイズ変更時にステータスバーが即座に更新されるようにします。
+
+### Backend (Rust)
+
+#### [MODIFY] [main.rs](file:///c:/work/NoCapEdit/src/main.rs)
+- ウィンドウ構築時のタイトルバーのバージョン表示を `.title("NoCapEdit [ Ver 0.1.8 ]")` に更新します。
 
 ### Metadata
 

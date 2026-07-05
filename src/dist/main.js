@@ -48,7 +48,6 @@ const elements = {
     fontFamilySelect: document.getElementById('fontFamilySelect'),
     editor: document.getElementById('editor'),
     statusText: document.getElementById('statusText'),
-    statusFile: document.getElementById('statusFile'),
     statusMetrics: document.getElementById('statusMetrics'),
     settingsDialog: document.getElementById('settingsDialog'),
     homeFolderInput: document.getElementById('homeFolderInput'),
@@ -78,12 +77,7 @@ function updateEditorMetrics() {
     const line = lines.length;
     const col = (lines[lines.length - 1] || '').length + 1;
 
-    elements.statusMetrics.textContent = `Ln ${line}, Col ${col} | ${chars} chars`;
-}
-
-function updateStatusFileLabel() {
-    const tab = getCurrentTab();
-    elements.statusFile.textContent = tab ? tab.fileName : '-';
+    elements.statusMetrics.textContent = `Ln ${line}, Col ${col} | ${chars} chars | ${appState.fontSize} pt`;
 }
 
 function getFileNameFromPath(path) {
@@ -168,7 +162,6 @@ async function saveTabAs(tab) {
     tab.fileName = getFileNameFromPath(targetPath);
     tab.isDirty = false;
     renderTabs();
-    updateStatusFileLabel();
     updateStatus('別名で保存済み', 'saved');
     return true;
 }
@@ -658,7 +651,6 @@ async function switchTab(tabId) {
         if (tab) {
             elements.editor.value = tab.content;
             renderTabs();
-            updateStatusFileLabel();
             updateEditorMetrics();
             updateStatus(tab.fileName + ' - 準備完了');
         }
@@ -731,7 +723,6 @@ async function closeTab(tabId) {
     }
 
     renderTabs();
-    updateStatusFileLabel();
     updateEditorMetrics();
 }
 
@@ -785,7 +776,6 @@ function onEditorInput(e) {
     tab.content = elements.editor.value;
     tab.isDirty = true;
     renderTabs();
-    updateStatusFileLabel();
     updateEditorMetrics();
     
     updateStatus('編集中...');
@@ -853,6 +843,7 @@ function applyFontSize() {
     if (elements.editor) {
         elements.editor.style.fontSize = `${appState.fontSize}px`;
     }
+    updateEditorMetrics();
     saveSettingsDelay();
 }
 
