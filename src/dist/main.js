@@ -21,6 +21,8 @@ let appState = {
     initialized: false,
     closeGuard: false,
     forceClosing: false,
+    fontsLoaded: false,
+    fontsLoading: false,
 };
 
 function generateTabId() {
@@ -339,7 +341,15 @@ async function init() {
         // フォント設定を適用
         applyFontSize();
         applyFontFamily();
-        await loadSystemFonts();
+        
+        // 前回の適用フォントが default 以外の場合、一覧をロードする前にドロップダウンに項目を追加しておく
+        if (appState.fontFamily !== 'default' && elements.fontFamilySelect) {
+            const option = document.createElement('option');
+            option.value = appState.fontFamily;
+            option.textContent = appState.fontFamily;
+            option.selected = true;
+            elements.fontFamilySelect.appendChild(option);
+        }
         
         // 初回起動チェック
         const isFirstLaunch = !!settings.is_first_launch;
@@ -478,6 +488,14 @@ function setupUIEventListeners() {
     elements.themeToggleBtn.addEventListener('click', toggleTheme);
     if (elements.fontFamilySelect) {
         elements.fontFamilySelect.addEventListener('change', onFontFamilyChange);
+        
+        const triggerLoad = async () => {
+            if (!appState.fontsLoaded && !appState.fontsLoading) {
+                await loadSystemFonts();
+            }
+        };
+        elements.fontFamilySelect.addEventListener('mousedown', triggerLoad);
+        elements.fontFamilySelect.addEventListener('focus', triggerLoad);
     }
     elements.editor.addEventListener('input', onEditorInput);
     elements.editor.addEventListener('click', updateEditorMetrics);
@@ -528,9 +546,11 @@ function setupUIEventListeners() {
 // システムフォントを取得してドロップダウンを構築
 async function loadSystemFonts() {
     if (!elements.fontFamilySelect) return;
+    if (appState.fontsLoaded || appState.fontsLoading) return;
 
     try {
         if (!ensureTauriApi()) return;
+        appState.fontsLoading = true;
         updateStatus('システムフォントを読み込み中...');
         const fonts = await invoke('get_system_fonts');
         
@@ -566,10 +586,13 @@ async function loadSystemFonts() {
 
         // 現在値を選択
         elements.fontFamilySelect.value = appState.fontFamily;
+        appState.fontsLoaded = true;
         updateStatus('準備完了');
     } catch (error) {
         console.error('Failed to load system fonts:', error);
         updateStatus('フォント読み込み失敗', 'error');
+    } finally {
+        appState.fontsLoading = false;
     }
 }
 
