@@ -330,6 +330,11 @@ async function init() {
         appState.fontSize = settings.font_size || 13;
         appState.fontFamily = settings.font_family || 'default';
         
+        // アプリケーションタイトルの動的設定
+        if (settings.app_version) {
+            document.title = `NoCapEdit [ Ver ${settings.app_version} ]`;
+        }
+        
         // テーマを適用
         applyThemeUI(appState.theme);
         try {

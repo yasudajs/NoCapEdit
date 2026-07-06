@@ -80,6 +80,7 @@ struct SettingsResponse {
     font_family: String,
     is_first_launch: bool,
     home_folder_exists: bool,
+    app_version: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -169,6 +170,7 @@ fn get_settings() -> SettingsResponse {
         font_family: settings.font_family,
         is_first_launch: !AppSettings::exists(),
         home_folder_exists: settings.home_folder.exists(),
+        app_version: env!("CARGO_PKG_VERSION").to_string(),
     }
 }
 
@@ -349,7 +351,7 @@ fn main() {
                 "main",
                 tauri::WindowUrl::App("index.html".into())
             )
-            .title("NoCapEdit [ Ver 0.1.8 ]")
+            .title(format!("NoCapEdit [ Ver {} ]", env!("CARGO_PKG_VERSION")))
             .inner_size(900.0, 600.0)
             .min_inner_size(400.0, 300.0)
             .resizable(true)
