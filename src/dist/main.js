@@ -519,7 +519,7 @@ function setupUIEventListeners() {
         }
     }, { passive: false });
 
-    // Ctrl + +/- でフォントサイズ拡大縮小
+    // Ctrl + +/- でフォントサイズ拡大縮小、Ctrl + s で手動保存
     window.addEventListener('keydown', (e) => {
         if (e.ctrlKey) {
             // 拡大条件: "+"キー、テンキーの"+", 英語配列の"=", 日本語配列の";" (Ctrl+;で拡大することも考慮)
@@ -531,6 +531,11 @@ function setupUIEventListeners() {
             else if (e.key === '-' || e.key === '_' || e.code === 'NumpadSubtract' || e.code === 'Minus') {
                 e.preventDefault();
                 zoomOut();
+            }
+            // 手動保存: "s" / "S" キー
+            else if (e.key === 's' || e.key === 'S' || e.code === 'KeyS') {
+                e.preventDefault();
+                triggerManualSave();
             }
         }
     });
@@ -830,6 +835,35 @@ async function autoSave() {
         updateStatus('保存済み', 'saved');
     } catch (error) {
         console.error('Auto-save failed:', error);
+        updateStatus('保存失敗', 'error');
+    }
+}
+
+// 手動保存
+async function triggerManualSave() {
+    if (!appState.currentTab) return;
+    
+    syncCurrentEditorToState();
+    
+    // 自動保存タイマーがあればクリアする
+    if (appState.autosaveTimer) {
+        clearTimeout(appState.autosaveTimer);
+        appState.autosaveTimer = null;
+    }
+    
+    const tab = appState.tabs.find(t => t.id === appState.currentTab);
+    if (!tab) return;
+    
+    // 強制的に保存させるため未保存フラグを設定して保存処理を走らせる
+    tab.isDirty = true;
+    renderTabs();
+    
+    try {
+        updateStatus('保存中...', 'saving');
+        await saveTabIfDirty(tab);
+        updateStatus('保存済み', 'saved');
+    } catch (error) {
+        console.error('Manual save failed:', error);
         updateStatus('保存失敗', 'error');
     }
 }
