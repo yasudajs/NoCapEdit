@@ -46,8 +46,9 @@ const elements = {
     app: document.getElementById('app'),
     tabsContainer: document.getElementById('tabsContainer'),
     addTabBtn: document.getElementById('addTabBtn'),
-    themeToggleBtn: document.getElementById('themeToggleBtn'),
-    fontFamilySelect: document.getElementById('fontFamilySelect'),
+    settingsBtn: document.getElementById('settingsBtn'),
+    fontFamilySelectModal: document.getElementById('fontFamilySelectModal'),
+    themeToggleModal: document.getElementById('themeToggleModal'),
     editor: document.getElementById('editor'),
     statusText: document.getElementById('statusText'),
     statusMetrics: document.getElementById('statusMetrics'),
@@ -347,13 +348,13 @@ async function init() {
         applyFontSize();
         applyFontFamily();
         
-        // 前回の適用フォントが default 以外の場合、一覧をロードする前にドロップダウンに項目を追加しておく
-        if (appState.fontFamily !== 'default' && elements.fontFamilySelect) {
+        // 前回の適用フォントが default 以外の場合、一覧をロードする前にモーダルドロップダウンに項目を追加しておく
+        if (appState.fontFamily !== 'default' && elements.fontFamilySelectModal) {
             const option = document.createElement('option');
             option.value = appState.fontFamily;
             option.textContent = appState.fontFamily;
             option.selected = true;
-            elements.fontFamilySelect.appendChild(option);
+            elements.fontFamilySelectModal.appendChild(option);
         }
         
         // 初回起動チェック
@@ -433,7 +434,10 @@ async function saveSettings() {
         elements.settingsDialog.classList.add('hidden');
         updateStatus('準備完了');
         setupUIEventListeners();
-        await createNewTab();
+        // タブが存在しない場合（初回起動時）のみ新規タブを作成
+        if (appState.tabs.length === 0) {
+            await createNewTab();
+        }
     } catch (error) {
         console.error('Failed to save settings:', error);
         updateStatus('設定保存エラー', 'error');
@@ -449,12 +453,17 @@ function getCurrentUsername() {
 function applyThemeUI(theme) {
     if (theme === 'light') {
         document.body.classList.add('light-theme');
-        const iconEl = elements.themeToggleBtn.querySelector('.theme-icon');
-        if (iconEl) iconEl.textContent = '☀';
+        // モーダル内のテーマトグルボタンのアイコンを更新
+        if (elements.themeToggleModal) {
+            const iconEl = elements.themeToggleModal.querySelector('.theme-icon');
+            if (iconEl) iconEl.textContent = '☀';
+        }
     } else {
         document.body.classList.remove('light-theme');
-        const iconEl = elements.themeToggleBtn.querySelector('.theme-icon');
-        if (iconEl) iconEl.textContent = '🌙';
+        if (elements.themeToggleModal) {
+            const iconEl = elements.themeToggleModal.querySelector('.theme-icon');
+            if (iconEl) iconEl.textContent = '🌙';
+        }
     }
 }
 
@@ -490,17 +499,17 @@ function setupUIEventListeners() {
     }
 
     elements.addTabBtn.addEventListener('click', createNewTab);
-    elements.themeToggleBtn.addEventListener('click', toggleTheme);
-    if (elements.fontFamilySelect) {
-        elements.fontFamilySelect.addEventListener('change', onFontFamilyChange);
-        
-        const triggerLoad = async () => {
+    elements.settingsBtn && elements.settingsBtn.addEventListener('click', () => showSettingsDialog(false));
+    elements.themeToggleModal && elements.themeToggleModal.addEventListener('click', toggleTheme);
+    if (elements.fontFamilySelectModal) {
+        elements.fontFamilySelectModal.addEventListener('change', onFontFamilyChange);
+        const triggerLoadModal = async () => {
             if (!appState.fontsLoaded && !appState.fontsLoading) {
                 await loadSystemFonts();
             }
         };
-        elements.fontFamilySelect.addEventListener('mousedown', triggerLoad);
-        elements.fontFamilySelect.addEventListener('focus', triggerLoad);
+        elements.fontFamilySelectModal.addEventListener('mousedown', triggerLoadModal);
+        elements.fontFamilySelectModal.addEventListener('focus', triggerLoadModal);
     }
     elements.editor.addEventListener('input', onEditorInput);
     elements.editor.addEventListener('click', updateEditorMetrics);
@@ -555,7 +564,7 @@ function setupUIEventListeners() {
 
 // システムフォントを取得してドロップダウンを構築
 async function loadSystemFonts() {
-    if (!elements.fontFamilySelect) return;
+    if (!elements.fontFamilySelectModal) return;
     if (appState.fontsLoaded || appState.fontsLoading) return;
 
     try {
@@ -565,8 +574,8 @@ async function loadSystemFonts() {
         const fonts = await invoke('get_system_fonts');
         
         // 既存の動的オプションをクリア (デフォルトの「デフォルト (Monospace)」は残す)
-        while (elements.fontFamilySelect.options.length > 1) {
-            elements.fontFamilySelect.remove(1);
+        while (elements.fontFamilySelectModal.options.length > 1) {
+            elements.fontFamilySelectModal.remove(1);
         }
         
         const monoGroup = document.createElement('optgroup');
@@ -588,14 +597,14 @@ async function loadSystemFonts() {
         });
         
         if (monoGroup.children.length > 0) {
-            elements.fontFamilySelect.appendChild(monoGroup);
+            elements.fontFamilySelectModal.appendChild(monoGroup);
         }
         if (otherGroup.children.length > 0) {
-            elements.fontFamilySelect.appendChild(otherGroup);
+            elements.fontFamilySelectModal.appendChild(otherGroup);
         }
 
         // 現在値を選択
-        elements.fontFamilySelect.value = appState.fontFamily;
+        elements.fontFamilySelectModal.value = appState.fontFamily;
         appState.fontsLoaded = true;
         updateStatus('準備完了');
     } catch (error) {
@@ -605,6 +614,7 @@ async function loadSystemFonts() {
         appState.fontsLoading = false;
     }
 }
+
 
 // フォントファミリーの適用
 function applyFontFamily() {
@@ -617,9 +627,14 @@ function applyFontFamily() {
     }
 }
 
-// フォントファミリー変更時
-function onFontFamilyChange() {
-    appState.fontFamily = elements.fontFamilySelect.value;
+// フォントファミリー変更時（タブバーのセレクトが削除されたためモーダルのセレクトを参照）
+function onFontFamilyChange(event) {
+    // イベントソースから値を取得。モーダルのセレクトが優先される
+    const selectEl = event && event.target ? event.target
+        : (elements.fontFamilySelectModal || elements.fontFamilySelect);
+    if (selectEl) {
+        appState.fontFamily = selectEl.value;
+    }
     applyFontFamily();
     saveSettingsDelay();
 }

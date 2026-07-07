@@ -12,11 +12,12 @@
         <!-- タブバー -->
         <div class="tab-bar">
             <div class="tabs-container" id="tabsContainer"></div>
-            <select id="fontFamilySelect" class="font-select" title="フォントを変更">
-                <option value="default">デフォルト (Monospace)</option>
-            </select>
-            <button class="theme-toggle-btn" id="themeToggleBtn" title="テーマを切り替え">
-                <span class="theme-icon">🌙</span>
+            <button class="settings-btn" id="settingsBtn" title="設定">
+                <!-- フラットデザインの歯車SVGアイコン -->
+                <svg class="settings-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
             </button>
             <button class="add-tab-btn" id="addTabBtn" title="新規タブを作成">
                 <span class="plus-icon">+</span>
@@ -32,23 +33,32 @@
         <div class="status-bar">
             <span class="status-text" id="statusText">準備中...</span>
             <div class="status-meta">
-
                 <span class="status-metrics" id="statusMetrics">Ln 1, Col 1 | 0 chars</span>
             </div>
         </div>
     </div>
 
-    <!-- 初回設定ダイアログ -->
+    <!-- 設定ダイアログ -->
     <div id="settingsDialog" class="dialog-overlay hidden">
         <div class="dialog-box">
-            <h2>NoCapEdit - 初期設定</h2>
+            <h2>NoCapEdit - 設定</h2>
             <div class="dialog-content">
-                <label for="homeFolderInput">ホームフォルダを指定してください:</label>
+                <label for="homeFolderInput">ホームフォルダ:</label>
                 <div class="folder-input-group">
                     <input type="text" id="homeFolderInput" class="folder-input" readonly>
                     <button id="browseFolderBtn" class="browse-btn">参照...</button>
                 </div>
                 <small id="folderHint" class="hint"></small>
+
+                <label for="fontFamilySelectModal">フォント:</label>
+                <select id="fontFamilySelectModal" class="font-select" title="フォントを変更">
+                    <option value="default">デフォルト (Monospace)</option>
+                </select>
+
+                <label>テーマ:</label>
+                <button class="theme-toggle-btn" id="themeToggleModal" title="テーマを切り替え">
+                    <span class="theme-icon">🌙</span> テーマ切り替え
+                </button>
             </div>
             <div class="dialog-actions">
                 <button id="confirmSettingsBtn" class="btn-primary">OK</button>
