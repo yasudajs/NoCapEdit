@@ -158,6 +158,35 @@ body {
     border-color: var(--accent);
 }
 
+/* 設定ボタン（歯車アイコン） */
+.settings-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    margin: 4px 2px 4px 4px;
+    background-color: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.settings-btn:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    border-color: var(--accent);
+}
+
+.settings-btn .settings-icon {
+    width: 16px;
+    height: 16px;
+    pointer-events: none;
+}
+
 /* テーマ切り替えボタン */
 .theme-toggle-btn {
     display: flex;
@@ -180,6 +209,16 @@ body {
     background-color: var(--bg-tertiary);
     color: var(--text-primary);
     border-color: var(--accent);
+}
+
+/* 設定モーダル内のテーマ切替ボタン（幅崩れを修正） */
+.dialog-box .theme-toggle-btn {
+    width: auto;
+    height: 32px;
+    margin: 4px 0;
+    padding: 0 12px;
+    gap: 8px;
+    justify-content: flex-start;
 }
 
 /* フォント選択セレクトボックス */
