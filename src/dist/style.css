@@ -221,11 +221,12 @@ body {
     justify-content: flex-start;
 }
 
-/* フォント選択セレクトボックス */
-.font-select {
+/* フォント選択およびタブ選択セレクトボックス */
+.font-select,
+.tab-select {
     height: 32px;
     max-width: 180px;
-    margin: 4px 0 4px 8px;
+    margin: 4px 0 12px 8px;
     padding: 0 8px;
     background-color: var(--bg-primary);
     border: 1px solid var(--border);
@@ -238,23 +239,27 @@ body {
     flex-shrink: 0;
 }
 
-.font-select:hover {
+.font-select:hover,
+.tab-select:hover {
     border-color: var(--accent);
     background-color: var(--bg-tertiary);
 }
 
-.font-select:focus {
+.font-select:focus,
+.tab-select:focus {
     border-color: var(--accent);
 }
 
-.font-select optgroup {
+.font-select optgroup,
+.tab-select optgroup {
     background-color: var(--bg-primary);
     color: var(--text-secondary);
     font-style: normal;
     font-weight: bold;
 }
 
-.font-select option {
+.font-select option,
+.tab-select option {
     background-color: var(--bg-primary);
     color: var(--text-primary);
 }
