@@ -16,6 +16,7 @@ let appState = {
     theme: 'dark',
     fontSize: 13,
     fontFamily: 'default',
+    lineHeight: 1.6,
     isDirty: false,
     autosaveTimer: null,
     initialized: false,
@@ -80,7 +81,7 @@ function updateEditorMetrics() {
     const line = lines.length;
     const col = (lines[lines.length - 1] || '').length + 1;
 
-    elements.statusMetrics.textContent = `Ln ${line}, Col ${col} | ${chars} chars | ${appState.fontSize} pt`;
+    elements.statusMetrics.textContent = `Ln ${line}, Col ${col} | ${chars} chars | Font ${appState.fontSize} pt | LH ${appState.lineHeight.toFixed(1)} pt`;
 }
 
 function getFileNameFromPath(path) {
@@ -330,6 +331,7 @@ async function init() {
         appState.theme = settings.theme || 'dark';
         appState.fontSize = settings.font_size || 13;
         appState.fontFamily = settings.font_family || 'default';
+        appState.lineHeight = settings.line_height || 1.6;
         
         // アプリケーションタイトルの動的設定
         if (settings.app_version) {
@@ -347,6 +349,7 @@ async function init() {
         // フォント設定を適用
         applyFontSize();
         applyFontFamily();
+        applyLineHeight();
         
         // 前回の適用フォントが default 以外の場合、一覧をロードする前にモーダルドロップダウンに項目を追加しておく
         if (appState.fontFamily !== 'default' && elements.fontFamilySelectModal) {
@@ -428,7 +431,8 @@ async function saveSettings() {
             homeFolder,
             theme: appState.theme,
             fontSize: appState.fontSize,
-            fontFamily: appState.fontFamily
+            fontFamily: appState.fontFamily,
+            lineHeight: appState.lineHeight
         });
         appState.homeFolder = homeFolder;
         elements.settingsDialog.classList.add('hidden');
@@ -485,7 +489,8 @@ async function toggleTheme() {
             homeFolder: appState.homeFolder,
             theme: newTheme,
             fontSize: appState.fontSize,
-            fontFamily: appState.fontFamily
+            fontFamily: appState.fontFamily,
+            lineHeight: appState.lineHeight
         });
     } catch (error) {
         console.error('Failed to save settings during theme toggle:', error);
@@ -516,14 +521,22 @@ function setupUIEventListeners() {
     elements.editor.addEventListener('keyup', updateEditorMetrics);
     registerCloseHandler();
 
-    // Ctrl + マウスホイールでフォントサイズ拡大縮小
+    // Ctrl + マウスホイールでフォントサイズ拡大縮小、Ctrl + Shift + マウスホイールで行間調整
     window.addEventListener('wheel', (e) => {
         if (e.ctrlKey) {
             e.preventDefault();
-            if (e.deltaY < 0) {
-                zoomIn();
-            } else if (e.deltaY > 0) {
-                zoomOut();
+            if (e.shiftKey) {
+                if (e.deltaY < 0) {
+                    increaseLineHeight();
+                } else if (e.deltaY > 0) {
+                    decreaseLineHeight();
+                }
+            } else {
+                if (e.deltaY < 0) {
+                    zoomIn();
+                } else if (e.deltaY > 0) {
+                    zoomOut();
+                }
             }
         }
     }, { passive: false });
@@ -531,6 +544,18 @@ function setupUIEventListeners() {
     // Ctrl + +/- でフォントサイズ拡大縮小、Ctrl + s で手動保存
     window.addEventListener('keydown', (e) => {
         if (e.ctrlKey) {
+            // Shift キーが押されている場合は行間の変更
+            if (e.shiftKey) {
+                if (e.code === 'NumpadAdd' || e.code === 'Equal' || e.code === 'Semicolon' || e.key === '+') {
+                    e.preventDefault();
+                    increaseLineHeight();
+                } else if (e.code === 'Minus' || e.code === 'NumpadSubtract' || e.key === '-' || e.key === '_') {
+                    e.preventDefault();
+                    decreaseLineHeight();
+                }
+                return;
+            }
+            
             // 拡大条件: "+"キー、テンキーの"+", 英語配列の"=", 日本語配列の";" (Ctrl+;で拡大することも考慮)
             if (e.key === '+' || e.key === '=' || e.key === ';' || e.code === 'NumpadAdd' || e.code === 'Equal' || (e.code === 'Semicolon' && e.shiftKey)) {
                 e.preventDefault();
@@ -924,6 +949,28 @@ function applyFontSize() {
     saveSettingsDelay();
 }
 
+function applyLineHeight() {
+    if (elements.editor) {
+        elements.editor.style.lineHeight = appState.lineHeight;
+    }
+    updateEditorMetrics();
+    saveSettingsDelay();
+}
+
+function increaseLineHeight() {
+    if (appState.lineHeight < 3.0) {
+        appState.lineHeight = Math.min(3.0, appState.lineHeight + 0.1);
+        applyLineHeight();
+    }
+}
+
+function decreaseLineHeight() {
+    if (appState.lineHeight > 1.0) {
+        appState.lineHeight = Math.max(1.0, appState.lineHeight - 0.1);
+        applyLineHeight();
+    }
+}
+
 function saveSettingsDelay() {
     clearTimeout(settingsSaveTimer);
     settingsSaveTimer = setTimeout(async () => {
@@ -933,7 +980,8 @@ function saveSettingsDelay() {
                     homeFolder: appState.homeFolder,
                     theme: appState.theme,
                     fontSize: appState.fontSize,
-                    fontFamily: appState.fontFamily
+                    fontFamily: appState.fontFamily,
+                    lineHeight: appState.lineHeight
                 });
             }
         } catch (error) {

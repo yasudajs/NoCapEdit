@@ -58,6 +58,8 @@ struct AppSettings {
     font_size: u32,
     #[serde(default = "default_font_family")]
     font_family: String,
+    #[serde(default = "default_line_height")]
+    line_height: f32,
 }
 
 fn default_theme() -> String {
@@ -72,12 +74,17 @@ fn default_font_family() -> String {
     "default".to_string()
 }
 
+fn default_line_height() -> f32 {
+    1.6
+}
+
 #[derive(Debug, Serialize)]
 struct SettingsResponse {
     home_folder: String,
     theme: String,
     font_size: u32,
     font_family: String,
+    line_height: f32,
     is_first_launch: bool,
     home_folder_exists: bool,
     app_version: String,
@@ -128,6 +135,7 @@ impl Default for AppSettings {
             theme: default_theme(),
             font_size: default_font_size(),
             font_family: default_font_family(),
+            line_height: default_line_height(),
         }
     }
 }
@@ -168,6 +176,7 @@ fn get_settings() -> SettingsResponse {
         theme: settings.theme,
         font_size: settings.font_size,
         font_family: settings.font_family,
+        line_height: settings.line_height,
         is_first_launch: !AppSettings::exists(),
         home_folder_exists: settings.home_folder.exists(),
         app_version: env!("CARGO_PKG_VERSION").to_string(),
@@ -175,12 +184,13 @@ fn get_settings() -> SettingsResponse {
 }
 
 #[tauri::command]
-fn save_settings(home_folder: PathBuf, theme: String, font_size: u32, font_family: String) -> Result<(), String> {
+fn save_settings(home_folder: PathBuf, theme: String, font_size: u32, font_family: String, line_height: f32) -> Result<(), String> {
     let settings = AppSettings {
         home_folder: home_folder.clone(),
         theme,
         font_size,
         font_family,
+        line_height,
     };
     
     // ホームフォルダが存在しなければ作成
