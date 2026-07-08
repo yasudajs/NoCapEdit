@@ -17,6 +17,7 @@ let appState = {
     fontSize: 13,
     fontFamily: 'default',
     lineHeight: 1.6,
+    tabBehavior: 'tab',
     isDirty: false,
     autosaveTimer: null,
     initialized: false,
@@ -49,6 +50,7 @@ const elements = {
     addTabBtn: document.getElementById('addTabBtn'),
     settingsBtn: document.getElementById('settingsBtn'),
     fontFamilySelectModal: document.getElementById('fontFamilySelectModal'),
+    tabBehaviorSelectModal: document.getElementById('tabBehaviorSelectModal'),
     themeToggleModal: document.getElementById('themeToggleModal'),
     editor: document.getElementById('editor'),
     statusText: document.getElementById('statusText'),
@@ -332,6 +334,11 @@ async function init() {
         appState.fontSize = settings.font_size || 13;
         appState.fontFamily = settings.font_family || 'default';
         appState.lineHeight = settings.line_height || 1.6;
+        appState.tabBehavior = settings.tab_behavior || 'tab';
+        
+        if (elements.tabBehaviorSelectModal) {
+            elements.tabBehaviorSelectModal.value = appState.tabBehavior;
+        }
         
         // アプリケーションタイトルの動的設定
         if (settings.app_version) {
@@ -388,6 +395,9 @@ async function init() {
 function showSettingsDialog(isMissingFolder = false) {
     const defaultPath = 'C:\\Users\\' + getCurrentUsername() + '\\Documents\\nce';
     elements.homeFolderInput.value = appState.homeFolder || defaultPath;
+    if (elements.tabBehaviorSelectModal) {
+        elements.tabBehaviorSelectModal.value = appState.tabBehavior;
+    }
     elements.folderHint.textContent = isMissingFolder
         ? '保存先フォルダが見つからないため、再設定してください'
         : 'ここにテキストファイルが保存されます';
@@ -416,6 +426,7 @@ function showSettingsDialog(isMissingFolder = false) {
 // 設定を保存
 async function saveSettings() {
     const homeFolder = elements.homeFolderInput.value;
+    const tabBehavior = elements.tabBehaviorSelectModal ? elements.tabBehaviorSelectModal.value : appState.tabBehavior;
     
     if (!homeFolder) {
         alert('ホームフォルダを指定してください');
@@ -432,9 +443,11 @@ async function saveSettings() {
             theme: appState.theme,
             fontSize: appState.fontSize,
             fontFamily: appState.fontFamily,
-            lineHeight: appState.lineHeight
+            lineHeight: appState.lineHeight,
+            tabBehavior
         });
         appState.homeFolder = homeFolder;
+        appState.tabBehavior = tabBehavior;
         elements.settingsDialog.classList.add('hidden');
         updateStatus('準備完了');
         setupUIEventListeners();
@@ -516,6 +529,112 @@ function setupUIEventListeners() {
         elements.fontFamilySelectModal.addEventListener('mousedown', triggerLoadModal);
         elements.fontFamilySelectModal.addEventListener('focus', triggerLoadModal);
     }
+    if (elements.tabBehaviorSelectModal) {
+        elements.tabBehaviorSelectModal.addEventListener('change', (e) => {
+            appState.tabBehavior = e.target.value;
+            saveSettingsDelay();
+        });
+    }
+
+    function getIndentString() {
+        switch (appState.tabBehavior) {
+            case 'space2': return '  ';
+            case 'space4': return '    ';
+            case 'tab':
+            default:
+                return '\t';
+        }
+    }
+
+    elements.editor.addEventListener('keydown', (e) => {
+        if (e.key === 'Tab') {
+            e.preventDefault();
+
+            const start = elements.editor.selectionStart;
+            const end = elements.editor.selectionEnd;
+            const value = elements.editor.value;
+            const indentStr = getIndentString();
+
+            // 選択範囲が複数行にまたがっているか判定
+            const isMultiLine = value.substring(start, end).includes('\n') || 
+                                (start !== end && value.substring(0, start).lastIndexOf('\n') === start - 1);
+
+            if (!e.shiftKey) {
+                // -- 通常の Tab (インデント追加) --
+                if (!isMultiLine) {
+                    // 単一行: カーソル位置にインデントを挿入
+                    elements.editor.value = value.substring(0, start) + indentStr + value.substring(end);
+                    elements.editor.selectionStart = elements.editor.selectionEnd = start + indentStr.length;
+                } else {
+                    // 複数行: 選択行すべての先頭にインデントを追加
+                    const startLinePos = value.substring(0, start).lastIndexOf('\n') + 1;
+                    const endLinePos = value.indexOf('\n', end);
+                    const actualEndLinePos = endLinePos === -1 ? value.length : endLinePos;
+
+                    const targetText = value.substring(startLinePos, actualEndLinePos);
+                    const lines = targetText.split('\n');
+
+                    const newLines = lines.map(line => indentStr + line);
+                    const newText = newLines.join('\n');
+
+                    elements.editor.value = value.substring(0, startLinePos) + newText + value.substring(actualEndLinePos);
+
+                    // 選択範囲を維持
+                    const insertedCount = lines.length * indentStr.length;
+                    elements.editor.selectionStart = start + indentStr.length;
+                    elements.editor.selectionEnd = end + insertedCount;
+                }
+            } else {
+                // -- Shift + Tab (インデント削除) --
+                const startLinePos = value.substring(0, start).lastIndexOf('\n') + 1;
+                const endLinePos = value.indexOf('\n', end);
+                const actualEndLinePos = endLinePos === -1 ? value.length : endLinePos;
+
+                const targetText = value.substring(startLinePos, actualEndLinePos);
+                const lines = targetText.split('\n');
+
+                let firstLineRemovedCount = 0;
+                let totalRemovedCount = 0;
+
+                const newLines = lines.map((line, idx) => {
+                    let removed = 0;
+                    let newLine = line;
+
+                    if (line.startsWith(indentStr)) {
+                        newLine = line.substring(indentStr.length);
+                        removed = indentStr.length;
+                    } else if (line.startsWith('\t')) {
+                        newLine = line.substring(1);
+                        removed = 1;
+                    } else if (line.startsWith(' ')) {
+                        const spaceMatch = line.match(/^ +/);
+                        if (spaceMatch) {
+                            const count = Math.min(spaceMatch[0].length, indentStr.length);
+                            newLine = line.substring(count);
+                            removed = count;
+                        }
+                    }
+
+                    if (idx === 0) {
+                        firstLineRemovedCount = removed;
+                    }
+                    totalRemovedCount += removed;
+                    return newLine;
+                });
+
+                const newText = newLines.join('\n');
+                elements.editor.value = value.substring(0, startLinePos) + newText + value.substring(actualEndLinePos);
+
+                // カーソル選択範囲を調整
+                elements.editor.selectionStart = Math.max(startLinePos, start - firstLineRemovedCount);
+                elements.editor.selectionEnd = Math.max(startLinePos, end - totalRemovedCount);
+            }
+
+            // 自動保存等を連動させるための input イベント発火
+            elements.editor.dispatchEvent(new Event('input'));
+        }
+    });
+
     elements.editor.addEventListener('input', onEditorInput);
     elements.editor.addEventListener('click', updateEditorMetrics);
     elements.editor.addEventListener('keyup', updateEditorMetrics);
@@ -981,7 +1100,8 @@ function saveSettingsDelay() {
                     theme: appState.theme,
                     fontSize: appState.fontSize,
                     fontFamily: appState.fontFamily,
-                    lineHeight: appState.lineHeight
+                    lineHeight: appState.lineHeight,
+                    tabBehavior: appState.tabBehavior
                 });
             }
         } catch (error) {
