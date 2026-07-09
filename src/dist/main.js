@@ -314,7 +314,7 @@ function registerCloseHandler() {
 function updateStatus(message, status = 'normal') {
     let displayMessage = message;
     if (appState.saveMode === 'manual') {
-        displayMessage = `[無保存モード] ${message}`;
+        displayMessage = `[手動保存モード] ${message}`;
     }
     elements.statusText.textContent = displayMessage;
     elements.statusText.className = 'status-text';
