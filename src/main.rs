@@ -27,6 +27,7 @@ const DEFAULT_FONT_SIZE: u32 = 13;
 const DEFAULT_FONT_FAMILY: &str = "default";
 const DEFAULT_LINE_HEIGHT: f32 = 1.5;
 const DEFAULT_TAB_BEHAVIOR: &str = "tab";
+const DEFAULT_SAVE_MODE: &str = "auto";
 
 // パス・ファイル関連設定
 const APP_DIR_NAME: &str = "NoCapEdit";
@@ -82,6 +83,8 @@ struct AppSettings {
     line_height: f32,
     #[serde(default = "default_tab_behavior")]
     tab_behavior: String,
+    #[serde(default = "default_save_mode")]
+    save_mode: String,
 }
 
 fn default_theme() -> String {
@@ -104,6 +107,10 @@ fn default_tab_behavior() -> String {
     DEFAULT_TAB_BEHAVIOR.to_string()
 }
 
+fn default_save_mode() -> String {
+    DEFAULT_SAVE_MODE.to_string()
+}
+
 #[derive(Debug, Serialize)]
 struct SettingsResponse {
     home_folder: String,
@@ -112,6 +119,7 @@ struct SettingsResponse {
     font_family: String,
     line_height: f32,
     tab_behavior: String,
+    save_mode: String,
     is_first_launch: bool,
     home_folder_exists: bool,
     app_version: String,
@@ -164,6 +172,7 @@ impl Default for AppSettings {
             font_family: default_font_family(),
             line_height: default_line_height(),
             tab_behavior: default_tab_behavior(),
+            save_mode: default_save_mode(),
         }
     }
 }
@@ -206,6 +215,7 @@ fn get_settings() -> SettingsResponse {
         font_family: settings.font_family,
         line_height: settings.line_height,
         tab_behavior: settings.tab_behavior,
+        save_mode: settings.save_mode,
         is_first_launch: !AppSettings::exists(),
         home_folder_exists: settings.home_folder.exists(),
         app_version: env!("CARGO_PKG_VERSION").to_string(),
@@ -220,6 +230,7 @@ fn save_settings(
     font_family: String,
     line_height: f32,
     tab_behavior: String,
+    save_mode: String,
 ) -> Result<(), String> {
     let settings = AppSettings {
         home_folder: home_folder.clone(),
@@ -228,6 +239,7 @@ fn save_settings(
         font_family,
         line_height,
         tab_behavior,
+        save_mode,
     };
     
     // ホームフォルダが存在しなければ作成

@@ -27,6 +27,7 @@ let appState = {
     fontFamily: null,
     lineHeight: null,
     tabBehavior: null,
+    saveMode: null,
     isDirty: false,
     autosaveTimer: null,
     initialized: false,
@@ -60,6 +61,7 @@ const elements = {
     settingsBtn: document.getElementById('settingsBtn'),
     fontFamilySelectModal: document.getElementById('fontFamilySelectModal'),
     tabBehaviorSelectModal: document.getElementById('tabBehaviorSelectModal'),
+    saveModeSelectModal: document.getElementById('saveModeSelectModal'),
     themeToggleModal: document.getElementById('themeToggleModal'),
     editor: document.getElementById('editor'),
     statusText: document.getElementById('statusText'),
@@ -207,6 +209,10 @@ async function persistTabWithRecovery(tab, contextLabel) {
         return true;
     }
 
+    if (appState.saveMode === 'manual') {
+        return true;
+    }
+
     if (shouldDeleteEmptyFile(tab)) {
         try {
             await invoke('delete_text_file', { filePath: tab.filePath });
@@ -306,7 +312,11 @@ function registerCloseHandler() {
 }
 // ステータス更新
 function updateStatus(message, status = 'normal') {
-    elements.statusText.textContent = message;
+    let displayMessage = message;
+    if (appState.saveMode === 'manual') {
+        displayMessage = `[無保存モード] ${message}`;
+    }
+    elements.statusText.textContent = displayMessage;
     elements.statusText.className = 'status-text';
     if (status !== 'normal') {
         elements.statusText.classList.add(status);
@@ -365,9 +375,13 @@ async function init() {
         appState.fontFamily = settings.font_family || 'default';
         appState.lineHeight = settings.line_height || 1.5;
         appState.tabBehavior = settings.tab_behavior || 'tab';
+        appState.saveMode = settings.save_mode || 'auto';
 
         if (elements.tabBehaviorSelectModal) {
             elements.tabBehaviorSelectModal.value = appState.tabBehavior;
+        }
+        if (elements.saveModeSelectModal) {
+            elements.saveModeSelectModal.value = appState.saveMode;
         }
 
         // アプリケーションタイトルの動的設定
@@ -436,6 +450,9 @@ function showSettingsDialog(isMissingFolder = false) {
     if (elements.tabBehaviorSelectModal) {
         elements.tabBehaviorSelectModal.value = appState.tabBehavior;
     }
+    if (elements.saveModeSelectModal) {
+        elements.saveModeSelectModal.value = appState.saveMode || 'auto';
+    }
     elements.folderHint.textContent = isMissingFolder
         ? '保存先フォルダが見つからないため、再設定してください'
         : 'ここにテキストファイルが保存されます';
@@ -465,6 +482,7 @@ function showSettingsDialog(isMissingFolder = false) {
 async function saveSettings() {
     const homeFolder = elements.homeFolderInput.value;
     const tabBehavior = elements.tabBehaviorSelectModal ? elements.tabBehaviorSelectModal.value : appState.tabBehavior;
+    const saveMode = elements.saveModeSelectModal ? elements.saveModeSelectModal.value : appState.saveMode;
 
     if (!homeFolder) {
         alert('ホームフォルダを指定してください');
@@ -482,10 +500,12 @@ async function saveSettings() {
             fontSize: appState.fontSize,
             fontFamily: appState.fontFamily,
             lineHeight: appState.lineHeight,
-            tabBehavior
+            tabBehavior,
+            saveMode
         });
         appState.homeFolder = homeFolder;
         appState.tabBehavior = tabBehavior;
+        appState.saveMode = saveMode;
         elements.settingsDialog.classList.add('hidden');
         updateStatus('準備完了');
         setupUIEventListeners();
@@ -828,16 +848,32 @@ async function createNewTab() {
             return;
         }
 
-        updateStatus('新規ファイル作成中...', 'saving');
+        let fileName = '';
+        let filePath = '';
 
-        const file = await invoke('create_auto_file', {
-            homeFolder: appState.homeFolder,
-        });
+        if (appState.saveMode === 'manual') {
+            updateStatus('新規タブを作成', 'saved');
+            const now = new Date();
+            const yyyy = now.getFullYear();
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const hh = String(now.getHours()).padStart(2, '0');
+            const min = String(now.getMinutes()).padStart(2, '0');
+            const ss = String(now.getSeconds()).padStart(2, '0');
+            fileName = `[${yyyy}/${mm}/${dd} ${hh}:${min}:${ss}]`;
+        } else {
+            updateStatus('新規ファイル作成中...', 'saving');
+            const file = await invoke('create_auto_file', {
+                homeFolder: appState.homeFolder,
+            });
+            fileName = file.file_name;
+            filePath = file.file_path;
+        }
 
         const tab = {
             id: generateTabId(),
-            fileName: file.file_name,
-            filePath: file.file_path,
+            fileName: fileName,
+            filePath: filePath,
             content: '',
             isDirty: false,
             isSaving: false,
@@ -847,7 +883,9 @@ async function createNewTab() {
         appState.tabs.push(tab);
         await switchTab(tab.id);
         renderTabs();
-        updateStatus(tab.fileName + ' を作成', 'saved');
+        if (appState.saveMode === 'auto') {
+            updateStatus(tab.fileName + ' を作成', 'saved');
+        }
     } catch (error) {
         console.error('Failed to create new file:', error);
         updateStatus('新規ファイル作成失敗', 'error');
@@ -1006,10 +1044,12 @@ function onEditorInput(e) {
     updateStatus('編集中...');
 
     // 自動保存タイマーをリセット
-    clearTimeout(appState.autosaveTimer);
-    appState.autosaveTimer = setTimeout(() => {
-        autoSave();
-    }, AUTOSAVE_DELAY_MS);
+    if (appState.saveMode !== 'manual') {
+        clearTimeout(appState.autosaveTimer);
+        appState.autosaveTimer = setTimeout(() => {
+            autoSave();
+        }, AUTOSAVE_DELAY_MS);
+    }
 }
 
 // 自動保存
@@ -1046,13 +1086,31 @@ async function triggerManualSave() {
     const tab = appState.tabs.find(t => t.id === appState.currentTab);
     if (!tab) return;
 
-    // 強制的に保存させるため未保存フラグを設定して保存処理を走らせる
-    tab.isDirty = true;
-    renderTabs();
-
     try {
         updateStatus('保存中...', 'saving');
-        await saveTabIfDirty(tab);
+
+        if (appState.saveMode === 'manual') {
+            const now = new Date();
+            const yyyy = now.getFullYear();
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const hh = String(now.getHours()).padStart(2, '0');
+            const min = String(now.getMinutes()).padStart(2, '0');
+            const ss = String(now.getSeconds()).padStart(2, '0');
+            const fileName = `${yyyy}${mm}${dd}_${hh}${min}${ss}.nctx`;
+            const filePath = appState.homeFolder.replace(/[\\\/]$/, '') + '\\' + fileName;
+            
+            await invoke('save_text_file', {
+                filePath: filePath,
+                content: tab.content
+            });
+            tab.isDirty = false;
+        } else {
+            tab.isDirty = true;
+            await saveTabIfDirty(tab);
+        }
+
+        renderTabs();
         updateStatus('保存済み', 'saved');
     } catch (error) {
         console.error('Manual save failed:', error);
