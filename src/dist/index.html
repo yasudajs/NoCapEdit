@@ -45,6 +45,11 @@
         <div class="dialog-box">
             <h2>NoCapEdit - 設定</h2>
             <div class="dialog-content">
+                <div id="updateNoticeContainer" class="update-notice hidden">
+                    <p>アップデート可能です: Ver. <span id="currentVerSpan"></span> → Ver. <span id="latestVerSpan"></span></p>
+                    <a href="#" id="releaseLink">リリースノートを開く</a>
+                </div>
+
                 <label for="homeFolderInput">ホームフォルダ:</label>
                 <div class="folder-input-group">
                     <input type="text" id="homeFolderInput" class="folder-input" readonly>
