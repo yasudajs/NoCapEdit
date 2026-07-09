@@ -108,6 +108,27 @@ function isAutoCreatedFileName(fileName) {
     return AUTO_FILE_REGEX.test(fileName);
 }
 
+function formatTabDisplayName(fileName) {
+    if (isAutoCreatedFileName(fileName)) {
+        const match = fileName.match(/^(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})(?:_(\d{2}))?\.nctx$/);
+        if (match) {
+            const [_, year, month, day, hour, min, sec, index] = match;
+            let formatted = `${year}/${month}/${day} ${hour}:${min}:${sec}`;
+            if (index) {
+                const numIdx = parseInt(index, 10);
+                formatted += `-${numIdx}`;
+            }
+            return formatted;
+        }
+    }
+
+    const lastDotIdx = fileName.lastIndexOf('.');
+    if (lastDotIdx <= 0) {
+        return fileName;
+    }
+    return fileName.substring(0, lastDotIdx);
+}
+
 function syncCurrentEditorToState() {
     const tab = getCurrentTab();
     if (!tab) {
@@ -952,7 +973,7 @@ function renderTabs() {
         if (tab.isDirty) {
             nameEl.classList.add('dirty');
         }
-        nameEl.textContent = tab.fileName;
+        nameEl.textContent = formatTabDisplayName(tab.fileName);
 
         const closeEl = document.createElement('span');
         closeEl.className = 'tab-close';
