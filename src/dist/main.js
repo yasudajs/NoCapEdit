@@ -209,10 +209,6 @@ async function persistTabWithRecovery(tab, contextLabel) {
         return true;
     }
 
-    if (appState.saveMode === 'manual') {
-        return true;
-    }
-
     if (shouldDeleteEmptyFile(tab)) {
         try {
             await invoke('delete_text_file', { filePath: tab.filePath });
@@ -221,6 +217,10 @@ async function persistTabWithRecovery(tab, contextLabel) {
             updateStatus('空ファイル削除失敗', 'error');
             return false;
         }
+        return true;
+    }
+
+    if (appState.saveMode === 'manual') {
         return true;
     }
 
@@ -525,6 +525,27 @@ async function saveSettings() {
             }
             renderTabs();
             autoSave();
+        } else if (previousSaveMode === 'auto' && saveMode === 'manual') {
+            for (const tab of appState.tabs) {
+                if (shouldDeleteEmptyFile(tab)) {
+                    try {
+                        await invoke('delete_text_file', { filePath: tab.filePath });
+                        tab.filePath = '';
+                        
+                        const now = new Date();
+                        const yyyy = now.getFullYear();
+                        const mm = String(now.getMonth() + 1).padStart(2, '0');
+                        const dd = String(now.getDate()).padStart(2, '0');
+                        const hh = String(now.getHours()).padStart(2, '0');
+                        const min = String(now.getMinutes()).padStart(2, '0');
+                        const ss = String(now.getSeconds()).padStart(2, '0');
+                        tab.fileName = `[${yyyy}/${mm}/${dd} ${hh}:${min}:${ss}]`;
+                    } catch (err) {
+                        console.error('Failed to delete empty file on mode switch:', err);
+                    }
+                }
+            }
+            renderTabs();
         }
         
         elements.settingsDialog.classList.add('hidden');
