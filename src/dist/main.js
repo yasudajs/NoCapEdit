@@ -483,6 +483,7 @@ async function saveSettings() {
     const homeFolder = elements.homeFolderInput.value;
     const tabBehavior = elements.tabBehaviorSelectModal ? elements.tabBehaviorSelectModal.value : appState.tabBehavior;
     const saveMode = elements.saveModeSelectModal ? elements.saveModeSelectModal.value : appState.saveMode;
+    const previousSaveMode = appState.saveMode;
 
     if (!homeFolder) {
         alert('ホームフォルダを指定してください');
@@ -506,6 +507,26 @@ async function saveSettings() {
         appState.homeFolder = homeFolder;
         appState.tabBehavior = tabBehavior;
         appState.saveMode = saveMode;
+        
+        if (previousSaveMode === 'manual' && saveMode === 'auto') {
+            for (const tab of appState.tabs) {
+                if (!tab.filePath) {
+                    try {
+                        const file = await invoke('create_auto_file', {
+                            homeFolder: appState.homeFolder,
+                        });
+                        tab.fileName = file.file_name;
+                        tab.filePath = file.file_path;
+                        tab.isDirty = true;
+                    } catch (err) {
+                        console.error('Failed to create file for tab:', err);
+                    }
+                }
+            }
+            renderTabs();
+            autoSave();
+        }
+        
         elements.settingsDialog.classList.add('hidden');
         updateStatus('準備完了');
         setupUIEventListeners();
@@ -1090,14 +1111,20 @@ async function triggerManualSave() {
         updateStatus('保存中...', 'saving');
 
         if (appState.saveMode === 'manual') {
-            const now = new Date();
-            const yyyy = now.getFullYear();
-            const mm = String(now.getMonth() + 1).padStart(2, '0');
-            const dd = String(now.getDate()).padStart(2, '0');
-            const hh = String(now.getHours()).padStart(2, '0');
-            const min = String(now.getMinutes()).padStart(2, '0');
-            const ss = String(now.getSeconds()).padStart(2, '0');
-            const fileName = `${yyyy}${mm}${dd}_${hh}${min}${ss}.nctx`;
+            let fileName = '';
+            const match = tab.fileName.match(/^\[(\d{4})\/(\d{2})\/(\d{2}) (\d{2}):(\d{2}):(\d{2})\]$/);
+            if (match) {
+                fileName = `${match[1]}${match[2]}${match[3]}_${match[4]}${match[5]}${match[6]}.nctx`;
+            } else {
+                const now = new Date();
+                const yyyy = now.getFullYear();
+                const mm = String(now.getMonth() + 1).padStart(2, '0');
+                const dd = String(now.getDate()).padStart(2, '0');
+                const hh = String(now.getHours()).padStart(2, '0');
+                const min = String(now.getMinutes()).padStart(2, '0');
+                const ss = String(now.getSeconds()).padStart(2, '0');
+                fileName = `${yyyy}${mm}${dd}_${hh}${min}${ss}.nctx`;
+            }
             const filePath = appState.homeFolder.replace(/[\\\/]$/, '') + '\\' + fileName;
             
             await invoke('save_text_file', {
