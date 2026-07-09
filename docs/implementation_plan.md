@@ -31,6 +31,7 @@ HTML構造にグループ化のためのラッパー要素（`.tabs-group`）を
 - 新設する `.tabs-group` に `flex: 1` と `overflow: hidden` などを設定し、全体の幅を確保します。
 - 既存の `.tabs-container` から `flex: 1` を外し、タブの内容に合わせて伸びるようにします。また `overflow-x: auto` を維持し、溢れた際にスクロールできるようにします。
 - `add-tab-btn` に `flex-shrink: 0` を付与し、ボタンが潰れたり隠れたりしないようにします。
+- **[追加修正]** `add-tab-btn` の枠線を透明（`border-color: transparent`）に設定し、通常時およびホバー時ともに枠線が見えないすっきりとしたデザインにします。
 
 #### [MODIFY] [style.css](file:///c:/work/NoCapEdit/src/dist/style.css)
 ```css
@@ -53,8 +54,14 @@ HTML構造にグループ化のためのラッパー要素（`.tabs-group`）を
 }
 
 .add-tab-btn {
-    /* 既存設定に加えて以下を追加 */
+    /* 既存設定に加えて以下を追加・変更 */
     flex-shrink: 0;
+    border-color: transparent;
+}
+
+.add-tab-btn:hover {
+    /* 既存設定に加えて以下を変更 */
+    border-color: transparent;
 }
 ```
 
