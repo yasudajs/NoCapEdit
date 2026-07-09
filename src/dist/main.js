@@ -92,7 +92,7 @@ function updateEditorMetrics() {
     const line = lines.length;
     const col = (lines[lines.length - 1] || '').length + 1;
 
-    elements.statusMetrics.textContent = `Ln ${line}, Col ${col} | ${chars} chars | Font ${appState.fontSize} pt | LH ${appState.lineHeight.toFixed(1)} pt`;
+    elements.statusMetrics.textContent = `Ln ${line}, Col ${col} | ${chars} chars | Font ${appState.fontSize} pt | LH x ${appState.lineHeight.toFixed(1)}`;
 }
 
 function getFileNameFromPath(path) {
