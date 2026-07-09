@@ -17,6 +17,11 @@
     --border: #222222;
     --status-success: #4ec9b0;
     --status-error: #f48771;
+    
+    /* エディタ設定 */
+    --editor-font-family: 'Fira Code', 'Monaco', 'Menlo', monospace;
+    --editor-font-size: 13px;
+    --editor-line-height: 1.5;
 }
 
 body.light-theme {
@@ -284,9 +289,9 @@ body {
     background-color: var(--bg-primary);
     color: var(--text-primary);
     border: none;
-    font-family: 'Fira Code', 'Monaco', 'Menlo', monospace;
-    font-size: 13px;
-    line-height: 1.5;
+    font-family: var(--editor-font-family);
+    font-size: var(--editor-font-size);
+    line-height: var(--editor-line-height);
     resize: none;
     outline: none;
     overflow-y: auto;

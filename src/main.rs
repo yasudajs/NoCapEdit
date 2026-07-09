@@ -13,9 +13,30 @@ use std::net::{TcpListener, TcpStream};
 use std::thread;
 
 const SINGLE_INSTANCE_PORT: u16 = 49423;
+const SINGLE_INSTANCE_HOST: &str = "127.0.0.1";
+
+// ウィンドウ設定
+const WINDOW_WIDTH: f64 = 900.0;
+const WINDOW_HEIGHT: f64 = 600.0;
+const WINDOW_MIN_WIDTH: f64 = 400.0;
+const WINDOW_MIN_HEIGHT: f64 = 300.0;
+
+// デフォルト設定
+const DEFAULT_THEME: &str = "dark";
+const DEFAULT_FONT_SIZE: u32 = 13;
+const DEFAULT_FONT_FAMILY: &str = "default";
+const DEFAULT_LINE_HEIGHT: f32 = 1.5;
+const DEFAULT_TAB_BEHAVIOR: &str = "tab";
+
+// パス・ファイル関連設定
+const APP_DIR_NAME: &str = "NoCapEdit";
+const HOME_DIR_NAME: &str = "nce";
+const FILE_EXTENSION: &str = ".nctx";
+const FILE_EXTENSION_NO_DOT: &str = "nctx";
+const DATETIME_FORMAT: &str = "%Y%m%d_%H%M%S";
 
 fn send_to_existing_instance(path: &str) -> bool {
-    if let Ok(mut stream) = TcpStream::connect(format!("127.0.0.1:{}", SINGLE_INSTANCE_PORT)) {
+    if let Ok(mut stream) = TcpStream::connect(format!("{}:{}", SINGLE_INSTANCE_HOST, SINGLE_INSTANCE_PORT)) {
         let _ = stream.write_all(path.as_bytes());
         true
     } else {
@@ -25,7 +46,7 @@ fn send_to_existing_instance(path: &str) -> bool {
 
 fn start_instance_listener(app_handle: tauri::AppHandle) {
     thread::spawn(move || {
-        if let Ok(listener) = TcpListener::bind(format!("127.0.0.1:{}", SINGLE_INSTANCE_PORT)) {
+        if let Ok(listener) = TcpListener::bind(format!("{}:{}", SINGLE_INSTANCE_HOST, SINGLE_INSTANCE_PORT)) {
             for stream in listener.incoming() {
                 if let Ok(mut stream) = stream {
                     let mut buffer = [0; 1024];
@@ -65,23 +86,23 @@ struct AppSettings {
 }
 
 fn default_theme() -> String {
-    "dark".to_string()
+    DEFAULT_THEME.to_string()
 }
 
 fn default_font_size() -> u32 {
-    13
+    DEFAULT_FONT_SIZE
 }
 
 fn default_font_family() -> String {
-    "default".to_string()
+    DEFAULT_FONT_FAMILY.to_string()
 }
 
 fn default_line_height() -> f32 {
-    1.5
+    DEFAULT_LINE_HEIGHT
 }
 
 fn default_tab_behavior() -> String {
-    "tab".to_string()
+    DEFAULT_TAB_BEHAVIOR.to_string()
 }
 
 #[derive(Debug, Serialize)]
@@ -106,7 +127,7 @@ struct FileInfo {
 impl AppSettings {
     fn config_path() -> PathBuf {
         let app_data = dirs::config_dir().unwrap_or_else(|| PathBuf::from("."));
-        app_data.join("NoCapEdit").join("config.json")
+        app_data.join(APP_DIR_NAME).join("config.json")
     }
 
     fn load() -> Self {
@@ -138,7 +159,7 @@ impl Default for AppSettings {
         let documents = dirs::document_dir()
             .unwrap_or_else(|| PathBuf::from(env!("USERPROFILE")));
         Self {
-            home_folder: documents.join("nce"),
+            home_folder: documents.join(HOME_DIR_NAME),
             theme: default_theme(),
             font_size: default_font_size(),
             font_family: default_font_family(),
@@ -154,14 +175,14 @@ fn normalize_crlf(content: &str) -> String {
 }
 
 fn next_available_file_path(home_folder: &PathBuf) -> Result<(String, PathBuf), String> {
-    let base = Local::now().format("%Y%m%d_%H%M%S").to_string();
+    let base = Local::now().format(DATETIME_FORMAT).to_string();
     let mut index = 0u32;
 
     loop {
         let file_name = if index == 0 {
-            format!("{}.nctx", base)
+            format!("{}{}", base, FILE_EXTENSION)
         } else {
-            format!("{}_{:02}.nctx", base, index)
+            format!("{}_{:02}{}", base, index, FILE_EXTENSION)
         };
 
         let file_path = home_folder.join(&file_name);
@@ -354,7 +375,7 @@ fn main() {
     };
 
     // ポートバインドを試みて重複起動を判定
-    let is_primary = match TcpListener::bind(format!("127.0.0.1:{}", SINGLE_INSTANCE_PORT)) {
+    let is_primary = match TcpListener::bind(format!("{}:{}", SINGLE_INSTANCE_HOST, SINGLE_INSTANCE_PORT)) {
         Ok(_) => true,
         Err(_) => false,
     };
@@ -378,9 +399,9 @@ fn main() {
                 "main",
                 tauri::WindowUrl::App("index.html".into())
             )
-            .title(format!("NoCapEdit [ Ver {} ]", env!("CARGO_PKG_VERSION")))
-            .inner_size(900.0, 600.0)
-            .min_inner_size(400.0, 300.0)
+            .title(format!("{} [ Ver {} ]", APP_DIR_NAME, env!("CARGO_PKG_VERSION")))
+            .inner_size(WINDOW_WIDTH, WINDOW_HEIGHT)
+            .min_inner_size(WINDOW_MIN_WIDTH, WINDOW_MIN_HEIGHT)
             .resizable(true)
             .fullscreen(false)
             .build()?;
