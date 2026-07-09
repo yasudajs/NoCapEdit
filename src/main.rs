@@ -32,7 +32,6 @@ const DEFAULT_TAB_BEHAVIOR: &str = "tab";
 const APP_DIR_NAME: &str = "NoCapEdit";
 const HOME_DIR_NAME: &str = "nce";
 const FILE_EXTENSION: &str = ".nctx";
-const FILE_EXTENSION_NO_DOT: &str = "nctx";
 const DATETIME_FORMAT: &str = "%Y%m%d_%H%M%S";
 
 fn send_to_existing_instance(path: &str) -> bool {
