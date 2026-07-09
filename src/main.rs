@@ -77,7 +77,7 @@ fn default_font_family() -> String {
 }
 
 fn default_line_height() -> f32 {
-    1.6
+    1.5
 }
 
 fn default_tab_behavior() -> String {

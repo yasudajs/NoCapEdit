@@ -16,7 +16,7 @@ let appState = {
     theme: 'dark',
     fontSize: 13,
     fontFamily: 'default',
-    lineHeight: 1.6,
+    lineHeight: 1.5,
     tabBehavior: 'tab',
     isDirty: false,
     autosaveTimer: null,
@@ -333,7 +333,7 @@ async function init() {
         appState.theme = settings.theme || 'dark';
         appState.fontSize = settings.font_size || 13;
         appState.fontFamily = settings.font_family || 'default';
-        appState.lineHeight = settings.line_height || 1.6;
+        appState.lineHeight = settings.line_height || 1.5;
         appState.tabBehavior = settings.tab_behavior || 'tab';
         
         if (elements.tabBehaviorSelectModal) {
