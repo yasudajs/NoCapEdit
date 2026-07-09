@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "NoCapEdit",
-    "version": "0.1.23"
+    "version": "0.1.24"
   },
   "tauri": {
     "bundle": {
@@ -24,6 +24,7 @@
       ],
       "windows": {
         "wix": {
+          "language": "ja-JP",
           "fragmentPaths": ["wix/file-association.wxs"],
           "componentRefs": ["FileAssociationComponent"]
         },
