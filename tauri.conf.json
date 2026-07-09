@@ -24,6 +24,7 @@
       ],
       "windows": {
         "wix": {
+          "language": "ja-JP",
           "fragmentPaths": ["wix/file-association.wxs"],
           "componentRefs": ["FileAssociationComponent"]
         },

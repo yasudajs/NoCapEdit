@@ -354,7 +354,7 @@ FunctionEnd
 !insertmacro MUI_UNPAGE_INSTFILES
 
 ;Languages
-!insertmacro MUI_LANGUAGE "English"
+!insertmacro MUI_LANGUAGE "Japanese"
 !insertmacro MUI_RESERVEFILE_LANGDLL
   !include "English.nsh"
 
