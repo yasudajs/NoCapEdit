@@ -7,17 +7,26 @@ const appWindow = tauriApi?.window?.appWindow || null;
 const listen = tauriApi?.event?.listen || null;
 
 const AUTOSAVE_DELAY_MS = 3000;
+const MAX_FONT_SIZE = 72;
+const MIN_FONT_SIZE = 8;
+const MAX_LINE_HEIGHT = 3.0;
+const MIN_LINE_HEIGHT = 1.0;
+const LINE_HEIGHT_STEP = 0.1;
+const DEFAULT_MONOSPACE_FONTS = "'Fira Code', 'Monaco', 'Menlo', monospace";
+const AUTO_FILE_REGEX = /^\d{8}_\d{6}(_\d{2})?\.nctx$/;
+const FILE_EXT_NCTX = 'nctx';
+const FILE_EXT_NCMD = 'ncmd';
 
 // アプリケーション状態
 let appState = {
     currentTab: null,
     tabs: [],
     homeFolder: null,
-    theme: 'dark',
-    fontSize: 13,
-    fontFamily: 'default',
-    lineHeight: 1.5,
-    tabBehavior: 'tab',
+    theme: null,
+    fontSize: null,
+    fontFamily: null,
+    lineHeight: null,
+    tabBehavior: null,
     isDirty: false,
     autosaveTimer: null,
     initialized: false,
@@ -96,7 +105,7 @@ function getFileNameFromPath(path) {
 }
 
 function isAutoCreatedFileName(fileName) {
-    return /^\d{8}_\d{6}(_\d{2})?\.nctx$/.test(fileName);
+    return AUTO_FILE_REGEX.test(fileName);
 }
 
 function syncCurrentEditorToState() {
@@ -149,8 +158,8 @@ async function saveTabAs(tab) {
     const targetPath = await saveDialog({
         defaultPath: tab.filePath,
         filters: [
-            { name: 'NoCapEdit Text (*.nctx)', extensions: ['nctx'] },
-            { name: 'NoCapEdit Markdown (*.ncmd)', extensions: ['ncmd'] },
+            { name: `NoCapEdit Text (*.${FILE_EXT_NCTX})`, extensions: [FILE_EXT_NCTX] },
+            { name: `NoCapEdit Markdown (*.${FILE_EXT_NCMD})`, extensions: [FILE_EXT_NCMD] },
             { name: 'Text Files (*.txt)', extensions: ['txt'] },
             { name: 'All Files (*.*)', extensions: ['*'] }
         ]
@@ -393,8 +402,7 @@ async function init() {
 
 // 初回設定ダイアログ表示
 function showSettingsDialog(isMissingFolder = false) {
-    const defaultPath = 'C:\\Users\\' + getCurrentUsername() + '\\Documents\\nce';
-    elements.homeFolderInput.value = appState.homeFolder || defaultPath;
+    elements.homeFolderInput.value = appState.homeFolder || '';
     if (elements.tabBehaviorSelectModal) {
         elements.tabBehaviorSelectModal.value = appState.tabBehavior;
     }
@@ -461,10 +469,7 @@ async function saveSettings() {
     }
 }
 
-// 現在のWindowsユーザー名を取得（簡易版）
-function getCurrentUsername() {
-    return 'User'; // 実装では环境変数から取得
-}
+// 現在のWindowsユーザー名を取得（簡易版）は削除
 
 // テーマの適用 (UI表示の切替)
 function applyThemeUI(theme) {
@@ -762,12 +767,10 @@ async function loadSystemFonts() {
 
 // フォントファミリーの適用
 function applyFontFamily() {
-    if (elements.editor) {
-        if (appState.fontFamily === 'default') {
-            elements.editor.style.fontFamily = "'Fira Code', 'Monaco', 'Menlo', monospace";
-        } else {
-            elements.editor.style.fontFamily = `"${appState.fontFamily}", 'Fira Code', 'Monaco', 'Menlo', monospace`;
-        }
+    if (appState.fontFamily === 'default' || !appState.fontFamily) {
+        document.documentElement.style.setProperty('--editor-font-family', DEFAULT_MONOSPACE_FONTS);
+    } else {
+        document.documentElement.style.setProperty('--editor-font-family', `"${appState.fontFamily}", ${DEFAULT_MONOSPACE_FONTS}`);
     }
 }
 
@@ -1042,8 +1045,6 @@ window.addEventListener('unhandledrejection', (event) => {
 });
 
 // ズーム（フォントサイズ変更）機能
-const MIN_FONT_SIZE = 8;
-const MAX_FONT_SIZE = 72;
 let settingsSaveTimer = null;
 
 function zoomIn() {
@@ -1061,31 +1062,31 @@ function zoomOut() {
 }
 
 function applyFontSize() {
-    if (elements.editor) {
-        elements.editor.style.fontSize = `${appState.fontSize}px`;
+    if (appState.fontSize) {
+        document.documentElement.style.setProperty('--editor-font-size', `${appState.fontSize}px`);
     }
     updateEditorMetrics();
     saveSettingsDelay();
 }
 
 function applyLineHeight() {
-    if (elements.editor) {
-        elements.editor.style.lineHeight = appState.lineHeight;
+    if (appState.lineHeight) {
+        document.documentElement.style.setProperty('--editor-line-height', appState.lineHeight);
     }
     updateEditorMetrics();
     saveSettingsDelay();
 }
 
 function increaseLineHeight() {
-    if (appState.lineHeight < 3.0) {
-        appState.lineHeight = Math.min(3.0, appState.lineHeight + 0.1);
+    if (appState.lineHeight < MAX_LINE_HEIGHT) {
+        appState.lineHeight = Math.min(MAX_LINE_HEIGHT, appState.lineHeight + LINE_HEIGHT_STEP);
         applyLineHeight();
     }
 }
 
 function decreaseLineHeight() {
-    if (appState.lineHeight > 1.0) {
-        appState.lineHeight = Math.max(1.0, appState.lineHeight - 0.1);
+    if (appState.lineHeight > MIN_LINE_HEIGHT) {
+        appState.lineHeight = Math.max(MIN_LINE_HEIGHT, appState.lineHeight - LINE_HEIGHT_STEP);
         applyLineHeight();
     }
 }
