@@ -334,7 +334,7 @@ async function init() {
     if (!ensureTauriApi()) {
         return;
     }
-    
+
     try {
         // 設定を取得
         const settings = await invoke('get_settings');
@@ -344,16 +344,20 @@ async function init() {
         appState.fontFamily = settings.font_family || 'default';
         appState.lineHeight = settings.line_height || 1.5;
         appState.tabBehavior = settings.tab_behavior || 'tab';
-        
+
         if (elements.tabBehaviorSelectModal) {
             elements.tabBehaviorSelectModal.value = appState.tabBehavior;
         }
-        
+
         // アプリケーションタイトルの動的設定
         if (settings.app_version) {
-            document.title = `NoCapEdit [ Ver ${settings.app_version} ]`;
+            const initialTitle = `NoCapEdit [ Ver ${settings.app_version} ]`;
+            document.title = initialTitle;
+            if (appWindow && typeof appWindow.setTitle === 'function') {
+                appWindow.setTitle(initialTitle);
+            }
         }
-        
+
         // テーマを適用
         applyThemeUI(appState.theme);
         try {
@@ -361,12 +365,12 @@ async function init() {
         } catch (themeError) {
             console.error('Failed to apply theme during init:', themeError);
         }
-        
+
         // フォント設定を適用
         applyFontSize();
         applyFontFamily();
         applyLineHeight();
-        
+
         // 前回の適用フォントが default 以外の場合、一覧をロードする前にモーダルドロップダウンに項目を追加しておく
         if (appState.fontFamily !== 'default' && elements.fontFamilySelectModal) {
             const option = document.createElement('option');
@@ -375,23 +379,28 @@ async function init() {
             option.selected = true;
             elements.fontFamilySelectModal.appendChild(option);
         }
-        
+
         // 初回起動チェック
         const isFirstLaunch = !!settings.is_first_launch;
         const isHomeFolderMissing = settings.home_folder_exists === false;
-        
+
         if (isFirstLaunch || isHomeFolderMissing) {
             showSettingsDialog(isHomeFolderMissing);
         } else {
             updateStatus('準備完了');
             setupUIEventListeners();
-            
+
             // 起動時引数のチェック
             const launchFile = await invoke('get_launch_file');
             if (launchFile) {
                 await openExistingFile(launchFile);
             } else {
                 await createNewTab();
+            }
+
+            // アップデートチェックをバックグラウンドで開始
+            if (settings.app_version) {
+                checkNewVersion(settings.app_version);
             }
         }
     } catch (error) {
@@ -425,7 +434,7 @@ function showSettingsDialog(isMissingFolder = false) {
             console.error('Folder browse failed:', error);
         }
     };
-    
+
     elements.confirmSettingsBtn.onclick = async () => {
         await saveSettings();
     };
@@ -435,12 +444,12 @@ function showSettingsDialog(isMissingFolder = false) {
 async function saveSettings() {
     const homeFolder = elements.homeFolderInput.value;
     const tabBehavior = elements.tabBehaviorSelectModal ? elements.tabBehaviorSelectModal.value : appState.tabBehavior;
-    
+
     if (!homeFolder) {
         alert('ホームフォルダを指定してください');
         return;
     }
-    
+
     try {
         if (!ensureTauriApi()) {
             return;
@@ -493,15 +502,15 @@ function applyThemeUI(theme) {
 async function toggleTheme() {
     const newTheme = appState.theme === 'dark' ? 'light' : 'dark';
     appState.theme = newTheme;
-    
+
     applyThemeUI(newTheme);
-    
+
     try {
         await invoke('apply_theme', { theme: newTheme });
     } catch (error) {
         console.error('Failed to apply theme to window:', error);
     }
-    
+
     try {
         await invoke('save_settings', {
             homeFolder: appState.homeFolder,
@@ -561,8 +570,8 @@ function setupUIEventListeners() {
             const indentStr = getIndentString();
 
             // 選択範囲が複数行にまたがっているか判定
-            const isMultiLine = value.substring(start, end).includes('\n') || 
-                                (start !== end && value.substring(0, start).lastIndexOf('\n') === start - 1);
+            const isMultiLine = value.substring(start, end).includes('\n') ||
+                (start !== end && value.substring(0, start).lastIndexOf('\n') === start - 1);
 
             if (!e.shiftKey) {
                 // -- 通常の Tab (インデント追加) --
@@ -679,7 +688,7 @@ function setupUIEventListeners() {
                 }
                 return;
             }
-            
+
             // 拡大条件: "+"キー、テンキーの"+", 英語配列の"=", 日本語配列の";" (Ctrl+;で拡大することも考慮)
             if (e.key === '+' || e.key === '=' || e.key === ';' || e.code === 'NumpadAdd' || e.code === 'Equal' || (e.code === 'Semicolon' && e.shiftKey)) {
                 e.preventDefault();
@@ -721,30 +730,30 @@ async function loadSystemFonts() {
         appState.fontsLoading = true;
         updateStatus('システムフォントを読み込み中...');
         const fonts = await invoke('get_system_fonts');
-        
+
         // 既存の動的オプションをクリア (デフォルトの「デフォルト (Monospace)」は残す)
         while (elements.fontFamilySelectModal.options.length > 1) {
             elements.fontFamilySelectModal.remove(1);
         }
-        
+
         const monoGroup = document.createElement('optgroup');
         monoGroup.label = '等幅フォント';
-        
+
         const otherGroup = document.createElement('optgroup');
         otherGroup.label = 'その他のフォント';
-        
+
         fonts.forEach(font => {
             const option = document.createElement('option');
             option.value = font.family;
             option.textContent = font.family;
-            
+
             if (font.is_monospace) {
                 monoGroup.appendChild(option);
             } else {
                 otherGroup.appendChild(option);
             }
         });
-        
+
         if (monoGroup.children.length > 0) {
             elements.fontFamilySelectModal.appendChild(monoGroup);
         }
@@ -838,11 +847,11 @@ async function switchTab(tabId) {
                 }
             }
         }
-    
+
         // 新しいタブに切り替え
         appState.currentTab = tabId;
         const tab = appState.tabs.find(t => t.id === tabId);
-    
+
         if (tab) {
             elements.editor.value = tab.content;
             renderTabs();
@@ -892,9 +901,9 @@ async function saveTabIfDirty(tab) {
 // タブを削除
 async function closeTab(tabId) {
     const idx = appState.tabs.findIndex(t => t.id === tabId);
-    
+
     if (idx === -1) return;
-    
+
     const tab = appState.tabs[idx];
     const ok = await persistTabWithRecovery(tab, 'tab-close');
     if (!ok) {
@@ -933,18 +942,18 @@ function shouldDeleteEmptyFile(tab) {
 // タブを再描画
 function renderTabs() {
     elements.tabsContainer.innerHTML = '';
-    
+
     appState.tabs.forEach(tab => {
         const tabEl = document.createElement('div');
         tabEl.className = 'tab' + (tab.id === appState.currentTab ? ' active' : '');
-        
+
         const nameEl = document.createElement('span');
         nameEl.className = 'tab-name';
         if (tab.isDirty) {
             nameEl.classList.add('dirty');
         }
         nameEl.textContent = tab.fileName;
-        
+
         const closeEl = document.createElement('span');
         closeEl.className = 'tab-close';
         closeEl.textContent = '×';
@@ -952,11 +961,11 @@ function renderTabs() {
             e.stopPropagation();
             closeTab(tab.id);
         });
-        
+
         tabEl.appendChild(nameEl);
         tabEl.appendChild(closeEl);
         tabEl.addEventListener('click', () => switchTab(tab.id));
-        
+
         elements.tabsContainer.appendChild(tabEl);
     });
 }
@@ -964,17 +973,17 @@ function renderTabs() {
 // エディタ入力イベント
 function onEditorInput(e) {
     if (!appState.currentTab) return;
-    
+
     const tab = appState.tabs.find(t => t.id === appState.currentTab);
     if (!tab) return;
-    
+
     tab.content = elements.editor.value;
     tab.isDirty = true;
     renderTabs();
     updateEditorMetrics();
-    
+
     updateStatus('編集中...');
-    
+
     // 自動保存タイマーをリセット
     clearTimeout(appState.autosaveTimer);
     appState.autosaveTimer = setTimeout(() => {
@@ -985,15 +994,15 @@ function onEditorInput(e) {
 // 自動保存
 async function autoSave() {
     if (!appState.currentTab) return;
-    
+
     const tab = appState.tabs.find(t => t.id === appState.currentTab);
     if (!tab || !tab.isDirty) return;
-    
+
     try {
         updateStatus('保存中...', 'saving');
 
         await saveTabIfDirty(tab);
-        
+
         updateStatus('保存済み', 'saved');
     } catch (error) {
         console.error('Auto-save failed:', error);
@@ -1004,22 +1013,22 @@ async function autoSave() {
 // 手動保存
 async function triggerManualSave() {
     if (!appState.currentTab) return;
-    
+
     syncCurrentEditorToState();
-    
+
     // 自動保存タイマーがあればクリアする
     if (appState.autosaveTimer) {
         clearTimeout(appState.autosaveTimer);
         appState.autosaveTimer = null;
     }
-    
+
     const tab = appState.tabs.find(t => t.id === appState.currentTab);
     if (!tab) return;
-    
+
     // 強制的に保存させるため未保存フラグを設定して保存処理を走らせる
     tab.isDirty = true;
     renderTabs();
-    
+
     try {
         updateStatus('保存中...', 'saving');
         await saveTabIfDirty(tab);
@@ -1111,3 +1120,59 @@ function saveSettingsDelay() {
     }, 1000);
 }
 
+// 自動アップデートチェック
+async function checkNewVersion(currentVersion) {
+    if (!currentVersion) return;
+
+    try {
+        // 起動時のUI描画を妨げないよう、3秒待機
+        await new Promise(resolve => setTimeout(resolve, 3000));
+
+        const response = await fetch('https://api.github.com/repos/yasudajs/NoCapEdit/releases/latest');
+        if (!response.ok) return;
+
+        const data = await response.json();
+        const latestTag = data.tag_name;
+        if (!latestTag) return;
+
+        const latestVersion = latestTag.replace(/^v/, '');
+
+        if (latestVersion !== currentVersion) {
+            // タイトルバーへの通知追加
+            const newTitle = `NoCapEdit [ Ver ${currentVersion} ] (Update: ${latestTag})`;
+            document.title = newTitle;
+            if (appWindow && typeof appWindow.setTitle === 'function') {
+                appWindow.setTitle(newTitle);
+            }
+
+            // 設定画面の最上段への表示
+            const noticeContainer = document.getElementById('updateNoticeContainer');
+            const currentVerSpan = document.getElementById('currentVerSpan');
+            const latestVerSpan = document.getElementById('latestVerSpan');
+            const releaseLink = document.getElementById('releaseLink');
+
+            if (noticeContainer && currentVerSpan && latestVerSpan && releaseLink) {
+                currentVerSpan.textContent = currentVersion;
+                latestVerSpan.textContent = latestVersion;
+
+                const releaseUrl = `https://github.com/yasudajs/NoCapEdit/releases/tag/${latestTag}`;
+                releaseLink.href = releaseUrl;
+
+                // Tauriのshell.openで外部ブラウザを開く
+                releaseLink.onclick = (e) => {
+                    e.preventDefault();
+                    if (window.__TAURI__ && window.__TAURI__.shell && window.__TAURI__.shell.open) {
+                        window.__TAURI__.shell.open(releaseUrl);
+                    } else {
+                        window.open(releaseUrl, '_blank');
+                    }
+                };
+
+                noticeContainer.classList.remove('hidden');
+            }
+        }
+    } catch (error) {
+        // オフラインやAPIエラー時は握りつぶす
+        console.warn('Update check failed:', error);
+    }
+}
