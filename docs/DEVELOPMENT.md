@@ -34,5 +34,5 @@ Compress-Archive -Path "target/release/NoCapEdit.exe" -DestinationPath "target/r
 ```
 
 ## 📄 仕様詳細
-仕様の詳細は [docs/spec.md](docs/spec.md) をご参照ください。
+仕様の詳細は [spec.md](spec.md) をご参照ください。
 過去の作業履歴や実装履歴は Git のコミットログにて管理されています。
