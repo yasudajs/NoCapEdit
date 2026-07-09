@@ -1045,8 +1045,6 @@ window.addEventListener('unhandledrejection', (event) => {
 });
 
 // ズーム（フォントサイズ変更）機能
-const MIN_FONT_SIZE = 8;
-const MAX_FONT_SIZE = 72;
 let settingsSaveTimer = null;
 
 function zoomIn() {
