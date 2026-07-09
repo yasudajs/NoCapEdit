@@ -1,5 +1,0 @@
-- [x] `nsis/installer.nsi` の言語設定を `Japanese` に変更する
-- [x] `tauri.conf.json` に MSI版（WiX）の日本語化設定（`language: "ja-JP"`）を追加する
-- [x] 変更内容のコミットとプッシュを行う
-- [ ] ユーザーによるビルドと検証
-- [ ] リリースの実施
