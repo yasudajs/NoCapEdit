@@ -85,7 +85,7 @@ function getCurrentTab() {
 
 function updateEditorMetrics() {
     const value = elements.editor.value || '';
-    const chars = value.length;
+    const chars = value.replace(/\r?\n/g, '').length;
     const caret = elements.editor.selectionStart || 0;
     const before = value.slice(0, caret);
     const lines = before.split('\n');
