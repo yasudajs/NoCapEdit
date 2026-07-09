@@ -1,5 +1,0 @@
-- `[ ]` `src/dist/index.html` にラッパー要素 `.tabs-group` を追加し、タブコンテナと「＋」ボタンをグループ化する。
-- `[ ]` `src/dist/style.css` に `.tabs-group` のスタイル定義（`display: flex; flex: 1; overflow: hidden;`）を追加する。
-- `[ ]` `src/dist/style.css` の `.tabs-container` から `flex: 1` を削除する。
-- `[ ]` `src/dist/style.css` の `.add-tab-btn` に `flex-shrink: 0` を追加し、ボタンが潰れないようにする。
-- `[ ]` アプリをビルドまたは実行し、ボタン位置とスクロールの動作確認（手動テスト）を行う。
