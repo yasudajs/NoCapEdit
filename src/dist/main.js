@@ -509,7 +509,7 @@ function openSettingsDialog(isMissingFolder = false) {
     }
     elements.folderHint.textContent = isMissingFolder
         ? '保存先フォルダが見つからないため、再設定してください'
-        : 'ここにテキストファイルが保存されます';
+        : 'ここにファイルが保存されます';
     
     elements.settingsDialog.classList.remove('hidden');
     if (elements.settingsBtn && !isMissingFolder) {
