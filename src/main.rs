@@ -85,6 +85,8 @@ struct AppSettings {
     tab_behavior: String,
     #[serde(default = "default_save_mode")]
     save_mode: String,
+    #[serde(default = "default_char_count_mode")]
+    char_count_mode: String,
 }
 
 fn default_theme() -> String {
@@ -111,6 +113,10 @@ fn default_save_mode() -> String {
     DEFAULT_SAVE_MODE.to_string()
 }
 
+fn default_char_count_mode() -> String {
+    "with_newline".to_string()
+}
+
 #[derive(Debug, Serialize)]
 struct SettingsResponse {
     home_folder: String,
@@ -120,6 +126,7 @@ struct SettingsResponse {
     line_height: f32,
     tab_behavior: String,
     save_mode: String,
+    char_count_mode: String,
     is_first_launch: bool,
     home_folder_exists: bool,
     app_version: String,
@@ -173,6 +180,7 @@ impl Default for AppSettings {
             line_height: default_line_height(),
             tab_behavior: default_tab_behavior(),
             save_mode: default_save_mode(),
+            char_count_mode: default_char_count_mode(),
         }
     }
 }
@@ -216,6 +224,7 @@ fn get_settings() -> SettingsResponse {
         line_height: settings.line_height,
         tab_behavior: settings.tab_behavior,
         save_mode: settings.save_mode,
+        char_count_mode: settings.char_count_mode,
         is_first_launch: !AppSettings::exists(),
         home_folder_exists: settings.home_folder.exists(),
         app_version: env!("CARGO_PKG_VERSION").to_string(),
@@ -231,6 +240,7 @@ fn save_settings(
     line_height: f32,
     tab_behavior: String,
     save_mode: String,
+    char_count_mode: String,
 ) -> Result<(), String> {
     let settings = AppSettings {
         home_folder: home_folder.clone(),
@@ -240,6 +250,7 @@ fn save_settings(
         line_height,
         tab_behavior,
         save_mode,
+        char_count_mode,
     };
     
     // ホームフォルダが存在しなければ作成

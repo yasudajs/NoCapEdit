@@ -28,6 +28,7 @@ let appState = {
     lineHeight: null,
     tabBehavior: null,
     saveMode: null,
+    charCountMode: null,
     isDirty: false,
     autosaveTimer: null,
     initialized: false,
@@ -62,6 +63,7 @@ const elements = {
     fontFamilySelectModal: document.getElementById('fontFamilySelectModal'),
     tabBehaviorSelectModal: document.getElementById('tabBehaviorSelectModal'),
     saveModeSelectModal: document.getElementById('saveModeSelectModal'),
+    charCountModeSelectModal: document.getElementById('charCountModeSelectModal'),
     themeToggleModal: document.getElementById('themeToggleModal'),
     editor: document.getElementById('editor'),
     statusText: document.getElementById('statusText'),
@@ -87,16 +89,31 @@ function getCurrentTab() {
 
 function updateEditorMetrics() {
     const value = elements.editor.value || '';
-    const newlineCount = (value.match(/[\r\n]/g) || []).length;
-    const chars = value.length - newlineCount;
     const caret = elements.editor.selectionStart || 0;
     const selectEnd = elements.editor.selectionEnd || 0;
 
+    let chars = value.length;
+    let selectedChars = 0;
+    const isSelected = caret !== selectEnd;
+
+    if (appState.charCountMode === 'no_newline') {
+        const newlineCount = (value.match(/[\r\n]/g) || []).length;
+        chars = value.length - newlineCount;
+
+        if (isSelected) {
+            const selectedText = value.substring(caret, selectEnd);
+            const selectedNewlineCount = (selectedText.match(/[\r\n]/g) || []).length;
+            selectedChars = selectedText.length - selectedNewlineCount;
+        }
+    } else {
+        if (isSelected) {
+            const selectedText = value.substring(caret, selectEnd);
+            selectedChars = selectedText.length;
+        }
+    }
+
     let charDisplay = '';
-    if (caret !== selectEnd) {
-        const selectedText = value.substring(caret, selectEnd);
-        const selectedNewlineCount = (selectedText.match(/[\r\n]/g) || []).length;
-        const selectedChars = selectedText.length - selectedNewlineCount;
+    if (isSelected) {
         charDisplay = `${selectedChars} / ${chars} chars`;
     } else {
         charDisplay = `${chars} chars`;
@@ -389,12 +406,16 @@ async function init() {
         appState.lineHeight = settings.line_height || 1.5;
         appState.tabBehavior = settings.tab_behavior || 'tab';
         appState.saveMode = settings.save_mode || 'auto';
+        appState.charCountMode = settings.char_count_mode || 'with_newline';
 
         if (elements.tabBehaviorSelectModal) {
             elements.tabBehaviorSelectModal.value = appState.tabBehavior;
         }
         if (elements.saveModeSelectModal) {
             elements.saveModeSelectModal.value = appState.saveMode;
+        }
+        if (elements.charCountModeSelectModal) {
+            elements.charCountModeSelectModal.value = appState.charCountMode;
         }
 
         // アプリケーションタイトルの動的設定
@@ -466,6 +487,9 @@ function showSettingsDialog(isMissingFolder = false) {
     if (elements.saveModeSelectModal) {
         elements.saveModeSelectModal.value = appState.saveMode || 'auto';
     }
+    if (elements.charCountModeSelectModal) {
+        elements.charCountModeSelectModal.value = appState.charCountMode || 'with_newline';
+    }
     elements.folderHint.textContent = isMissingFolder
         ? '保存先フォルダが見つからないため、再設定してください'
         : 'ここにテキストファイルが保存されます';
@@ -496,6 +520,7 @@ async function saveSettings() {
     const homeFolder = elements.homeFolderInput.value;
     const tabBehavior = elements.tabBehaviorSelectModal ? elements.tabBehaviorSelectModal.value : appState.tabBehavior;
     const saveMode = elements.saveModeSelectModal ? elements.saveModeSelectModal.value : appState.saveMode;
+    const charCountMode = elements.charCountModeSelectModal ? elements.charCountModeSelectModal.value : appState.charCountMode;
     const previousSaveMode = appState.saveMode;
 
     if (!homeFolder) {
@@ -515,11 +540,13 @@ async function saveSettings() {
             fontFamily: appState.fontFamily,
             lineHeight: appState.lineHeight,
             tabBehavior,
-            saveMode
+            saveMode,
+            charCountMode
         });
         appState.homeFolder = homeFolder;
         appState.tabBehavior = tabBehavior;
         appState.saveMode = saveMode;
+        appState.charCountMode = charCountMode;
         
         if (previousSaveMode === 'manual' && saveMode === 'auto') {
             for (const tab of appState.tabs) {
@@ -564,6 +591,7 @@ async function saveSettings() {
         elements.settingsDialog.classList.add('hidden');
         updateStatus('準備完了');
         setupUIEventListeners();
+        updateEditorMetrics();
         // タブが存在しない場合（初回起動時）のみ新規タブを作成
         if (appState.tabs.length === 0) {
             await createNewTab();
@@ -643,6 +671,13 @@ function setupUIEventListeners() {
         elements.tabBehaviorSelectModal.addEventListener('change', (e) => {
             appState.tabBehavior = e.target.value;
             saveSettingsDelay();
+        });
+    }
+    if (elements.charCountModeSelectModal) {
+        elements.charCountModeSelectModal.addEventListener('change', (e) => {
+            appState.charCountMode = e.target.value;
+            saveSettingsDelay();
+            updateEditorMetrics();
         });
     }
 
@@ -1252,7 +1287,9 @@ function saveSettingsDelay() {
                     fontSize: appState.fontSize,
                     fontFamily: appState.fontFamily,
                     lineHeight: appState.lineHeight,
-                    tabBehavior: appState.tabBehavior
+                    tabBehavior: appState.tabBehavior,
+                    saveMode: appState.saveMode,
+                    charCountMode: appState.charCountMode
                 });
             }
         } catch (error) {
