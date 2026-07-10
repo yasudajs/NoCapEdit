@@ -454,7 +454,7 @@ async function init() {
         const isHomeFolderMissing = settings.home_folder_exists === false;
 
         if (isFirstLaunch || isHomeFolderMissing) {
-            showSettingsDialog(isHomeFolderMissing);
+            openSettingsDialog(isHomeFolderMissing);
         } else {
             updateStatus('準備完了');
             setupUIEventListeners();
@@ -478,8 +478,25 @@ async function init() {
     }
 }
 
-// 初回設定ダイアログ表示
-function showSettingsDialog(isMissingFolder = false) {
+// 設定ドックの開閉トグル
+function toggleSettingsDialog() {
+    if (elements.settingsDialog.classList.contains('hidden')) {
+        openSettingsDialog(false);
+    } else {
+        closeSettingsDialog();
+    }
+}
+
+// 設定ドックを閉じる
+function closeSettingsDialog() {
+    elements.settingsDialog.classList.add('hidden');
+    if (elements.settingsBtn) {
+        elements.settingsBtn.classList.remove('open');
+    }
+}
+
+// 初回設定または設定ドックを開く
+function openSettingsDialog(isMissingFolder = false) {
     elements.homeFolderInput.value = appState.homeFolder || '';
     if (elements.tabBehaviorSelectModal) {
         elements.tabBehaviorSelectModal.value = appState.tabBehavior;
@@ -493,7 +510,11 @@ function showSettingsDialog(isMissingFolder = false) {
     elements.folderHint.textContent = isMissingFolder
         ? '保存先フォルダが見つからないため、再設定してください'
         : 'ここにテキストファイルが保存されます';
+    
     elements.settingsDialog.classList.remove('hidden');
+    if (elements.settingsBtn && !isMissingFolder) {
+        elements.settingsBtn.classList.add('open');
+    }
 
     elements.browseFolderBtn.onclick = async () => {
         if (!openDialog) {
@@ -504,14 +525,11 @@ function showSettingsDialog(isMissingFolder = false) {
             const selected = await openDialog({ directory: true, multiple: false });
             if (typeof selected === 'string' && selected.trim() !== '') {
                 elements.homeFolderInput.value = selected;
+                await saveSettings();
             }
         } catch (error) {
             console.error('Folder browse failed:', error);
         }
-    };
-
-    elements.confirmSettingsBtn.onclick = async () => {
-        await saveSettings();
     };
 }
 
@@ -588,7 +606,6 @@ async function saveSettings() {
             renderTabs();
         }
         
-        elements.settingsDialog.classList.add('hidden');
         updateStatus('準備完了');
         setupUIEventListeners();
         updateEditorMetrics();
@@ -655,7 +672,7 @@ function setupUIEventListeners() {
     }
 
     elements.addTabBtn.addEventListener('click', createNewTab);
-    elements.settingsBtn && elements.settingsBtn.addEventListener('click', () => showSettingsDialog(false));
+    elements.settingsBtn && elements.settingsBtn.addEventListener('click', toggleSettingsDialog);
     elements.themeToggleModal && elements.themeToggleModal.addEventListener('click', toggleTheme);
     if (elements.fontFamilySelectModal) {
         elements.fontFamilySelectModal.addEventListener('change', onFontFamilyChange);
@@ -668,16 +685,21 @@ function setupUIEventListeners() {
         elements.fontFamilySelectModal.addEventListener('focus', triggerLoadModal);
     }
     if (elements.tabBehaviorSelectModal) {
-        elements.tabBehaviorSelectModal.addEventListener('change', (e) => {
+        elements.tabBehaviorSelectModal.addEventListener('change', async (e) => {
             appState.tabBehavior = e.target.value;
-            saveSettingsDelay();
+            await saveSettings();
         });
     }
     if (elements.charCountModeSelectModal) {
-        elements.charCountModeSelectModal.addEventListener('change', (e) => {
+        elements.charCountModeSelectModal.addEventListener('change', async (e) => {
             appState.charCountMode = e.target.value;
-            saveSettingsDelay();
+            await saveSettings();
             updateEditorMetrics();
+        });
+    }
+    if (elements.saveModeSelectModal) {
+        elements.saveModeSelectModal.addEventListener('change', async (e) => {
+            await saveSettings();
         });
     }
 
@@ -924,7 +946,7 @@ function onFontFamilyChange(event) {
         appState.fontFamily = selectEl.value;
     }
     applyFontFamily();
-    saveSettingsDelay();
+    saveSettings();
 }
 
 // 新規タブ作成
