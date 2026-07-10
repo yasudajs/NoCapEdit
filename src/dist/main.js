@@ -89,12 +89,23 @@ function updateEditorMetrics() {
     const value = elements.editor.value || '';
     const chars = value.replace(/\r?\n/g, '').length;
     const caret = elements.editor.selectionStart || 0;
+    const selectEnd = elements.editor.selectionEnd || 0;
+
+    let charDisplay = '';
+    if (caret !== selectEnd) {
+        const selectedText = value.substring(caret, selectEnd);
+        const selectedChars = selectedText.replace(/\r?\n/g, '').length;
+        charDisplay = `${selectedChars} / ${chars} chars`;
+    } else {
+        charDisplay = `${chars} chars`;
+    }
+
     const before = value.slice(0, caret);
     const lines = before.split('\n');
     const line = lines.length;
     const col = (lines[lines.length - 1] || '').length + 1;
 
-    elements.statusMetrics.textContent = `Ln ${line}, Col ${col} | ${chars} chars | Font ${appState.fontSize} pt | LH x ${appState.lineHeight.toFixed(1)}`;
+    elements.statusMetrics.textContent = `Ln ${line}, Col ${col} | ${charDisplay} | Font ${appState.fontSize} pt | LH x ${appState.lineHeight.toFixed(1)}`;
 }
 
 function getFileNameFromPath(path) {
@@ -734,6 +745,7 @@ function setupUIEventListeners() {
 
     elements.editor.addEventListener('input', onEditorInput);
     elements.editor.addEventListener('click', updateEditorMetrics);
+    elements.editor.addEventListener('mouseup', updateEditorMetrics);
     elements.editor.addEventListener('keyup', updateEditorMetrics);
     registerCloseHandler();
 
