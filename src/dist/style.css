@@ -318,6 +318,8 @@ body {
     outline: none;
     overflow-y: auto;
     overflow-x: auto;
+    tab-size: 4;
+    -moz-tab-size: 4;
 }
 
 .editor::selection {
