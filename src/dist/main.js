@@ -87,14 +87,16 @@ function getCurrentTab() {
 
 function updateEditorMetrics() {
     const value = elements.editor.value || '';
-    const chars = value.replace(/\r?\n/g, '').length;
+    const newlineCount = (value.match(/[\r\n]/g) || []).length;
+    const chars = value.length - newlineCount;
     const caret = elements.editor.selectionStart || 0;
     const selectEnd = elements.editor.selectionEnd || 0;
 
     let charDisplay = '';
     if (caret !== selectEnd) {
         const selectedText = value.substring(caret, selectEnd);
-        const selectedChars = selectedText.replace(/\r?\n/g, '').length;
+        const selectedNewlineCount = (selectedText.match(/[\r\n]/g) || []).length;
+        const selectedChars = selectedText.length - selectedNewlineCount;
         charDisplay = `${selectedChars} / ${chars} chars`;
     } else {
         charDisplay = `${chars} chars`;
