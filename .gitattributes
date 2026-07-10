@@ -1,0 +1,18 @@
+# 改行コードの管理
+# テキストファイルはLFに統一する
+* text=auto
+
+*.toml  text eol=lf
+*.rs    text eol=lf
+*.js    text eol=lf
+*.css   text eol=lf
+*.html  text eol=lf
+*.md    text eol=lf
+*.json  text eol=lf
+*.lock  text eol=lf
+
+# バイナリファイルは変換しない
+*.ico   binary
+*.png   binary
+*.woff  binary
+*.woff2 binary
