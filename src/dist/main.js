@@ -673,6 +673,13 @@ function setupUIEventListeners() {
 
     elements.addTabBtn.addEventListener('click', createNewTab);
     elements.settingsBtn && elements.settingsBtn.addEventListener('click', toggleSettingsDialog);
+    if (elements.settingsDialog) {
+        elements.settingsDialog.addEventListener('click', (e) => {
+            if (e.target === elements.settingsDialog) {
+                closeSettingsDialog();
+            }
+        });
+    }
     elements.themeToggleModal && elements.themeToggleModal.addEventListener('click', toggleTheme);
     if (elements.fontFamilySelectModal) {
         elements.fontFamilySelectModal.addEventListener('change', onFontFamilyChange);
