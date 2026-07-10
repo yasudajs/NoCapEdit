@@ -199,6 +199,19 @@ body {
     width: 16px;
     height: 16px;
     pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.settings-btn .close-icon {
+    display: none;
+}
+
+.settings-btn.open .gear-icon {
+    display: none;
+}
+
+.settings-btn.open .close-icon {
+    display: block;
 }
 
 /* テーマ切り替えボタン */
@@ -374,6 +387,63 @@ body {
     font-weight: 700;
 }
 
+/* -----------------------------
+ * 設定ドック (#settingsDialog) 専用スタイル
+ * ----------------------------- */
+#settingsDialog {
+    justify-content: flex-end;
+    background-color: transparent;
+    pointer-events: none;
+    top: 40px; /* タブバーの高さ分下げる */
+    height: calc(100vh - 64px); /* タブバー(40px)とステータスバー(24px)を除く高さ */
+}
+
+#settingsDialog:not(.hidden) {
+    background-color: rgba(0, 0, 0, 0.2);
+    pointer-events: auto;
+}
+
+#settingsDialog .dialog-box {
+    height: 100%;
+    width: 320px;
+    min-width: 320px;
+    margin: 0;
+    border-radius: 0;
+    border-left: 1px solid var(--border);
+    border-top: none;
+    border-bottom: none;
+    border-right: none;
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+}
+
+#settingsDialog:not(.hidden) .dialog-box {
+    transform: translateX(0);
+}
+
+#settingsDialog .dialog-content {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+/* アニメーション対応のため #settingsDialog の .hidden 挙動を変更 */
+#settingsDialog.hidden {
+    opacity: 0;
+    pointer-events: none;
+    display: flex;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s;
+}
+
+#settingsDialog:not(.hidden) {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.3s ease;
+}
+
 /* ダイアログオーバーレイ */
 .dialog-overlay {
     position: fixed;
@@ -421,6 +491,7 @@ body {
 
 .folder-input-group {
     display: flex;
+    flex-direction: column;
     gap: 8px;
     margin-bottom: 8px;
     margin-left: 16px;
@@ -428,6 +499,7 @@ body {
 
 .folder-input {
     flex: 1;
+    width: 100%;
     padding: 8px;
     background-color: var(--bg-primary);
     border: 1px solid var(--border);
@@ -442,6 +514,7 @@ body {
 }
 
 .browse-btn {
+    align-self: flex-end;
     padding: 8px 16px;
     background-color: var(--bg-tertiary);
     border: 1px solid var(--border);
@@ -461,7 +534,8 @@ body {
 .hint {
     display: block;
     color: var(--text-secondary);
-    margin-top: 4px;
+    margin-top: 0px;
+    margin-bottom: 4px;
     margin-left: 16px;
     font-size: 11px;
 }
