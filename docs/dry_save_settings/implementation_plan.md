@@ -50,21 +50,25 @@ fn save_settings(
 #### [MODIFY] [main.js](file:///c:/work/NoCapEdit/src/dist/main.js)
 - 現在、設定を保存するために `save_settings` コマンドを呼び出している3つの箇所をリファクタリングします。
 - 新たに共通の非同期関数 `saveApplicationSettings()` を定義し、設定情報を1つのオブジェクト（`settings` キーを持つオブジェクト）にまとめてRust側に渡すようにします。
+- ⚠️ **マッピング規則の調整**: Tauri構造体マッピング時にJSのキャメルケースからRustのスネークケースへ自動変換されない制約に対応するため、JS側で送信するオブジェクトのプロパティ名は `snake_case` (例: `home_folder`, `font_size` 等) に統一します。
 
 ```javascript
-// 新設する共通関数イメージ
+// 新設する共通関数（最終実装）
 async function saveApplicationSettings() {
+    if (!ensureTauriApi() || !appState.homeFolder) {
+        return;
+    }
     try {
         await invoke('save_settings', {
             settings: {
-                homeFolder: appState.homeFolder,
+                home_folder: appState.homeFolder,
                 theme: appState.theme,
-                fontSize: appState.fontSize,
-                fontFamily: appState.fontFamily,
-                lineHeight: appState.lineHeight,
-                tabBehavior: appState.tabBehavior,
-                saveMode: appState.saveMode,
-                charCountMode: appState.charCountMode
+                font_size: appState.fontSize,
+                font_family: appState.fontFamily,
+                line_height: appState.lineHeight,
+                tab_behavior: appState.tabBehavior,
+                save_mode: appState.saveMode,
+                char_count_mode: appState.charCountMode
             }
         });
     } catch (error) {
@@ -74,9 +78,10 @@ async function saveApplicationSettings() {
 ```
 
 - 以下の3箇所について、直接 `invoke` を行っていた部分を `saveApplicationSettings()` の呼び出しに置換します。
-  1. **設定ダイアログ保存時 (L585付近)**: 値を `appState` に同期させたあと、`saveApplicationSettings()` を呼び出す。
-  2. **テーマ切り替え時 (L687付近)**: `appState.theme` を更新後、`saveApplicationSettings()` を呼び出す。
-  3. **遅延保存時 (L1395付近)**: `saveApplicationSettings()` を呼び出す。
+  1. **設定ダイアログ保存時 (L585付近)**: 
+     - 呼び出し箇所の整理に伴い `try` の開始括弧（`try {`）が消え構文エラーになるのを防ぐため、値を `appState` に同期させたあと、`try` ブロック内で `saveApplicationSettings()` を呼び出します。
+  2. **テーマ切り替え時 (L687付近)**: `appState.theme` を更新後、`saveApplicationSettings()` を呼び出します。
+  3. **遅延保存時 (L1395付近)**: `saveApplicationSettings()` を呼び出します。
 
 ---
 
