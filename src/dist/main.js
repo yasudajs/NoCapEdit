@@ -459,6 +459,9 @@ async function init() {
 
         if (isFirstLaunch || isHomeFolderMissing) {
             openSettingsDialog(isHomeFolderMissing);
+            if (appWindow && typeof appWindow.show === 'function') {
+                await appWindow.show();
+            }
         } else {
             updateStatus('準備完了');
             setupUIEventListeners();
@@ -474,6 +477,10 @@ async function init() {
             // アップデートチェックをバックグラウンドで開始
             if (settings.app_version) {
                 checkNewVersion(settings.app_version);
+            }
+
+            if (appWindow && typeof appWindow.show === 'function') {
+                await appWindow.show();
             }
         }
     } catch (error) {
