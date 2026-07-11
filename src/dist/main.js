@@ -67,7 +67,7 @@ const elements = {
     tabBehaviorSelectModal: document.getElementById('tabBehaviorSelectModal'),
     saveModeSelectModal: document.getElementById('saveModeSelectModal'),
     charCountModeSelectModal: document.getElementById('charCountModeSelectModal'),
-    themeToggleModal: document.getElementById('themeToggleModal'),
+    themeSelectModal: document.getElementById('themeSelectModal'),
     editor: document.getElementById('editor'),
     statusText: document.getElementById('statusText'),
     statusMetrics: document.getElementById('statusMetrics'),
@@ -665,25 +665,24 @@ async function saveSettings() {
 
 // テーマの適用 (UI表示の切替)
 function applyThemeUI(theme) {
+    // 全テーマクラスを一度リセット
+    document.body.classList.remove('light-theme', 'soft-dark-theme');
+
     if (theme === 'light') {
         document.body.classList.add('light-theme');
-        // モーダル内のテーマトグルボタンのアイコンを更新
-        if (elements.themeToggleModal) {
-            const iconEl = elements.themeToggleModal.querySelector('.theme-icon');
-            if (iconEl) iconEl.textContent = '☀';
-        }
-    } else {
-        document.body.classList.remove('light-theme');
-        if (elements.themeToggleModal) {
-            const iconEl = elements.themeToggleModal.querySelector('.theme-icon');
-            if (iconEl) iconEl.textContent = '🌙';
-        }
+    } else if (theme === 'soft-dark') {
+        document.body.classList.add('soft-dark-theme');
+    }
+    // 'dark' の場合はクラスなし（:root のデフォルトが適用される）
+
+    // ドロップダウンの選択値を現在のテーマに同期
+    if (elements.themeSelectModal) {
+        elements.themeSelectModal.value = theme;
     }
 }
 
-// テーマのトグル切り替え
-async function toggleTheme() {
-    const newTheme = appState.theme === 'dark' ? 'light' : 'dark';
+// テーマの変更（ドロップダウン選択時）
+async function onThemeChange(newTheme) {
     appState.theme = newTheme;
 
     applyThemeUI(newTheme);
@@ -712,7 +711,7 @@ function setupUIEventListeners() {
             }
         });
     }
-    elements.themeToggleModal && elements.themeToggleModal.addEventListener('click', toggleTheme);
+    elements.themeSelectModal && elements.themeSelectModal.addEventListener('change', (e) => onThemeChange(e.target.value));
     if (elements.fontFamilySelectModal) {
         elements.fontFamilySelectModal.addEventListener('change', onFontFamilyChange);
         const triggerLoadModal = async () => {
