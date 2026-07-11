@@ -459,9 +459,6 @@ async function init() {
 
         if (isFirstLaunch || isHomeFolderMissing) {
             openSettingsDialog(isHomeFolderMissing);
-            if (appWindow && typeof appWindow.show === 'function') {
-                await appWindow.show();
-            }
         } else {
             updateStatus('準備完了');
             setupUIEventListeners();
@@ -478,14 +475,19 @@ async function init() {
             if (settings.app_version) {
                 checkNewVersion(settings.app_version);
             }
-
-            if (appWindow && typeof appWindow.show === 'function') {
-                await appWindow.show();
-            }
         }
     } catch (error) {
         console.error('Failed to initialize:', error);
         updateStatus('初期化エラー', 'error');
+    } finally {
+        // 初期化エラーなどの例外が発生した場合でも、確実にウィンドウを表示してユーザーに状態が見えるようにする（フェイルセーフ）
+        if (appWindow && typeof appWindow.show === 'function') {
+            try {
+                await appWindow.show();
+            } catch (showError) {
+                console.error('Failed to show window:', showError);
+            }
+        }
     }
 }
 

@@ -17,6 +17,7 @@
 |------|---------|
 | ウィンドウ初期表示設定 | Rust側で起動時は `visible(false)` に設定 |
 | ウィンドウ表示のタイミング | JS側の `init()` の最後（すべての初期レンダリング完了後）に表示 |
+| セキュリティ許可 (Allowlist) | フロントエンドから `appWindow.show()` を呼ぶため、Tauri設定で権限を許可 |
 
 ---
 
@@ -28,18 +29,18 @@ graph TD
     B --> C["WebViewがHTML/CSSをロード"]
     C --> D["init() の非同期処理実行"]
     D --> E["初期タブの描画完了"]
-    E -->|"JS: appWindow.show()"| F["完成した画面をフロントに表示"]
+    E -->|"JS: appWindow.show() in finally"| F["完成した画面をフロントに表示"]
 ```
 
 ---
 
 ## 変更計画
 
-### Rustバックエンド（main.rs）
+### Rustバックエンド（main.rs / Cargo.toml / tauri.conf.json）
 
 #### [MODIFY] [main.rs](file:///c:/work/NoCapEdit/src/main.rs)
 
-**1. WindowBuilder で初期表示を非表示にする（L419-L429付近）**
+**1. WindowBuilder で初期表示を非表示にする（L435付近）**
 
 `WindowBuilder` でウィンドウをビルドする際、`.visible(false)` メソッドを挟み、作成時点では画面に表示されないように制御する。
 
@@ -58,23 +59,57 @@ graph TD
              .build()?;
 ```
 
+#### [MODIFY] [Cargo.toml](file:///c:/work/NoCapEdit/Cargo.toml)
+
+**2. tauri 依存関係に `window-show` フィーチャーを追加（L7）**
+
+フロントエンドからの `appWindow.show()` 呼び出しに備え、Tauriのフィーチャーフラグを有効化する。
+
+```diff
+-[dependencies]
+-tauri = { version = "1.5", features = [ "window-set-title", "shell-open", "dialog-open", "dialog-save"] }
++tauri = { version = "1.5", features = [ "window-set-title", "window-show", "shell-open", "dialog-open", "dialog-save"] }
+```
+
+#### [MODIFY] [tauri.conf.json](file:///c:/work/NoCapEdit/tauri.conf.json)
+
+**3. allowlist.window に `show` 権限を追加（L47）**
+
+```diff
+       "window": {
+-        "setTitle": true
++        "setTitle": true,
++        "show": true
+       }
+```
+
 ---
 
 ### フロントエンド（main.js）
 
 #### [MODIFY] [main.js](file:///c:/work/NoCapEdit/src/dist/main.js)
 
-**1. `init()` の最後に `appWindow.show()` を追加（L460-L480付近）**
+**1. `init()` の最後に `finally` ブロックを追加して `appWindow.show()` を安全に呼び出す（L487付近）**
 
-設定読み込み、テーマの適用、および初期タブの作成（`createNewTab`）がすべて完了した時点で、ウィンドウを表示する。
+設定読み込み、テーマの適用、および初期タブの作成（`createNewTab`）などの初期化処理中にエラーが発生した場合でも、確実にウィンドウを表示させてエラー画面をユーザーに視認可能にするため、`finally` ブロックで安全に `appWindow.show()` を呼び出す。
 
 ```diff
+ async function init() {
+     console.log('NoCapEdit initializing...');
+ 
+     if (!ensureTauriApi()) {
+         return;
+     }
+ 
+     try {
+         // ... (中略) ...
+ 
+         // 初回起動チェック
+         const isFirstLaunch = !!settings.is_first_launch;
+         const isHomeFolderMissing = settings.home_folder_exists === false;
+ 
          if (isFirstLaunch || isHomeFolderMissing) {
              openSettingsDialog(isHomeFolderMissing);
-+            // 設定ダイアログ表示時もウィンドウを表示する
-+            if (appWindow && typeof appWindow.show === 'function') {
-+                await appWindow.show();
-+            }
          } else {
              updateStatus('準備完了');
              setupUIEventListeners();
@@ -91,12 +126,21 @@ graph TD
              if (settings.app_version) {
                  checkNewVersion(settings.app_version);
              }
-+
-+            // 初期化完了後にウィンドウを表示
-+            if (appWindow && typeof appWindow.show === 'function') {
-+                await appWindow.show();
-+            }
          }
+     } catch (error) {
+         console.error('Failed to initialize:', error);
+         updateStatus('初期化エラー', 'error');
++    } finally {
++        // 初期化エラーなどの例外が発生した場合でも、確実にウィンドウを表示してユーザーに状態が見えるようにする（フェイルセーフ）
++        if (appWindow && typeof appWindow.show === 'function') {
++            try {
++                await appWindow.show();
++            } catch (showError) {
++                console.error('Failed to show window:', showError);
++            }
++        }
+     }
+ }
 ```
 
 ---
