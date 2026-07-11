@@ -344,15 +344,47 @@ function registerCloseHandler() {
     });
 }
 // ステータス更新
-function updateStatus(message, status = 'normal') {
+function updateStatus(message, status = 'normal', bypassPrefix = false) {
     let displayMessage = message;
-    if (appState.saveMode === 'manual') {
+    if (appState.saveMode === 'manual' && !bypassPrefix) {
         displayMessage = `[手動保存モード] ${message}`;
     }
     elements.statusText.textContent = displayMessage;
     elements.statusText.className = 'status-text';
     if (status !== 'normal') {
         elements.statusText.classList.add(status);
+    }
+}
+
+// タブ個別ステータス表示用ヘルパー
+function updateTabStatus(tab, state = null, statusType = 'normal') {
+    if (!tab) return;
+
+    let targetState = state;
+    if (!targetState) {
+        if (tab.isSaving) {
+            targetState = '保存中...';
+        } else if (tab.isDirty) {
+            targetState = '編集中';
+        } else {
+            targetState = '保存済み';
+        }
+    }
+
+    if (!tab.filePath) {
+        // ファイル未作成（初期状態）
+        if (appState.saveMode === 'manual') {
+            updateStatus('※Ctrl+Sで保存できます', statusType);
+        } else {
+            updateStatus('保存準備完了', statusType);
+        }
+    } else {
+        // ファイル作成済み
+        let prefix = '';
+        if (appState.saveMode === 'manual') {
+            prefix = '[手動保存:Ctrl+S] ';
+        }
+        updateStatus(`${prefix}${tab.fileName} - ${targetState}`, statusType, true);
     }
 }
 
@@ -1013,10 +1045,8 @@ async function createNewTab() {
         timestamp = `${yyyy}${mm}${dd}_${hh}${min}${ss}`;
 
         if (appState.saveMode === 'manual') {
-            updateStatus('新規タブを作成', 'saved');
             fileName = `[${yyyy}/${mm}/${dd} ${hh}:${min}:${ss}]`;
         } else {
-            updateStatus('新規タブを作成', 'saved');
             fileName = `${timestamp}.nctx`;
         }
 
@@ -1034,9 +1064,6 @@ async function createNewTab() {
         appState.tabs.push(tab);
         await switchTab(tab.id);
         renderTabs();
-        if (appState.saveMode === 'auto') {
-            updateStatus(tab.fileName + ' を作成', 'saved');
-        }
     } catch (error) {
         console.error('Failed to create new file:', error);
         updateStatus('新規ファイル作成失敗', 'error');
@@ -1076,7 +1103,7 @@ async function switchTab(tabId) {
             elements.editor.value = tab.content;
             renderTabs();
             updateEditorMetrics();
-            updateStatus(tab.fileName + ' - 準備完了');
+            updateTabStatus(tab);
 
             // エディタにフォーカスを戻し、カーソル状態を復元する
             if (elements.editor) {
@@ -1243,7 +1270,7 @@ function onEditorInput(e) {
     renderTabs();
     updateEditorMetrics();
 
-    updateStatus('編集中...');
+    updateTabStatus(tab, '編集中');
 
     // 自動保存タイマーをリセット
     if (appState.saveMode !== 'manual') {
@@ -1254,22 +1281,27 @@ function onEditorInput(e) {
     }
 }
 
-// 自動保存
 async function autoSave() {
     if (!appState.currentTab) return;
 
     const tab = appState.tabs.find(t => t.id === appState.currentTab);
     if (!tab || !tab.isDirty) return;
 
+    const isFirstSave = !tab.filePath;
+
     try {
-        updateStatus('保存中...', 'saving');
+        updateTabStatus(tab, '保存中...', 'saving');
 
         await saveTabIfDirty(tab);
 
-        updateStatus('保存済み', 'saved');
+        if (isFirstSave) {
+            updateStatus(tab.fileName + ' を作成', 'saved');
+        } else {
+            updateTabStatus(tab, '保存済み', 'saved');
+        }
     } catch (error) {
         console.error('Auto-save failed:', error);
-        updateStatus('保存失敗', 'error');
+        updateTabStatus(tab, '保存失敗', 'error');
     }
 }
 
@@ -1288,8 +1320,10 @@ async function triggerManualSave() {
     const tab = appState.tabs.find(t => t.id === appState.currentTab);
     if (!tab) return;
 
+    const isFirstSave = !tab.filePath;
+
     try {
-        updateStatus('保存中...', 'saving');
+        updateTabStatus(tab, '保存中...', 'saving');
 
         if (appState.saveMode === 'manual') {
             let fileName = '';
@@ -1312,6 +1346,8 @@ async function triggerManualSave() {
                 filePath: filePath,
                 content: tab.content
             });
+            tab.filePath = filePath;
+            tab.fileName = fileName;
             tab.isDirty = false;
         } else {
             tab.isDirty = true;
@@ -1319,10 +1355,19 @@ async function triggerManualSave() {
         }
 
         renderTabs();
-        updateStatus('保存済み', 'saved');
+
+        if (isFirstSave) {
+            let prefix = '';
+            if (appState.saveMode === 'manual') {
+                prefix = '[手動保存:Ctrl+S] ';
+            }
+            updateStatus(`${prefix}${tab.fileName} を作成`, 'saved', true);
+        } else {
+            updateTabStatus(tab, '保存済み', 'saved');
+        }
     } catch (error) {
         console.error('Manual save failed:', error);
-        updateStatus('保存失敗', 'error');
+        updateTabStatus(tab, '保存失敗', 'error');
     }
 }
 
