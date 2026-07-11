@@ -1041,6 +1041,16 @@ async function switchTab(tabId) {
             const currentIdx = appState.tabs.findIndex(t => t.id === appState.currentTab);
             if (currentIdx !== -1) {
                 appState.tabs[currentIdx].content = elements.editor.value;
+                
+                // 切り替え前のタブのカーソル状態を記憶
+                if (elements.editor) {
+                    appState.tabs[currentIdx].cursorState = {
+                        selectionStart: elements.editor.selectionStart || 0,
+                        selectionEnd: elements.editor.selectionEnd || 0,
+                        scrollTop: elements.editor.scrollTop || 0,
+                    };
+                }
+
                 const ok = await persistTabWithRecovery(appState.tabs[currentIdx], 'tab-switch');
                 if (!ok) {
                     return;
@@ -1057,6 +1067,24 @@ async function switchTab(tabId) {
             renderTabs();
             updateEditorMetrics();
             updateStatus(tab.fileName + ' - 準備完了');
+
+            // エディタにフォーカスを戻し、カーソル状態を復元する
+            if (elements.editor) {
+                elements.editor.focus();
+                
+                if (tab.cursorState) {
+                    // 記憶されたカーソル位置とスクロール位置を復元
+                    elements.editor.selectionStart = tab.cursorState.selectionStart;
+                    elements.editor.selectionEnd = tab.cursorState.selectionEnd;
+                    elements.editor.scrollTop = tab.cursorState.scrollTop;
+                } else {
+                    // 記憶がない場合（新規タブなど）は、テキストの末尾にカーソルを設定
+                    const len = elements.editor.value.length;
+                    elements.editor.selectionStart = len;
+                    elements.editor.selectionEnd = len;
+                    elements.editor.scrollTop = 0;
+                }
+            }
         }
     } catch (error) {
         console.error('Failed to switch tab:', error);
