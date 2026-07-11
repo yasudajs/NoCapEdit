@@ -689,7 +689,10 @@ async function toggleTheme() {
             theme: newTheme,
             fontSize: appState.fontSize,
             fontFamily: appState.fontFamily,
-            lineHeight: appState.lineHeight
+            lineHeight: appState.lineHeight,
+            tabBehavior: appState.tabBehavior,
+            saveMode: appState.saveMode,
+            charCountMode: appState.charCountMode
         });
     } catch (error) {
         console.error('Failed to save settings during theme toggle:', error);
