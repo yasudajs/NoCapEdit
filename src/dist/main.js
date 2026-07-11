@@ -379,6 +379,7 @@ async function openExistingFile(filePath) {
             isDirty: false,
             isSaving: false,
             savePromise: null,
+            createdTimestamp: '',
         };
 
         appState.tabs.push(tab);
@@ -991,24 +992,23 @@ async function createNewTab() {
 
         let fileName = '';
         let filePath = '';
+        let timestamp = '';
+
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const hh = String(now.getHours()).padStart(2, '0');
+        const min = String(now.getMinutes()).padStart(2, '0');
+        const ss = String(now.getSeconds()).padStart(2, '0');
+        timestamp = `${yyyy}${mm}${dd}_${hh}${min}${ss}`;
 
         if (appState.saveMode === 'manual') {
             updateStatus('新規タブを作成', 'saved');
-            const now = new Date();
-            const yyyy = now.getFullYear();
-            const mm = String(now.getMonth() + 1).padStart(2, '0');
-            const dd = String(now.getDate()).padStart(2, '0');
-            const hh = String(now.getHours()).padStart(2, '0');
-            const min = String(now.getMinutes()).padStart(2, '0');
-            const ss = String(now.getSeconds()).padStart(2, '0');
             fileName = `[${yyyy}/${mm}/${dd} ${hh}:${min}:${ss}]`;
         } else {
-            updateStatus('新規ファイル作成中...', 'saving');
-            const file = await invoke('create_auto_file', {
-                homeFolder: appState.homeFolder,
-            });
-            fileName = file.file_name;
-            filePath = file.file_path;
+            updateStatus('新規タブを作成', 'saved');
+            fileName = `${timestamp}.nctx`;
         }
 
         const tab = {
@@ -1019,6 +1019,7 @@ async function createNewTab() {
             isDirty: false,
             isSaving: false,
             savePromise: null,
+            createdTimestamp: timestamp,
         };
 
         appState.tabs.push(tab);
@@ -1097,6 +1098,13 @@ async function saveTabIfDirty(tab) {
         return;
     }
 
+    // ファイル未作成で内容が空（または空白のみ）の場合は保存（ファイル作成）をスキップし、未保存フラグを下げる
+    if (!tab.filePath && tab.content.trim() === '') {
+        tab.isDirty = false;
+        renderTabs();
+        return;
+    }
+
     if (tab.isSaving) {
         if (tab.savePromise) {
             await tab.savePromise;
@@ -1111,10 +1119,22 @@ async function saveTabIfDirty(tab) {
     tab.isSaving = true;
     tab.savePromise = (async () => {
         try {
-            await invoke('save_text_file', {
-                filePath: tab.filePath,
-                content: tab.content,
-            });
+            if (!tab.filePath) {
+                // 初回保存：ファイル生成＋内容書き込みを同時実行
+                const file = await invoke('create_and_save_file', {
+                    homeFolder: appState.homeFolder,
+                    timestamp: tab.createdTimestamp,
+                    content: tab.content,
+                });
+                tab.filePath = file.file_path;
+                tab.fileName = file.file_name;
+            } else {
+                // 2回目以降：既存ファイルに上書き保存
+                await invoke('save_text_file', {
+                    filePath: tab.filePath,
+                    content: tab.content,
+                });
+            }
             tab.isDirty = false;
             renderTabs();
         } finally {
@@ -1160,6 +1180,10 @@ async function closeTab(tabId) {
 
 // 空白のみファイルを削除すべきか判定
 function shouldDeleteEmptyFile(tab) {
+    // ファイルが未作成の場合は削除不要
+    if (!tab.filePath) {
+        return false;
+    }
     const trimmed = tab.content.trim();
     if (trimmed !== '') {
         return false;
