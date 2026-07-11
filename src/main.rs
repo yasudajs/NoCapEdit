@@ -6,7 +6,7 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
-use chrono::Local;
+
 use tauri::Manager;
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
@@ -33,7 +33,7 @@ const DEFAULT_SAVE_MODE: &str = "auto";
 const APP_DIR_NAME: &str = "NoCapEdit";
 const HOME_DIR_NAME: &str = "nce";
 const FILE_EXTENSION: &str = ".nctx";
-const DATETIME_FORMAT: &str = "%Y%m%d_%H%M%S";
+
 
 fn send_to_existing_instance(path: &str) -> bool {
     if let Ok(mut stream) = TcpStream::connect(format!("{}:{}", SINGLE_INSTANCE_HOST, SINGLE_INSTANCE_PORT)) {
@@ -190,8 +190,8 @@ fn normalize_crlf(content: &str) -> String {
     lf.replace('\n', "\r\n")
 }
 
-fn next_available_file_path(home_folder: &PathBuf) -> Result<(String, PathBuf), String> {
-    let base = Local::now().format(DATETIME_FORMAT).to_string();
+fn next_available_file_path(home_folder: &PathBuf, timestamp: &str) -> Result<(String, PathBuf), String> {
+    let base = timestamp.to_string();
     let mut index = 0u32;
 
     loop {
@@ -260,11 +260,20 @@ fn save_settings(
 }
 
 #[tauri::command]
-fn create_auto_file(home_folder: PathBuf) -> Result<FileInfo, String> {
+fn create_and_save_file(
+    home_folder: PathBuf,
+    timestamp: String,
+    content: String,
+) -> Result<FileInfo, String> {
     fs::create_dir_all(&home_folder).map_err(|e| e.to_string())?;
 
-    let (file_name, file_path) = next_available_file_path(&home_folder)?;
-    fs::write(&file_path, "").map_err(|e| e.to_string())?;
+    let (file_name, file_path) = next_available_file_path(&home_folder, &timestamp)?;
+
+    // 内容を正規化してアトミック書き込み
+    let normalized = normalize_crlf(&content);
+    let tmp_path = file_path.with_extension("tmp");
+    fs::write(&tmp_path, &normalized).map_err(|e| e.to_string())?;
+    fs::rename(&tmp_path, &file_path).map_err(|e| e.to_string())?;
 
     Ok(FileInfo {
         file_name,
@@ -457,7 +466,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             get_settings,
             save_settings,
-            create_auto_file,
+            create_and_save_file,
             read_text_file,
             save_text_file,
             delete_text_file,
