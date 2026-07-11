@@ -479,6 +479,15 @@ async function init() {
     } catch (error) {
         console.error('Failed to initialize:', error);
         updateStatus('初期化エラー', 'error');
+    } finally {
+        // 初期化エラーなどの例外が発生した場合でも、確実にウィンドウを表示してユーザーに状態が見えるようにする（フェイルセーフ）
+        if (appWindow && typeof appWindow.show === 'function') {
+            try {
+                await appWindow.show();
+            } catch (showError) {
+                console.error('Failed to show window:', showError);
+            }
+        }
     }
 }
 

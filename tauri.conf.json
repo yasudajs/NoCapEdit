@@ -45,7 +45,8 @@
         "open": true
       },
       "window": {
-        "setTitle": true
+        "setTitle": true,
+        "show": true
       }
     },
     "windows": [],
