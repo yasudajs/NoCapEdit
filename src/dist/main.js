@@ -38,6 +38,9 @@ let appState = {
     fontsLoading: false,
 };
 
+// 設定画面を開く前のエディタのカーソル状態を保持する
+let savedEditorCursor = null;
+
 function generateTabId() {
     if (window.crypto && typeof window.crypto.randomUUID === 'function') {
         return window.crypto.randomUUID();
@@ -493,10 +496,28 @@ function closeSettingsDialog() {
     if (elements.settingsBtn) {
         elements.settingsBtn.classList.remove('open');
     }
+
+    // エディタにフォーカスを戻し、カーソル位置を復元
+    if (savedEditorCursor !== null && elements.editor) {
+        elements.editor.focus();
+        elements.editor.selectionStart = savedEditorCursor.selectionStart;
+        elements.editor.selectionEnd = savedEditorCursor.selectionEnd;
+        elements.editor.scrollTop = savedEditorCursor.scrollTop;
+        savedEditorCursor = null;
+    }
 }
 
 // 初回設定または設定ドックを開く
 function openSettingsDialog(isMissingFolder = false) {
+    // 設定画面を開く前にカーソル位置を保存
+    if (elements.editor) {
+        savedEditorCursor = {
+            selectionStart: elements.editor.selectionStart || 0,
+            selectionEnd: elements.editor.selectionEnd || 0,
+            scrollTop: elements.editor.scrollTop || 0,
+        };
+    }
+
     elements.homeFolderInput.value = appState.homeFolder || '';
     if (elements.tabBehaviorSelectModal) {
         elements.tabBehaviorSelectModal.value = appState.tabBehavior;
