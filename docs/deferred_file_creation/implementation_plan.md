@@ -178,15 +178,23 @@ const tab = {
  }
 ```
 
-**3. `saveTabIfDirty()` の変更（L1046-L1078）**
+**3. `saveTabIfDirty()` の変更（L1095-L1127）**
 
 `filePath` が空（ファイル未作成）の場合、`create_and_save_file` を呼んでファイル生成と保存を同時に行う。
+また、ファイル未作成かつ内容が空（または空白文字のみ）の場合は、ファイル作成・保存処理をスキップして `isDirty` フラグを下げることで、余計な空ファイルがディスクに生成されるのを防止する。
 
 ```diff
  async function saveTabIfDirty(tab) {
      if (!tab || !tab.isDirty) return;
      // ... isSaving チェック ...
-
+ 
++    // ファイル未作成で内容が空（または空白のみ）の場合は保存（ファイル作成）をスキップし、未保存フラグを下げる
++    if (!tab.filePath && tab.content.trim() === '') {
++        tab.isDirty = false;
++        renderTabs();
++        return;
++    }
++
      tab.isSaving = true;
      tab.savePromise = (async () => {
          try {
@@ -213,7 +221,7 @@ const tab = {
              tab.savePromise = null;
          }
      })();
-
+ 
      await tab.savePromise;
  }
 ```
