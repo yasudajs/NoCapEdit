@@ -233,28 +233,10 @@ fn get_settings() -> SettingsResponse {
 
 #[tauri::command]
 fn save_settings(
-    home_folder: PathBuf,
-    theme: String,
-    font_size: u32,
-    font_family: String,
-    line_height: f32,
-    tab_behavior: String,
-    save_mode: String,
-    char_count_mode: String,
+    settings: AppSettings,
 ) -> Result<(), String> {
-    let settings = AppSettings {
-        home_folder: home_folder.clone(),
-        theme,
-        font_size,
-        font_family,
-        line_height,
-        tab_behavior,
-        save_mode,
-        char_count_mode,
-    };
-    
     // ホームフォルダが存在しなければ作成
-    fs::create_dir_all(&home_folder).map_err(|e| e.to_string())?;
+    fs::create_dir_all(&settings.home_folder).map_err(|e| e.to_string())?;
     
     settings.save().map_err(|e| e.to_string())
 }

@@ -564,6 +564,29 @@ function openSettingsDialog(isMissingFolder = false) {
     };
 }
 
+// アプリケーション設定を保存（共通処理）
+async function saveApplicationSettings() {
+    if (!ensureTauriApi() || !appState.homeFolder) {
+        return;
+    }
+    try {
+        await invoke('save_settings', {
+            settings: {
+                home_folder: appState.homeFolder,
+                theme: appState.theme,
+                font_size: appState.fontSize,
+                font_family: appState.fontFamily,
+                line_height: appState.lineHeight,
+                tab_behavior: appState.tabBehavior,
+                save_mode: appState.saveMode,
+                char_count_mode: appState.charCountMode
+            }
+        });
+    } catch (error) {
+        console.error('Failed to save settings:', error);
+    }
+}
+
 // 設定を保存
 async function saveSettings() {
     const homeFolder = elements.homeFolderInput.value;
@@ -578,25 +601,13 @@ async function saveSettings() {
     }
 
     try {
-        if (!ensureTauriApi()) {
-            return;
-        }
-
-        await invoke('save_settings', {
-            homeFolder,
-            theme: appState.theme,
-            fontSize: appState.fontSize,
-            fontFamily: appState.fontFamily,
-            lineHeight: appState.lineHeight,
-            tabBehavior,
-            saveMode,
-            charCountMode
-        });
         appState.homeFolder = homeFolder;
         appState.tabBehavior = tabBehavior;
         appState.saveMode = saveMode;
         appState.charCountMode = charCountMode;
-        
+
+        await saveApplicationSettings();
+
         if (previousSaveMode === 'manual' && saveMode === 'auto') {
             for (const tab of appState.tabs) {
                 if (!tab.filePath) {
@@ -683,20 +694,7 @@ async function toggleTheme() {
         console.error('Failed to apply theme to window:', error);
     }
 
-    try {
-        await invoke('save_settings', {
-            homeFolder: appState.homeFolder,
-            theme: newTheme,
-            fontSize: appState.fontSize,
-            fontFamily: appState.fontFamily,
-            lineHeight: appState.lineHeight,
-            tabBehavior: appState.tabBehavior,
-            saveMode: appState.saveMode,
-            charCountMode: appState.charCountMode
-        });
-    } catch (error) {
-        console.error('Failed to save settings during theme toggle:', error);
-    }
+    await saveApplicationSettings();
 }
 
 // UI イベントリスナー設定
@@ -1393,22 +1391,7 @@ function decreaseLineHeight() {
 function saveSettingsDelay() {
     clearTimeout(settingsSaveTimer);
     settingsSaveTimer = setTimeout(async () => {
-        try {
-            if (ensureTauriApi() && appState.homeFolder) {
-                await invoke('save_settings', {
-                    homeFolder: appState.homeFolder,
-                    theme: appState.theme,
-                    fontSize: appState.fontSize,
-                    fontFamily: appState.fontFamily,
-                    lineHeight: appState.lineHeight,
-                    tabBehavior: appState.tabBehavior,
-                    saveMode: appState.saveMode,
-                    charCountMode: appState.charCountMode
-                });
-            }
-        } catch (error) {
-            console.error('Failed to save settings:', error);
-        }
+        await saveApplicationSettings();
     }, 1000);
 }
 
