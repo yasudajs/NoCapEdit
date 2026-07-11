@@ -38,6 +38,9 @@ let appState = {
     fontsLoading: false,
 };
 
+// 設定画面を開く前のエディタのカーソル状態を保持する
+let savedEditorCursor = null;
+
 function generateTabId() {
     if (window.crypto && typeof window.crypto.randomUUID === 'function') {
         return window.crypto.randomUUID();
@@ -493,10 +496,28 @@ function closeSettingsDialog() {
     if (elements.settingsBtn) {
         elements.settingsBtn.classList.remove('open');
     }
+
+    // エディタにフォーカスを戻し、カーソル位置を復元
+    if (savedEditorCursor !== null && elements.editor) {
+        elements.editor.focus();
+        elements.editor.selectionStart = savedEditorCursor.selectionStart;
+        elements.editor.selectionEnd = savedEditorCursor.selectionEnd;
+        elements.editor.scrollTop = savedEditorCursor.scrollTop;
+        savedEditorCursor = null;
+    }
 }
 
 // 初回設定または設定ドックを開く
 function openSettingsDialog(isMissingFolder = false) {
+    // 設定画面を開く前にカーソル位置を保存
+    if (elements.editor) {
+        savedEditorCursor = {
+            selectionStart: elements.editor.selectionStart || 0,
+            selectionEnd: elements.editor.selectionEnd || 0,
+            scrollTop: elements.editor.scrollTop || 0,
+        };
+    }
+
     elements.homeFolderInput.value = appState.homeFolder || '';
     if (elements.tabBehaviorSelectModal) {
         elements.tabBehaviorSelectModal.value = appState.tabBehavior;
@@ -1020,6 +1041,16 @@ async function switchTab(tabId) {
             const currentIdx = appState.tabs.findIndex(t => t.id === appState.currentTab);
             if (currentIdx !== -1) {
                 appState.tabs[currentIdx].content = elements.editor.value;
+                
+                // 切り替え前のタブのカーソル状態を記憶
+                if (elements.editor) {
+                    appState.tabs[currentIdx].cursorState = {
+                        selectionStart: elements.editor.selectionStart || 0,
+                        selectionEnd: elements.editor.selectionEnd || 0,
+                        scrollTop: elements.editor.scrollTop || 0,
+                    };
+                }
+
                 const ok = await persistTabWithRecovery(appState.tabs[currentIdx], 'tab-switch');
                 if (!ok) {
                     return;
@@ -1036,6 +1067,24 @@ async function switchTab(tabId) {
             renderTabs();
             updateEditorMetrics();
             updateStatus(tab.fileName + ' - 準備完了');
+
+            // エディタにフォーカスを戻し、カーソル状態を復元する
+            if (elements.editor) {
+                elements.editor.focus();
+                
+                if (tab.cursorState) {
+                    // 記憶されたカーソル位置とスクロール位置を復元
+                    elements.editor.selectionStart = tab.cursorState.selectionStart;
+                    elements.editor.selectionEnd = tab.cursorState.selectionEnd;
+                    elements.editor.scrollTop = tab.cursorState.scrollTop;
+                } else {
+                    // 記憶がない場合（新規タブなど）は、テキストの末尾にカーソルを設定
+                    const len = elements.editor.value.length;
+                    elements.editor.selectionStart = len;
+                    elements.editor.selectionEnd = len;
+                    elements.editor.scrollTop = 0;
+                }
+            }
         }
     } catch (error) {
         console.error('Failed to switch tab:', error);
