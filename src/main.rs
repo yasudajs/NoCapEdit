@@ -388,7 +388,11 @@ fn delete_text_file(file_path: PathBuf) -> Result<(), String> {
 fn create_file_or_dir(parent_path: String, name: String, is_dir: bool) -> Result<String, String> {
     let settings = AppSettings::load();
     let home_folder = settings.home_folder;
-    let parent = PathBuf::from(parent_path);
+    let parent = if parent_path.is_empty() {
+        home_folder.clone()
+    } else {
+        PathBuf::from(parent_path)
+    };
 
     // セキュリティチェック
     let canon_parent = parent.canonicalize().map_err(|e| e.to_string())?;

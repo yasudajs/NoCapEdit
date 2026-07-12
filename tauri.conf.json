@@ -43,7 +43,8 @@
         "all": false,
         "save": true,
         "open": true,
-        "ask": true
+        "ask": true,
+        "message": true
       },
       "window": {
         "setTitle": true,
