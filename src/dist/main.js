@@ -68,6 +68,7 @@ const elements = {
     sidebarToggleBtn: document.getElementById('sidebar-toggle-btn'),
     sidebar: document.getElementById('sidebar'),
     sidebarResizeHandle: document.getElementById('sidebar-resize-handle'),
+    fileTree: document.getElementById('file-tree'),
     iconBar: document.getElementById('icon-bar'),
     tabsContainer: document.getElementById('tabsContainer'),
     addTabBtn: document.getElementById('addTabBtn'),
@@ -1475,6 +1476,11 @@ function initSidebar() {
             saveSettingsDelay();
         }
     });
+
+    // 初期ディレクトリの読み込み
+    if (elements.fileTree) {
+        loadDirectory(null, elements.fileTree);
+    }
 }
 
 window.addEventListener('error', (event) => {
@@ -1527,9 +1533,89 @@ function increaseLineHeight() {
 
 function decreaseLineHeight() {
     if (appState.lineHeight > MIN_LINE_HEIGHT) {
-        appState.lineHeight = Math.max(MIN_LINE_HEIGHT, appState.lineHeight - LINE_HEIGHT_STEP);
+        appState.lineHeight = Math.max(MIN_LINE_HEIGHT, Number((appState.lineHeight - 0.1).toFixed(1)));
         applyLineHeight();
     }
+}
+
+// ====== ファイルツリー関連 ======
+async function loadDirectory(path, parentElement) {
+    try {
+        const files = await invoke('read_directory', { path });
+        renderFileTree(files, parentElement);
+    } catch (e) {
+        console.error('Failed to load directory:', e);
+        parentElement.innerHTML = `<div class="tree-error">読み込みエラー: ${e}</div>`;
+    }
+}
+
+function renderFileTree(files, container) {
+    container.innerHTML = '';
+    if (files.length === 0) {
+        container.innerHTML = '<div class="tree-empty">フォルダは空です</div>';
+        return;
+    }
+
+    files.forEach(file => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'tree-item';
+        
+        const iconSpan = document.createElement('span');
+        iconSpan.className = 'tree-icon';
+        iconSpan.textContent = file.is_dir ? '📁' : '📄';
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'tree-name';
+        nameSpan.textContent = file.file_name;
+        nameSpan.title = file.file_name;
+
+        itemDiv.appendChild(iconSpan);
+        itemDiv.appendChild(nameSpan);
+
+        if (file.is_dir) {
+            const childrenContainer = document.createElement('div');
+            childrenContainer.className = 'tree-children hidden';
+            
+            itemDiv.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                
+                const isHidden = childrenContainer.classList.contains('hidden');
+                if (isHidden) {
+                    childrenContainer.classList.remove('hidden');
+                    iconSpan.textContent = '📂';
+                    
+                    if (childrenContainer.children.length === 0) {
+                        childrenContainer.innerHTML = '<div class="tree-loading">読み込み中...</div>';
+                        await loadDirectory(file.file_path, childrenContainer);
+                    }
+                } else {
+                    childrenContainer.classList.add('hidden');
+                    iconSpan.textContent = '📁';
+                }
+            });
+            
+            container.appendChild(itemDiv);
+            container.appendChild(childrenContainer);
+        } else {
+            itemDiv.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openFileFromTree(file);
+                
+                document.querySelectorAll('.tree-item').forEach(el => el.classList.remove('active'));
+                itemDiv.classList.add('active');
+            });
+            container.appendChild(itemDiv);
+        }
+    });
+}
+
+function openFileFromTree(file) {
+    const existingTab = appState.tabs.find(t => t.path === file.file_path);
+    if (existingTab) {
+        switchTab(existingTab.id);
+        return;
+    }
+    readFileContent(file.file_path);
 }
 
 function saveSettingsDelay() {

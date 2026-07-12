@@ -30,7 +30,7 @@ cargo tauri build
 # ポータブル版のビルドとZIPアーカイブの作成
 cargo build --release
 New-Item -ItemType Directory -Force -Path "target/release/bundle"
-Compress-Archive -Path "target/release/NoCapEdit.exe" -DestinationPath "target/release/bundle/NoCapEdit_v0.2.0_x64_portable.zip" -Force
+Compress-Archive -Path "target/release/NoCapEdit.exe" -DestinationPath "target/release/bundle/NoCapEdit_v0.2.1_x64_portable.zip" -Force
 ```
 
 ## 📄 仕様詳細

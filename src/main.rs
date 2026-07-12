@@ -150,6 +150,13 @@ struct FileInfo {
     file_path: String,
 }
 
+#[derive(Debug, Serialize)]
+struct TreeFileInfo {
+    file_name: String,
+    file_path: String,
+    is_dir: bool,
+}
+
 impl AppSettings {
     fn config_path() -> PathBuf {
         let app_data = dirs::config_dir().unwrap_or_else(|| PathBuf::from("."));
@@ -301,6 +308,72 @@ fn save_text_file(file_path: PathBuf, content: String) -> Result<(), String> {
     fs::rename(&tmp_path, &file_path).map_err(|e| e.to_string())?;
 
     Ok(())
+}
+
+#[tauri::command]
+fn read_directory(path: Option<String>) -> Result<Vec<TreeFileInfo>, String> {
+    let settings = AppSettings::load();
+    let home_folder = settings.home_folder;
+    
+    let target_path = if let Some(p) = path {
+        PathBuf::from(p)
+    } else {
+        home_folder.clone()
+    };
+
+    if !target_path.exists() {
+        return Ok(Vec::new());
+    }
+
+    // セキュリティチェック: target_path が home_folder の配下にあること
+    let target_canon = target_path.canonicalize().map_err(|e| e.to_string())?;
+    let home_canon = home_folder.canonicalize().map_err(|e| e.to_string())?;
+    if !target_canon.starts_with(&home_canon) {
+        return Err("アクセスが許可されていないディレクトリです".to_string());
+    }
+
+    let mut result = Vec::new();
+    let entries = fs::read_dir(target_canon).map_err(|e| e.to_string())?;
+
+    for entry in entries.flatten() {
+        let path = entry.path();
+        let is_dir = path.is_dir();
+        
+        let file_name = if let Some(name) = path.file_name() {
+            name.to_string_lossy().to_string()
+        } else {
+            continue;
+        };
+
+        if !is_dir {
+            // 許可された拡張子のみ
+            if let Some(ext) = path.extension() {
+                let ext_str = ext.to_string_lossy().to_lowercase();
+                if !["txt", "md", "nctx", "json", "csv"].contains(&ext_str.as_str()) {
+                    continue;
+                }
+            } else {
+                continue;
+            }
+        }
+
+        result.push(TreeFileInfo {
+            file_name,
+            file_path: path.to_string_lossy().to_string(),
+            is_dir,
+        });
+    }
+
+    // ソート: フォルダが先、ファイルが後。それぞれアルファベット順
+    result.sort_by(|a, b| {
+        match (a.is_dir, b.is_dir) {
+            (true, false) => std::cmp::Ordering::Less,
+            (false, true) => std::cmp::Ordering::Greater,
+            _ => a.file_name.to_lowercase().cmp(&b.file_name.to_lowercase()),
+        }
+    });
+
+    Ok(result)
 }
 
 #[tauri::command]
@@ -467,6 +540,7 @@ fn main() {
             read_text_file,
             save_text_file,
             delete_text_file,
+            read_directory,
             exit_app,
             get_launch_file,
             apply_theme,
