@@ -144,7 +144,7 @@ body {
 
 /* リサイズハンドル */
 .resize-handle {
-    width: 4px;
+    width: 2px;
     background-color: var(--border);
     cursor: col-resize;
     flex-shrink: 0;
