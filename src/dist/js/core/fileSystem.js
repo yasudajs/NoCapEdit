@@ -1,6 +1,6 @@
 import { appState, elements } from '../state.js';
 import { invoke, saveDialog, ensureTauriApi } from './tauri.js';
-import { getFileNameFromPath, isAutoCreatedFileName } from '../utils/helpers.js';
+import { getFileNameFromPath, isAutoCreatedFileName, normalizePathForComparison } from '../utils/helpers.js';
 import { updateStatus, updateTabStatus, renderTabs, switchTab, createNewTab } from '../ui/tabs.js';
 import { syncCurrentEditorToState } from '../ui/editor.js';
 import { FILE_EXT_NCTX, FILE_EXT_NCMD } from '../state.js';
@@ -320,7 +320,8 @@ export async function triggerManualSave() {
 
 export async function openExistingFile(filePath) {
     // 既に同じファイルが開いている場合は、切り替えるだけ
-    const existingTab = appState.tabs.find((t) => t.filePath === filePath);
+    const targetPath = normalizePathForComparison(filePath);
+    const existingTab = appState.tabs.find((t) => normalizePathForComparison(t.filePath) === targetPath);
     if (existingTab) {
         await switchTab(existingTab.id);
         return;
