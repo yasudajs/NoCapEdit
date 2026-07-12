@@ -980,6 +980,82 @@ function setupUIEventListeners() {
         });
     }
 
+    // 外部ファイルシステム変更イベントの購読
+    let fileChangeDebounceTimer = null;
+    let pendingChangedDirs = new Set();
+
+    if (listen) {
+        listen('file-system-changed', async (event) => {
+            const { event_type, paths } = event.payload;
+            console.log('file-system-changed event received:', event_type, paths);
+
+            // 1. 開いているタブとの連動処理
+            if (event_type === 'remove') {
+                for (const path of paths) {
+                    const normalizedPath = path.replace(/\\/g, '/');
+                    await closeTabByPathWithoutSaving(normalizedPath);
+                }
+            } else if (event_type === 'rename') {
+                if (paths.length >= 2) {
+                    const oldPath = paths[0].replace(/\\/g, '/');
+                    const newPath = paths[1].replace(/\\/g, '/');
+                    
+                    const tab = appState.tabs.find(t => t.filePath && t.filePath.replace(/\\/g, '/') === oldPath);
+                    if (tab) {
+                        tab.filePath = newPath;
+                        const newName = newPath.split('/').pop();
+                        tab.fileName = newName;
+                        
+                        renderTabs();
+                        
+                        if (appState.currentTab === tab.id) {
+                            updateStatus(`${newName} に名前変更されました`, 'info');
+                            const cleanName = newName.replace(/\.nctx$/, '');
+                            const masterVersion = appState.appVersion || '0.2.4';
+                            document.title = `NoCapEdit [ Ver ${masterVersion} ] - ${cleanName}`;
+                        }
+                    }
+                }
+            }
+
+            // 2. ツリーのリロード処理（デバウンス）
+            for (const path of paths) {
+                const normalizedPath = path.replace(/\\/g, '/');
+                const parent = getParentPath(normalizedPath);
+                if (parent) {
+                    pendingChangedDirs.add(parent);
+                } else if (appState.homeFolder) {
+                    pendingChangedDirs.add(appState.homeFolder.replace(/\\/g, '/'));
+                }
+            }
+
+            clearTimeout(fileChangeDebounceTimer);
+            fileChangeDebounceTimer = setTimeout(async () => {
+                const dirsToReload = Array.from(pendingChangedDirs);
+                pendingChangedDirs.clear();
+
+                for (const dir of dirsToReload) {
+                    const normalizedDir = dir.replace(/\\/g, '/');
+                    const normalizedHome = appState.homeFolder ? appState.homeFolder.replace(/\\/g, '/') : '';
+
+                    if (normalizedDir === normalizedHome || normalizedDir === '') {
+                        await loadDirectory(null, elements.fileTree);
+                    } else {
+                        const folderItem = document.querySelector(`.tree-item[data-file-path="${normalizedDir}"]`);
+                        if (folderItem) {
+                            const childrenContainer = folderItem.nextElementSibling;
+                            if (childrenContainer && childrenContainer.classList.contains('tree-children')) {
+                                if (!childrenContainer.classList.contains('hidden')) {
+                                    await loadDirectory(normalizedDir, childrenContainer);
+                                }
+                            }
+                        }
+                    }
+                }
+            }, 250);
+        });
+    }
+
     appState.initialized = true;
 }
 

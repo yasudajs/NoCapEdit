@@ -6,11 +6,20 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
+use std::sync::Mutex;
+use notify::{RecommendedWatcher, Watcher, RecursiveMode, Event};
 
 use tauri::Manager;
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
 use std::thread;
+
+struct WatcherState {
+    watcher: Option<RecommendedWatcher>,
+    current_path: Option<PathBuf>,
+}
+
+struct WatcherManager(Mutex<WatcherState>);
 
 const SINGLE_INSTANCE_PORT: u16 = 49423;
 const SINGLE_INSTANCE_HOST: &str = "127.0.0.1";
@@ -252,14 +261,91 @@ fn get_settings() -> SettingsResponse {
     }
 }
 
+#[derive(serde::Serialize, Clone)]
+struct FileChangeEventPayload {
+    event_type: String, // "create", "remove", "rename", "modify"
+    paths: Vec<String>,
+}
+
+fn handle_watch_event(app_handle: &tauri::AppHandle, event: Event) {
+    use notify::event::EventKind;
+    let event_type = match event.kind {
+        EventKind::Create(_) => "create",
+        EventKind::Remove(_) => "remove",
+        EventKind::Modify(notify::event::ModifyKind::Name(_)) => "rename",
+        EventKind::Modify(_) => "modify",
+        _ => return, // 他のイベントは無視
+    };
+
+    let paths: Vec<String> = event.paths.iter()
+        .map(|p| p.to_string_lossy().to_string())
+        .collect();
+
+    if !paths.is_empty() {
+        let payload = FileChangeEventPayload {
+            event_type: event_type.to_string(),
+            paths,
+        };
+        let _ = app_handle.emit_all("file-system-changed", payload);
+    }
+}
+
+fn start_watching(app_handle: &tauri::AppHandle, path: PathBuf) -> Result<(), String> {
+    let state = app_handle.state::<WatcherManager>();
+    let mut lock = state.0.lock().map_err(|e| e.to_string())?;
+
+    // すでに同じパスを監視中なら何もしない
+    if let Some(ref current) = lock.current_path {
+        if current == &path {
+            return Ok(());
+        }
+    }
+
+    // 古い監視を停止
+    if let Some(mut old_watcher) = lock.watcher.take() {
+        if let Some(ref old_path) = lock.current_path {
+            let _ = old_watcher.unwatch(old_path);
+        }
+    }
+
+    let app_handle_clone = app_handle.clone();
+
+    // 新しい監視の作成
+    let mut watcher = RecommendedWatcher::new(move |res| {
+        match res {
+            Ok(event) => {
+                handle_watch_event(&app_handle_clone, event);
+            }
+            Err(e) => eprintln!("watch error: {:?}", e),
+        }
+    }, notify::Config::default()).map_err(|e| e.to_string())?;
+
+    // パスが存在することを確認した上で監視
+    if path.exists() {
+        watcher.watch(&path, RecursiveMode::Recursive).map_err(|e| e.to_string())?;
+    }
+
+    lock.watcher = Some(watcher);
+    lock.current_path = Some(path);
+
+    Ok(())
+}
+
 #[tauri::command]
 fn save_settings(
     settings: AppSettings,
+    app_handle: tauri::AppHandle,
 ) -> Result<(), String> {
     // ホームフォルダが存在しなければ作成
     fs::create_dir_all(&settings.home_folder).map_err(|e| e.to_string())?;
     
-    settings.save().map_err(|e| e.to_string())
+    let home_folder = settings.home_folder.clone();
+    settings.save().map_err(|e| e.to_string())?;
+
+    // 監視パスの切り替え
+    let _ = start_watching(&app_handle, home_folder);
+
+    Ok(())
 }
 
 #[tauri::command]
@@ -589,8 +675,23 @@ fn main() {
 
     tauri::Builder::default()
         .setup(|app| {
+            let settings = AppSettings::load();
+            let home_folder = settings.home_folder.clone();
+
+            // WatcherState の初期化と管理登録
+            app.manage(WatcherManager(Mutex::new(WatcherState {
+                watcher: None,
+                current_path: None,
+            })));
+
             let app_handle = app.handle();
-            start_instance_listener(app_handle);
+            start_instance_listener(app_handle.clone());
+
+            // 起動時に監視を開始
+            let app_handle_clone = app_handle.clone();
+            tauri::async_runtime::spawn(async move {
+                let _ = start_watching(&app_handle_clone, home_folder);
+            });
 
             let window = tauri::WindowBuilder::new(
                 app,
