@@ -780,17 +780,14 @@ body {
 }
 
 .tree-children {
-    padding-left: 18px;
+    margin-left: 20px;
+    border-left: 1px solid var(--border);
+    padding-left: 0;
 }
 
 /* 子要素の前に └ のツリーガイドを表示 */
 .tree-children .tree-item::before {
-    content: "└";
-    color: var(--text-secondary);
-    opacity: 0.7;
-    font-weight: normal;
-    position: absolute;
-    left: -4px;
+    content: none;
 }
 
 .tree-empty, .tree-error, .tree-loading {
