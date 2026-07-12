@@ -1132,25 +1132,25 @@ async function switchTab(tabId) {
 
 async function saveTabIfDirty(tab) {
     if (!tab || !tab.isDirty) {
-        return;
+        return false;
     }
 
     // ファイル未作成で内容が空（または空白のみ）の場合は保存（ファイル作成）をスキップし、未保存フラグを下げる
     if (!tab.filePath && tab.content.trim() === '') {
         tab.isDirty = false;
         renderTabs();
-        return;
+        return false;
     }
 
     if (tab.isSaving) {
         if (tab.savePromise) {
             await tab.savePromise;
         }
-        return;
+        return true;
     }
 
     if (!ensureTauriApi()) {
-        return;
+        return false;
     }
 
     tab.isSaving = true;
@@ -1191,6 +1191,7 @@ async function saveTabIfDirty(tab) {
     })();
 
     await tab.savePromise;
+    return true;
 }
 
 // タブを削除
@@ -1209,11 +1210,7 @@ async function closeTab(tabId) {
 
     if (appState.currentTab === tabId) {
         if (appState.tabs.length > 0) {
-            appState.currentTab = appState.tabs[0].id;
-            const active = getCurrentTab();
-            if (active) {
-                elements.editor.value = active.content;
-            }
+            await switchTab(appState.tabs[0].id);
         } else {
             appState.currentTab = null;
             elements.editor.value = '';
@@ -1303,12 +1300,16 @@ async function autoSave() {
     try {
         updateTabStatus(tab, '保存中...', 'saving');
 
-        await saveTabIfDirty(tab);
+        const saved = await saveTabIfDirty(tab);
 
-        if (isFirstSave) {
-            updateStatus(tab.fileName + ' を作成', 'saved');
+        if (saved) {
+            if (isFirstSave) {
+                updateStatus(tab.fileName + ' を作成', 'saved');
+            } else {
+                updateTabStatus(tab, '保存済み', 'saved');
+            }
         } else {
-            updateTabStatus(tab, '保存済み', 'saved');
+            updateTabStatus(tab);
         }
     } catch (error) {
         console.error('Auto-save failed:', error);
@@ -1336,6 +1337,7 @@ async function triggerManualSave() {
     try {
         updateTabStatus(tab, '保存中...', 'saving');
 
+        let saved = false;
         if (appState.saveMode === 'manual') {
             const now = new Date();
             const yyyy = now.getFullYear();
@@ -1356,21 +1358,26 @@ async function triggerManualSave() {
             tab.fileName = fileName;
             tab.createdTimestamp = saveTimestamp;
             tab.isDirty = false;
+            saved = true;
         } else {
             tab.isDirty = true;
-            await saveTabIfDirty(tab);
+            saved = await saveTabIfDirty(tab);
         }
 
         renderTabs();
 
-        if (isFirstSave) {
-            let prefix = '';
-            if (appState.saveMode === 'manual') {
-                prefix = '[手動保存:Ctrl+S] ';
+        if (saved) {
+            if (isFirstSave) {
+                let prefix = '';
+                if (appState.saveMode === 'manual') {
+                    prefix = '[手動保存:Ctrl+S] ';
+                }
+                updateStatus(`${prefix}${tab.fileName} を作成`, 'saved', true);
+            } else {
+                updateTabStatus(tab, '保存済み', 'saved');
             }
-            updateStatus(`${prefix}${tab.fileName} を作成`, 'saved', true);
         } else {
-            updateTabStatus(tab, '保存済み', 'saved');
+            updateTabStatus(tab);
         }
     } catch (error) {
         console.error('Manual save failed:', error);
