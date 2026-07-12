@@ -87,6 +87,18 @@ struct AppSettings {
     save_mode: String,
     #[serde(default = "default_char_count_mode")]
     char_count_mode: String,
+    #[serde(default = "default_sidebar_visible")]
+    sidebar_visible: bool,
+    #[serde(default = "default_sidebar_width")]
+    sidebar_width: u32,
+}
+
+fn default_sidebar_visible() -> bool {
+    false
+}
+
+fn default_sidebar_width() -> u32 {
+    220
 }
 
 fn default_theme() -> String {
@@ -181,6 +193,8 @@ impl Default for AppSettings {
             tab_behavior: default_tab_behavior(),
             save_mode: default_save_mode(),
             char_count_mode: default_char_count_mode(),
+            sidebar_visible: default_sidebar_visible(),
+            sidebar_width: default_sidebar_width(),
         }
     }
 }
