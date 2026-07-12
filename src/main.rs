@@ -403,10 +403,6 @@ fn save_text_file(file_path: PathBuf, content: String) -> Result<(), String> {
     let tmp_path = file_path.with_extension("tmp");
 
     fs::write(&tmp_path, normalized).map_err(|e| e.to_string())?;
-
-    if file_path.exists() {
-        fs::remove_file(&file_path).map_err(|e| e.to_string())?;
-    }
     fs::rename(&tmp_path, &file_path).map_err(|e| e.to_string())?;
 
     Ok(())
