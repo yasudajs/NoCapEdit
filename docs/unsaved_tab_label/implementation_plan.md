@@ -163,13 +163,22 @@ fileName = `${yyyy}${mm}${dd}_${hh}${min}${ss}.nctx`;
 
 **変更内容**:
 - `未保存N` / `[未保存N]` 形式のファイル名はそのまま返す（変換不要）
-- 現在は「ファイルが存在する」前提でフォーマットしているが、未保存ラベルを透過させる
+- 自動生成されたファイル名（タイムスタンプ形式）をパースする際、手動保存モードの場合は表示名に角カッコ `[ ]` を付与する
 
 ```diff
 // 変更前
 function formatTabDisplayName(fileName) {
     if (isAutoCreatedFileName(fileName)) {
-        ...
+        const match = fileName.match(/^(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})(?:_(\d{2}))?\.nctx$/);
+        if (match) {
+            const [_, year, month, day, hour, min, sec, index] = match;
+            let formatted = `${year}/${month}/${day} ${hour}:${min}:${sec}`;
+            if (index) {
+                const numIdx = parseInt(index, 10);
+                formatted += `-${numIdx}`;
+            }
+            return formatted;
+        }
     }
     // 拡張子除去ロジック
 }
@@ -181,7 +190,20 @@ function formatTabDisplayName(fileName) {
         return fileName;
     }
     if (isAutoCreatedFileName(fileName)) {
-        ...
+        const match = fileName.match(/^(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})(?:_(\d{2}))?\.nctx$/);
+        if (match) {
+            const [_, year, month, day, hour, min, sec, index] = match;
+            let formatted = `${year}/${month}/${day} ${hour}:${min}:${sec}`;
+            if (index) {
+                const numIdx = parseInt(index, 10);
+                formatted += `-${numIdx}`;
+            }
+            // 手動保存モードの場合は角カッコで囲む
+            if (appState.saveMode === 'manual') {
+                formatted = `[${formatted}]`;
+            }
+            return formatted;
+        }
     }
     // 拡張子除去ロジック（変更なし）
 }
