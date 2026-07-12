@@ -113,7 +113,7 @@ body {
 /* サイドバー */
 .sidebar {
     width: var(--sidebar-width);
-    background-color: var(--bg-primary);
+    background-color: var(--bg-secondary);
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
