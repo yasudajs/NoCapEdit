@@ -1689,34 +1689,47 @@ function showContextMenu(e, path, isDir, name, element) {
 
     if (!elements.contextMenu) return;
 
-    // 表示項目の制御
+    // 表示項目的制御と表示カウントの算出
+    let visibleCount = 0;
     if (path === null) {
         // 背景右クリック
         elements.menuNewFile.classList.remove('hidden');
         elements.menuNewFolder.classList.remove('hidden');
         elements.menuRename.classList.add('hidden');
         elements.menuDelete.classList.add('hidden');
+        visibleCount = 2;
     } else if (isDir) {
         // フォルダ右クリック
         elements.menuNewFile.classList.remove('hidden');
         elements.menuNewFolder.classList.remove('hidden');
         elements.menuRename.classList.remove('hidden');
         elements.menuDelete.classList.remove('hidden');
+        visibleCount = 4;
     } else {
         // ファイル右クリック
         elements.menuNewFile.classList.add('hidden');
         elements.menuNewFolder.classList.add('hidden');
         elements.menuRename.classList.remove('hidden');
         elements.menuDelete.classList.remove('hidden');
+        visibleCount = 2;
     }
 
     // 表示位置の決定
     const menuWidth = 160;
-    const menuHeight = 150;
+    // 1項目あたり約32px + 上下パディング等で約8px
+    const menuHeight = visibleCount * 32 + 8;
     let x = (e && typeof e.clientX === 'number') ? e.clientX : 0;
     let y = (e && typeof e.clientY === 'number') ? e.clientY : 0;
 
-    console.log('showContextMenu layout:', { x, y, innerWidth: window.innerWidth, innerHeight: window.innerHeight });
+    // 「左下」がマウスカーソルに重なるように配置（通常はメニューの高さ分上にずらす）
+    y -= menuHeight;
+
+    // 画面上端をはみ出る場合は、マウス位置のすぐ下（左上基準）に反転して配置
+    if (y < 0) {
+        y = (e && typeof e.clientY === 'number') ? e.clientY : 0;
+    }
+
+    console.log('showContextMenu layout:', { x, y, menuHeight, innerWidth: window.innerWidth, innerHeight: window.innerHeight });
 
     if (x + menuWidth > window.innerWidth) {
         x = Math.max(0, window.innerWidth - menuWidth);
