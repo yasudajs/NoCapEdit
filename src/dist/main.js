@@ -147,6 +147,16 @@ function updateEditorMetrics() {
     elements.statusMetrics.textContent = `Ln ${line}, Col ${col} | ${charDisplay} | Font ${fs} pt | LH x ${lh.toFixed(1)}`;
 }
 
+// OSに依存するUNCプレフィックス (\\?\) の除去や、末尾スラッシュの除去、小文字化を行うパス比較用の正規化関数
+function normalizePathForComparison(p) {
+    if (!p) return '';
+    let normalized = p.replace(/\\/g, '/');
+    if (normalized.startsWith('//?/')) {
+        normalized = normalized.substring(4);
+    }
+    return normalized.replace(/\/$/, '').toLowerCase();
+}
+
 function getFileNameFromPath(path) {
     if (!path) {
         return '';
@@ -992,15 +1002,15 @@ function setupUIEventListeners() {
             // 1. 開いているタブとの連動処理
             if (event_type === 'remove') {
                 for (const path of paths) {
-                    const normalizedPath = path.replace(/\\/g, '/').replace(/\/$/, '');
-                    await closeTabByPathWithoutSaving(normalizedPath);
+                    await closeTabByPathWithoutSaving(path);
                 }
             } else if (event_type === 'rename') {
                 const handleRenameTab = (oldPath, newPath) => {
-                    const tab = appState.tabs.find(t => t.filePath && t.filePath.toLowerCase().replace(/\\/g, '/').replace(/\/$/, '') === oldPath.toLowerCase());
+                    const oldNorm = normalizePathForComparison(oldPath);
+                    const tab = appState.tabs.find(t => t.filePath && normalizePathForComparison(t.filePath) === oldNorm);
                     if (tab) {
                         tab.filePath = newPath;
-                        const newName = newPath.split('/').pop();
+                        const newName = newPath.split('/').pop().replace(/\\/g, '/');
                         tab.fileName = newName;
                         
                         renderTabs();
@@ -1015,24 +1025,23 @@ function setupUIEventListeners() {
                 };
 
                 if (detail === 'both' && paths.length >= 2) {
-                    handleRenameTab(paths[0].replace(/\\/g, '/').replace(/\/$/, ''), paths[1].replace(/\\/g, '/').replace(/\/$/, ''));
+                    handleRenameTab(paths[0], paths[1]);
                 } else if (paths.length >= 2) {
-                    handleRenameTab(paths[0].replace(/\\/g, '/').replace(/\/$/, ''), paths[1].replace(/\\/g, '/').replace(/\/$/, ''));
+                    handleRenameTab(paths[0], paths[1]);
                 } else if (paths.length === 1) {
-                    const normalizedPath = paths[0].replace(/\\/g, '/').replace(/\/$/, '');
                     if (detail === 'from') {
-                        appState.pendingRenameFrom = normalizedPath;
+                        appState.pendingRenameFrom = paths[0];
                     } else if (detail === 'to') {
                         if (appState.pendingRenameFrom) {
-                            handleRenameTab(appState.pendingRenameFrom, normalizedPath);
+                            handleRenameTab(appState.pendingRenameFrom, paths[0]);
                             appState.pendingRenameFrom = null;
                         }
                     } else {
                         // from/toが不明だが1件ずつ来た場合、最初の1件をfrom、次をtoとみなす
                         if (!appState.pendingRenameFrom) {
-                            appState.pendingRenameFrom = normalizedPath;
+                            appState.pendingRenameFrom = paths[0];
                         } else {
-                            handleRenameTab(appState.pendingRenameFrom, normalizedPath);
+                            handleRenameTab(appState.pendingRenameFrom, paths[0]);
                             appState.pendingRenameFrom = null;
                         }
                     }
@@ -1041,14 +1050,14 @@ function setupUIEventListeners() {
 
             // 2. ツリーのリロード処理（デバウンス）
             for (const path of paths) {
-                const normalizedPath = path.replace(/\\/g, '/').replace(/\/$/, '');
+                const normalizedPath = normalizePathForComparison(path);
                 
                 // 大文字小文字を無視してツリー内のフォルダを探す
                 const isExistingFolder = Array.from(document.querySelectorAll('.tree-item[data-is-dir="true"]')).some(el => {
-                    return el.dataset.filePath && el.dataset.filePath.toLowerCase().replace(/\\/g, '/').replace(/\/$/, '') === normalizedPath.toLowerCase();
+                    return normalizePathForComparison(el.dataset.filePath) === normalizedPath;
                 });
 
-                const isHomeFolder = appState.homeFolder && normalizedPath.toLowerCase() === appState.homeFolder.replace(/\\/g, '/').replace(/\/$/, '').toLowerCase();
+                const isHomeFolder = normalizePathForComparison(appState.homeFolder) === normalizedPath;
                 
                 // もし対象のパスがフォルダ（ツリーに存在するか、ホームフォルダ自身）で、単なる更新イベント（modify）である場合は、
                 // 親フォルダのリロードをスキップする（フォルダが閉じるのを防ぐため）
@@ -1062,7 +1071,8 @@ function setupUIEventListeners() {
                     continue;
                 }
 
-                const parent = getParentPath(normalizedPath);
+                // 親ディレクトリを取得するが、ここでは厳密な文字列操作ではなく元のパスを使う方が安全
+                const parent = getParentPath(path.replace(/\\/g, '/'));
                 if (parent) {
                     pendingChangedDirs.add(parent);
                 } else if (appState.homeFolder) {
@@ -1076,15 +1086,15 @@ function setupUIEventListeners() {
                 pendingChangedDirs.clear();
 
                 for (const dir of dirsToReload) {
-                    const normalizedDir = dir.replace(/\\/g, '/').replace(/\/$/, '');
-                    const normalizedHome = appState.homeFolder ? appState.homeFolder.replace(/\\/g, '/').replace(/\/$/, '') : '';
+                    const normalizedDir = normalizePathForComparison(dir);
+                    const normalizedHome = normalizePathForComparison(appState.homeFolder);
 
-                    if (normalizedDir.toLowerCase() === normalizedHome.toLowerCase() || normalizedDir === '') {
+                    if (normalizedDir === normalizedHome || normalizedDir === '') {
                         await loadDirectory(null, elements.fileTree);
                     } else {
                         // 該当するディレクトリの children コンテナを見つける（大文字小文字無視）
                         const folderItem = Array.from(document.querySelectorAll('.tree-item[data-is-dir="true"]')).find(el => {
-                            return el.dataset.filePath && el.dataset.filePath.toLowerCase().replace(/\\/g, '/').replace(/\/$/, '') === normalizedDir.toLowerCase();
+                            return normalizePathForComparison(el.dataset.filePath) === normalizedDir;
                         });
 
                         if (folderItem) {
@@ -2171,10 +2181,9 @@ async function deleteItemInTree() {
 
 // 削除されたファイルのタブを保存をスキップして強制的に閉じる
 async function closeTabByPathWithoutSaving(filePath) {
-    const targetNormalized = filePath ? filePath.replace(/\\/g, '/').toLowerCase() : '';
+    const targetNormalized = normalizePathForComparison(filePath);
     const idx = appState.tabs.findIndex(t => {
-        const tabNormalized = t.filePath ? t.filePath.replace(/\\/g, '/').toLowerCase() : '';
-        return tabNormalized === targetNormalized && targetNormalized !== '';
+        return normalizePathForComparison(t.filePath) === targetNormalized && targetNormalized !== '';
     });
     if (idx === -1) return;
 
