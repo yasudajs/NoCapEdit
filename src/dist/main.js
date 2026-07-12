@@ -41,6 +41,9 @@ let appState = {
 // 設定画面を開く前のエディタのカーソル状態を保持する
 let savedEditorCursor = null;
 
+// セッション内の未保存タブ連番カウンタ（再起動でリセット）
+let unsavedTabCounter = 0;
+
 function generateTabId() {
     if (window.crypto && typeof window.crypto.randomUUID === 'function') {
         return window.crypto.randomUUID();
@@ -144,6 +147,9 @@ function isAutoCreatedFileName(fileName) {
 }
 
 function formatTabDisplayName(fileName) {
+    if (/^(\[)?未保存\d+(\])?$/.test(fileName)) {
+        return fileName;
+    }
     if (isAutoCreatedFileName(fileName)) {
         const match = fileName.match(/^(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})(?:_(\d{2}))?\.nctx$/);
         if (match) {
@@ -152,6 +158,9 @@ function formatTabDisplayName(fileName) {
             if (index) {
                 const numIdx = parseInt(index, 10);
                 formatted += `-${numIdx}`;
+            }
+            if (appState.saveMode === 'manual') {
+                formatted = `[${formatted}]`;
             }
             return formatted;
         }
@@ -643,15 +652,15 @@ async function saveSettings() {
         if (previousSaveMode === 'manual' && saveMode === 'auto') {
             for (const tab of appState.tabs) {
                 if (!tab.filePath) {
-                    try {
-                        const file = await invoke('create_auto_file', {
-                            homeFolder: appState.homeFolder,
-                        });
-                        tab.fileName = file.file_name;
-                        tab.filePath = file.file_path;
+                    // [未保存N] -> 未保存N に置換
+                    if (tab.fileName.startsWith('[未保存') && tab.fileName.endsWith(']')) {
+                        tab.fileName = tab.fileName.slice(1, -1);
+                    } else if (!tab.fileName.startsWith('未保存')) {
+                        tab.fileName = `未保存${tab.unsavedNumber}`;
+                    }
+                    // 文字が入力されている場合は、自動保存の対象にする
+                    if (tab.content.trim() !== '') {
                         tab.isDirty = true;
-                    } catch (err) {
-                        console.error('Failed to create file for tab:', err);
                     }
                 }
             }
@@ -663,17 +672,17 @@ async function saveSettings() {
                     try {
                         await invoke('delete_text_file', { filePath: tab.filePath });
                         tab.filePath = '';
-                        
-                        const now = new Date();
-                        const yyyy = now.getFullYear();
-                        const mm = String(now.getMonth() + 1).padStart(2, '0');
-                        const dd = String(now.getDate()).padStart(2, '0');
-                        const hh = String(now.getHours()).padStart(2, '0');
-                        const min = String(now.getMinutes()).padStart(2, '0');
-                        const ss = String(now.getSeconds()).padStart(2, '0');
-                        tab.fileName = `[${yyyy}/${mm}/${dd} ${hh}:${min}:${ss}]`;
                     } catch (err) {
                         console.error('Failed to delete empty file on mode switch:', err);
+                    }
+                }
+
+                if (!tab.filePath) {
+                    // 未保存N -> [未保存N] に置換
+                    if (tab.fileName.startsWith('未保存')) {
+                        tab.fileName = `[${tab.fileName}]`;
+                    } else if (!tab.fileName.startsWith('[未保存')) {
+                        tab.fileName = `[未保存${tab.unsavedNumber}]`;
                     }
                 }
             }
@@ -1031,23 +1040,14 @@ async function createNewTab() {
             return;
         }
 
+        unsavedTabCounter++;
         let fileName = '';
         let filePath = '';
-        let timestamp = '';
-
-        const now = new Date();
-        const yyyy = now.getFullYear();
-        const mm = String(now.getMonth() + 1).padStart(2, '0');
-        const dd = String(now.getDate()).padStart(2, '0');
-        const hh = String(now.getHours()).padStart(2, '0');
-        const min = String(now.getMinutes()).padStart(2, '0');
-        const ss = String(now.getSeconds()).padStart(2, '0');
-        timestamp = `${yyyy}${mm}${dd}_${hh}${min}${ss}`;
 
         if (appState.saveMode === 'manual') {
-            fileName = `[${yyyy}/${mm}/${dd} ${hh}:${min}:${ss}]`;
+            fileName = `[未保存${unsavedTabCounter}]`;
         } else {
-            fileName = `${timestamp}.nctx`;
+            fileName = `未保存${unsavedTabCounter}`;
         }
 
         const tab = {
@@ -1058,7 +1058,8 @@ async function createNewTab() {
             isDirty: false,
             isSaving: false,
             savePromise: null,
-            createdTimestamp: timestamp,
+            createdTimestamp: '',
+            unsavedNumber: unsavedTabCounter,
         };
 
         appState.tabs.push(tab);
@@ -1157,13 +1158,23 @@ async function saveTabIfDirty(tab) {
         try {
             if (!tab.filePath) {
                 // 初回保存：ファイル生成＋内容書き込みを同時実行
+                const now = new Date();
+                const yyyy = now.getFullYear();
+                const mm = String(now.getMonth() + 1).padStart(2, '0');
+                const dd = String(now.getDate()).padStart(2, '0');
+                const hh = String(now.getHours()).padStart(2, '0');
+                const min = String(now.getMinutes()).padStart(2, '0');
+                const ss = String(now.getSeconds()).padStart(2, '0');
+                const saveTimestamp = `${yyyy}${mm}${dd}_${hh}${min}${ss}`;
+
                 const file = await invoke('create_and_save_file', {
                     homeFolder: appState.homeFolder,
-                    timestamp: tab.createdTimestamp,
+                    timestamp: saveTimestamp,
                     content: tab.content,
                 });
                 tab.filePath = file.file_path;
                 tab.fileName = file.file_name;
+                tab.createdTimestamp = saveTimestamp;
             } else {
                 // 2回目以降：既存ファイルに上書き保存
                 await invoke('save_text_file', {
@@ -1326,20 +1337,15 @@ async function triggerManualSave() {
         updateTabStatus(tab, '保存中...', 'saving');
 
         if (appState.saveMode === 'manual') {
-            let fileName = '';
-            const match = tab.fileName.match(/^\[(\d{4})\/(\d{2})\/(\d{2}) (\d{2}):(\d{2}):(\d{2})\]$/);
-            if (match) {
-                fileName = `${match[1]}${match[2]}${match[3]}_${match[4]}${match[5]}${match[6]}.nctx`;
-            } else {
-                const now = new Date();
-                const yyyy = now.getFullYear();
-                const mm = String(now.getMonth() + 1).padStart(2, '0');
-                const dd = String(now.getDate()).padStart(2, '0');
-                const hh = String(now.getHours()).padStart(2, '0');
-                const min = String(now.getMinutes()).padStart(2, '0');
-                const ss = String(now.getSeconds()).padStart(2, '0');
-                fileName = `${yyyy}${mm}${dd}_${hh}${min}${ss}.nctx`;
-            }
+            const now = new Date();
+            const yyyy = now.getFullYear();
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            const hh = String(now.getHours()).padStart(2, '0');
+            const min = String(now.getMinutes()).padStart(2, '0');
+            const ss = String(now.getSeconds()).padStart(2, '0');
+            const saveTimestamp = `${yyyy}${mm}${dd}_${hh}${min}${ss}`;
+            const fileName = `${saveTimestamp}.nctx`;
             const filePath = appState.homeFolder.replace(/[\\\/]$/, '') + '\\' + fileName;
             
             await invoke('save_text_file', {
@@ -1348,6 +1354,7 @@ async function triggerManualSave() {
             });
             tab.filePath = filePath;
             tab.fileName = fileName;
+            tab.createdTimestamp = saveTimestamp;
             tab.isDirty = false;
         } else {
             tab.isDirty = true;
