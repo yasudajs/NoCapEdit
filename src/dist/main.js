@@ -68,6 +68,7 @@ const elements = {
     sidebarToggleBtn: document.getElementById('sidebar-toggle-btn'),
     sidebar: document.getElementById('sidebar'),
     sidebarResizeHandle: document.getElementById('sidebar-resize-handle'),
+    iconBar: document.getElementById('icon-bar'),
     tabsContainer: document.getElementById('tabsContainer'),
     addTabBtn: document.getElementById('addTabBtn'),
     settingsBtn: document.getElementById('settingsBtn'),
@@ -466,9 +467,11 @@ async function init() {
         if (appState.sidebarVisible) {
             if (elements.sidebar) elements.sidebar.classList.remove('hidden');
             if (elements.sidebarResizeHandle) elements.sidebarResizeHandle.classList.remove('hidden');
+            if (elements.iconBar) elements.iconBar.style.width = 'var(--sidebar-width)';
         } else {
             if (elements.sidebar) elements.sidebar.classList.add('hidden');
             if (elements.sidebarResizeHandle) elements.sidebarResizeHandle.classList.add('hidden');
+            if (elements.iconBar) elements.iconBar.style.width = '48px';
         }
         document.documentElement.style.setProperty('--sidebar-width', `${appState.sidebarWidth}px`);
 
@@ -1429,9 +1432,11 @@ function initSidebar() {
         if (appState.sidebarVisible) {
             elements.sidebar.classList.remove('hidden');
             elements.sidebarResizeHandle.classList.remove('hidden');
+            elements.iconBar.style.width = 'var(--sidebar-width)';
         } else {
             elements.sidebar.classList.add('hidden');
             elements.sidebarResizeHandle.classList.add('hidden');
+            elements.iconBar.style.width = '48px';
         }
         console.log('Sidebar is now:', appState.sidebarVisible ? 'visible' : 'hidden');
         saveSettingsDelay();

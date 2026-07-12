@@ -110,7 +110,8 @@ body {
 .icon-bar {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
+    padding-left: 14px;
     width: 48px;
     height: 100%;
     background-color: transparent;
