@@ -159,6 +159,9 @@ function formatTabDisplayName(fileName) {
                 const numIdx = parseInt(index, 10);
                 formatted += `-${numIdx}`;
             }
+            if (appState.saveMode === 'manual') {
+                formatted = `[${formatted}]`;
+            }
             return formatted;
         }
     }
