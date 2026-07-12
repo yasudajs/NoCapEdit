@@ -13,6 +13,7 @@ tokio = { version = "1.0", features = ["full"] }
 regex = "1.0"
 dirs = "5.0"
 fontdb = "0.16"
+trash = "3.0"
 
 [target.'cfg(windows)'.dependencies]
 windows-sys = { version = "0.52", features = ["Win32_Graphics_Dwm", "Win32_Foundation"] }

@@ -385,6 +385,100 @@ fn delete_text_file(file_path: PathBuf) -> Result<(), String> {
 }
 
 #[tauri::command]
+fn create_file_or_dir(parent_path: String, name: String, is_dir: bool) -> Result<String, String> {
+    let settings = AppSettings::load();
+    let home_folder = settings.home_folder;
+    let parent = PathBuf::from(parent_path);
+
+    // セキュリティチェック
+    let canon_parent = parent.canonicalize().map_err(|e| e.to_string())?;
+    let canon_home = home_folder.canonicalize().map_err(|e| e.to_string())?;
+    if !canon_parent.starts_with(&canon_home) {
+        return Err("アクセスが許可されていないパスです".to_string());
+    }
+
+    let mut target_path = canon_parent.join(&name);
+
+    if is_dir {
+        // フォルダの連番衝突回避
+        let mut count = 0;
+        while target_path.exists() {
+            count += 1;
+            let final_name = format!("{}_{:02}", name, count);
+            target_path = canon_parent.join(&final_name);
+        }
+        fs::create_dir(&target_path).map_err(|e| e.to_string())?;
+    } else {
+        // ファイルの連番衝突回避
+        let path_for_ext = PathBuf::from(&name);
+        let ext = path_for_ext.extension()
+            .map(|e| e.to_string_lossy().to_string())
+            .unwrap_or_else(|| "nctx".to_string());
+        
+        let stem = path_for_ext.file_stem()
+            .map(|s| s.to_string_lossy().to_string())
+            .unwrap_or_else(|| "名称未設定".to_string());
+
+        let mut count = 0;
+        while target_path.exists() {
+            count += 1;
+            let final_name = format!("{}_{:02}.{}", stem, count, ext);
+            target_path = canon_parent.join(&final_name);
+        }
+        fs::write(&target_path, "").map_err(|e| e.to_string())?;
+    }
+
+    Ok(target_path.to_string_lossy().to_string())
+}
+
+#[tauri::command]
+fn rename_file_or_dir(old_path: String, new_name: String) -> Result<String, String> {
+    let settings = AppSettings::load();
+    let home_folder = settings.home_folder;
+    let old = PathBuf::from(old_path);
+
+    // セキュリティチェック
+    let canon_old = old.canonicalize().map_err(|e| e.to_string())?;
+    let canon_home = home_folder.canonicalize().map_err(|e| e.to_string())?;
+    if !canon_old.starts_with(&canon_home) {
+        return Err("アクセスが許可されていないパスです".to_string());
+    }
+
+    let parent = canon_old.parent().ok_or_else(|| "親ディレクトリが見つかりません".to_string())?;
+    let new_path = parent.join(&new_name);
+
+    // セキュリティチェック（新しいパスも home_folder 配下にあること）
+    if !new_path.starts_with(&canon_home) {
+        return Err("アクセスが許可されていないパスです".to_string());
+    }
+
+    if new_path.exists() {
+        return Err("同名のファイルまたはフォルダが既に存在します".to_string());
+    }
+
+    fs::rename(&canon_old, &new_path).map_err(|e| e.to_string())?;
+
+    Ok(new_path.to_string_lossy().to_string())
+}
+
+#[tauri::command]
+fn trash_file_or_dir(file_path: String) -> Result<(), String> {
+    let settings = AppSettings::load();
+    let home_folder = settings.home_folder;
+    let path = PathBuf::from(file_path);
+
+    // セキュリティチェック
+    let canon_path = path.canonicalize().map_err(|e| e.to_string())?;
+    let canon_home = home_folder.canonicalize().map_err(|e| e.to_string())?;
+    if !canon_path.starts_with(&canon_home) {
+        return Err("アクセスが許可されていないパスです".to_string());
+    }
+
+    trash::delete(canon_path).map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
 fn exit_app(app: tauri::AppHandle) {
     app.exit(0);
 }
@@ -541,6 +635,9 @@ fn main() {
             save_text_file,
             delete_text_file,
             read_directory,
+            create_file_or_dir,
+            rename_file_or_dir,
+            trash_file_or_dir,
             exit_app,
             get_launch_file,
             apply_theme,

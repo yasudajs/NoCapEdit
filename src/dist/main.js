@@ -91,6 +91,11 @@ const elements = {
     saveAsBtn: document.getElementById('saveAsBtn'),
     cancelExitBtn: document.getElementById('cancelExitBtn'),
     folderHint: document.getElementById('folderHint'),
+    contextMenu: document.getElementById('contextMenu'),
+    menuNewFile: document.getElementById('menuNewFile'),
+    menuNewFolder: document.getElementById('menuNewFolder'),
+    menuRename: document.getElementById('menuRename'),
+    menuDelete: document.getElementById('menuDelete'),
 };
 
 function getCurrentTab() {
@@ -1481,6 +1486,49 @@ function initSidebar() {
     if (elements.fileTree) {
         loadDirectory(null, elements.fileTree);
     }
+
+    // サイドバー背景の右クリック
+    elements.sidebar.addEventListener('contextmenu', (e) => {
+        if (e.target.closest('.tree-item')) return;
+        e.preventDefault();
+        showContextMenu(e, null, false, null, null);
+    });
+
+    // コンテキストメニューアイテムのクリックイベント
+    if (elements.menuNewFile) {
+        elements.menuNewFile.addEventListener('click', () => {
+            hideContextMenu();
+            createNewItemInTree(false);
+        });
+    }
+    if (elements.menuNewFolder) {
+        elements.menuNewFolder.addEventListener('click', () => {
+            hideContextMenu();
+            createNewItemInTree(true);
+        });
+    }
+    if (elements.menuRename) {
+        elements.menuRename.addEventListener('click', () => {
+            hideContextMenu();
+            startRenameInTree();
+        });
+    }
+    if (elements.menuDelete) {
+        elements.menuDelete.addEventListener('click', () => {
+            hideContextMenu();
+            deleteItemInTree();
+        });
+    }
+
+    // メニュー外クリックやEscで閉じる
+    document.addEventListener('click', () => {
+        hideContextMenu();
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            hideContextMenu();
+        }
+    });
 }
 
 window.addEventListener('error', (event) => {
@@ -1572,6 +1620,16 @@ function renderFileTree(files, container) {
         itemDiv.appendChild(iconSpan);
         itemDiv.appendChild(nameSpan);
 
+        itemDiv.dataset.filePath = file.file_path;
+        itemDiv.dataset.fileName = file.file_name;
+        itemDiv.dataset.isDir = file.is_dir;
+
+        itemDiv.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            showContextMenu(e, file.file_path, file.is_dir, file.file_name, itemDiv);
+        });
+
         if (file.is_dir) {
             const childrenContainer = document.createElement('div');
             childrenContainer.className = 'tree-children hidden';
@@ -1611,6 +1669,390 @@ function renderFileTree(files, container) {
 
 function openFileFromTree(file) {
     openExistingFile(file.file_path);
+}
+
+// コンテキストメニュー関連の状態管理
+let contextMenuTarget = {
+    filePath: null,
+    isDir: false,
+    fileName: null,
+    element: null
+};
+
+function showContextMenu(e, path, isDir, name, element) {
+    contextMenuTarget = {
+        filePath: path,
+        isDir: isDir,
+        fileName: name,
+        element: element
+    };
+
+    if (!elements.contextMenu) return;
+
+    // 表示項目の制御
+    if (path === null) {
+        // 背景右クリック
+        elements.menuNewFile.classList.remove('hidden');
+        elements.menuNewFolder.classList.remove('hidden');
+        elements.menuRename.classList.add('hidden');
+        elements.menuDelete.classList.add('hidden');
+    } else if (isDir) {
+        // フォルダ右クリック
+        elements.menuNewFile.classList.remove('hidden');
+        elements.menuNewFolder.classList.remove('hidden');
+        elements.menuRename.classList.remove('hidden');
+        elements.menuDelete.classList.remove('hidden');
+    } else {
+        // ファイル右クリック
+        elements.menuNewFile.classList.add('hidden');
+        elements.menuNewFolder.classList.add('hidden');
+        elements.menuRename.classList.remove('hidden');
+        elements.menuDelete.classList.remove('hidden');
+    }
+
+    // 表示位置の決定
+    const menuWidth = 160;
+    const menuHeight = 150;
+    let x = e.clientX;
+    let y = e.clientY;
+
+    if (x + menuWidth > window.innerWidth) {
+        x -= menuWidth;
+    }
+    if (y + menuHeight > window.innerHeight) {
+        y -= menuHeight;
+    }
+
+    elements.contextMenu.style.left = `${x}px`;
+    elements.contextMenu.style.top = `${y}px`;
+    elements.contextMenu.classList.remove('hidden');
+}
+
+function hideContextMenu() {
+    if (elements.contextMenu) {
+        elements.contextMenu.classList.add('hidden');
+    }
+}
+
+// 親パスを取得するヘルパー
+function getParentPath(path) {
+    if (!path) return "";
+    const lastSlash = Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\'));
+    if (lastSlash === -1) return "";
+    return path.substring(0, lastSlash);
+}
+
+// 新規作成
+async function createNewItemInTree(isDir) {
+    let parentPath = "";
+    let parentContainer = elements.fileTree;
+
+    if (contextMenuTarget.filePath) {
+        if (contextMenuTarget.isDir) {
+            parentPath = contextMenuTarget.filePath;
+            parentContainer = contextMenuTarget.element.nextElementSibling; // .tree-children
+            
+            // フォルダが閉じている場合は展開
+            const iconSpan = contextMenuTarget.element.querySelector('.tree-icon');
+            if (parentContainer && parentContainer.classList.contains('hidden')) {
+                parentContainer.classList.remove('hidden');
+                if (iconSpan) iconSpan.textContent = '📂';
+                if (parentContainer.children.length === 0) {
+                    parentContainer.innerHTML = '<div class="tree-loading">読み込み中...</div>';
+                    await loadDirectory(parentPath, parentContainer);
+                }
+            }
+        } else {
+            // ファイルの親フォルダ
+            parentPath = getParentPath(contextMenuTarget.filePath);
+            const parentItem = contextMenuTarget.element.parentElement.previousElementSibling;
+            if (parentItem && parentItem.classList.contains('tree-item')) {
+                parentContainer = contextMenuTarget.element.parentElement; // .tree-children
+            }
+        }
+    }
+
+    // コンテナ内のプレースホルダーを取り除く
+    const empties = parentContainer.querySelectorAll('.tree-empty, .tree-loading, .tree-error');
+    empties.forEach(el => el.remove());
+
+    // 一時的なインライン入力用のアイテムを作成
+    const tempItem = document.createElement('div');
+    tempItem.className = 'tree-item';
+
+    const iconSpan = document.createElement('span');
+    iconSpan.className = 'tree-icon';
+    iconSpan.textContent = isDir ? '📁' : '📄';
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'tree-input';
+    const defaultName = isDir ? '新しいフォルダ' : '名称未設定';
+    input.value = defaultName;
+
+    tempItem.appendChild(iconSpan);
+    tempItem.appendChild(input);
+    parentContainer.appendChild(tempItem);
+
+    // スクロールして見えるようにする
+    tempItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+
+    input.focus();
+    input.select();
+
+    let finished = false;
+
+    const commitCreate = async () => {
+        if (finished) return;
+        finished = true;
+
+        const name = input.value.trim() || defaultName;
+        let finalName = name;
+
+        // ファイル作成時のみ許可拡張子の自動補完
+        if (!isDir) {
+            const hasAllowedExt = ['.nctx', '.txt', '.md', '.json', '.csv'].some(ext => name.toLowerCase().endsWith(ext));
+            if (!hasAllowedExt) {
+                finalName = name + '.nctx';
+            }
+        }
+
+        try {
+            const newPath = await invoke('create_file_or_dir', {
+                parentPath: parentPath,
+                name: finalName,
+                isDir: isDir
+            });
+
+            // 親ディレクトリを再読み込み
+            if (parentPath === "") {
+                await loadDirectory(null, elements.fileTree);
+            } else {
+                await loadDirectory(parentPath, parentContainer);
+            }
+
+            // 新規作成されたファイルなら、自動で開く
+            if (!isDir) {
+                await openExistingFile(newPath);
+            }
+        } catch (e) {
+            console.error('Failed to create item:', e);
+            if (window.__TAURI__ && window.__TAURI__.dialog) {
+                await window.__TAURI__.dialog.message(`作成に失敗しました: ${e}`, { title: 'エラー', type: 'error' });
+            } else {
+                alert(`作成に失敗しました: ${e}`);
+            }
+            // 失敗時はコンテナをリロードして一時項目を除去
+            if (parentPath === "") {
+                await loadDirectory(null, elements.fileTree);
+            } else {
+                await loadDirectory(parentPath, parentContainer);
+            }
+        }
+    };
+
+    const cancelCreate = () => {
+        if (finished) return;
+        finished = true;
+        tempItem.remove();
+        if (parentContainer.children.length === 0) {
+            parentContainer.innerHTML = '<div class="tree-empty">フォルダは空です</div>';
+        }
+    };
+
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            commitCreate();
+        } else if (e.key === 'Escape') {
+            cancelCreate();
+        }
+    });
+
+    input.addEventListener('blur', () => {
+        commitCreate();
+    });
+}
+
+// 名前変更
+async function startRenameInTree() {
+    const targetPath = contextMenuTarget.filePath;
+    const targetElement = contextMenuTarget.element;
+    const isDir = contextMenuTarget.isDir;
+    const oldName = contextMenuTarget.fileName;
+
+    if (!targetPath || !targetElement) return;
+
+    const nameSpan = targetElement.querySelector('.tree-name');
+    if (!nameSpan) return;
+
+    // 元のテキストを退避
+    const originalText = nameSpan.textContent;
+    nameSpan.innerHTML = '';
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'tree-input';
+    input.value = oldName;
+
+    nameSpan.appendChild(input);
+    input.focus();
+
+    // 拡張子以外の部分を選択
+    const lastDot = oldName.lastIndexOf('.');
+    if (!isDir && lastDot !== -1) {
+        input.setSelectionRange(0, lastDot);
+    } else {
+        input.select();
+    }
+
+    let finished = false;
+
+    const commitRename = async () => {
+        if (finished) return;
+        finished = true;
+
+        const newName = input.value.trim();
+        if (!newName || newName === oldName) {
+            // キャンセル
+            nameSpan.textContent = originalText;
+            return;
+        }
+
+        let finalName = newName;
+        if (!isDir) {
+            const hasAllowedExt = ['.nctx', '.txt', '.md', '.json', '.csv'].some(ext => newName.toLowerCase().endsWith(ext));
+            if (!hasAllowedExt) {
+                finalName = newName + '.nctx';
+            }
+        }
+
+        try {
+            const newPath = await invoke('rename_file_or_dir', {
+                oldPath: targetPath,
+                newName: finalName
+            });
+
+            // 親ディレクトリを再読み込み
+            const parentPath = getParentPath(targetPath);
+            const parentContainer = targetElement.parentElement;
+            if (parentPath === "") {
+                await loadDirectory(null, elements.fileTree);
+            } else {
+                await loadDirectory(parentPath, parentContainer);
+            }
+
+            // エディタ（タブ）の連動
+            const tab = appState.tabs.find(t => t.filePath === targetPath);
+            if (tab) {
+                tab.filePath = newPath;
+                tab.fileName = finalName;
+                renderTabs();
+                if (appState.currentTab === tab.id) {
+                    updateTabStatus(tab);
+                    // タイトルバー更新
+                    const titleText = `NoCapEdit [ Ver ${appState.version || '0.2.4'} ]`;
+                    document.title = titleText;
+                    if (appWindow && typeof appWindow.setTitle === 'function') {
+                        appWindow.setTitle(titleText);
+                    }
+                }
+            }
+        } catch (e) {
+            console.error('Failed to rename item:', e);
+            if (window.__TAURI__ && window.__TAURI__.dialog) {
+                await window.__TAURI__.dialog.message(`名前変更に失敗しました: ${e}`, { title: 'エラー', type: 'error' });
+            } else {
+                alert(`名前変更に失敗しました: ${e}`);
+            }
+            nameSpan.textContent = originalText;
+        }
+    };
+
+    const cancelRename = () => {
+        if (finished) return;
+        finished = true;
+        nameSpan.textContent = originalText;
+    };
+
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            commitRename();
+        } else if (e.key === 'Escape') {
+            cancelRename();
+        }
+    });
+
+    input.addEventListener('blur', () => {
+        commitRename();
+    });
+}
+
+// 削除処理
+async function deleteItemInTree() {
+    const targetPath = contextMenuTarget.filePath;
+    const targetElement = contextMenuTarget.element;
+    const isDir = contextMenuTarget.isDir;
+    const fileName = contextMenuTarget.fileName;
+
+    if (!targetPath) return;
+
+    // 確認ダイアログの表示
+    let confirmed = false;
+    if (window.__TAURI__ && window.__TAURI__.dialog) {
+        confirmed = await window.__TAURI__.dialog.ask(
+            `「${fileName}」を削除してごみ箱に移動しますか？`,
+            { title: '確認', type: 'warning' }
+        );
+    } else {
+        confirmed = confirm(`「${fileName}」を削除してごみ箱に移動しますか？`);
+    }
+
+    if (!confirmed) return;
+
+    try {
+        await invoke('trash_file_or_dir', { filePath: targetPath });
+
+        // 親ディレクトリを再読み込み
+        const parentPath = getParentPath(targetPath);
+        const parentContainer = targetElement.parentElement;
+        if (parentPath === "") {
+            await loadDirectory(null, elements.fileTree);
+        } else {
+            await loadDirectory(parentPath, parentContainer);
+        }
+
+        // エディタ（タブ）の連動：開いているタブがあれば保存せず閉じる
+        await closeTabByPathWithoutSaving(targetPath);
+    } catch (e) {
+        console.error('Failed to delete item:', e);
+        if (window.__TAURI__ && window.__TAURI__.dialog) {
+            await window.__TAURI__.dialog.message(`削除に失敗しました: ${e}`, { title: 'エラー', type: 'error' });
+        } else {
+            alert(`削除に失敗しました: ${e}`);
+        }
+    }
+}
+
+// 削除されたファイルのタブを保存をスキップして強制的に閉じる
+async function closeTabByPathWithoutSaving(filePath) {
+    const idx = appState.tabs.findIndex(t => t.filePath === filePath);
+    if (idx === -1) return;
+
+    const tab = appState.tabs[idx];
+    appState.tabs.splice(idx, 1);
+
+    if (appState.currentTab === tab.id) {
+        if (appState.tabs.length > 0) {
+            await switchTab(appState.tabs[0].id);
+        } else {
+            appState.currentTab = null;
+            elements.editor.value = '';
+            await createNewTab();
+        }
+    }
+
+    renderTabs();
+    updateEditorMetrics();
 }
 
 function saveSettingsDelay() {
