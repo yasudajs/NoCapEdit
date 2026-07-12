@@ -15,6 +15,7 @@
     --accent: #5a9fd4;
     --accent-hover: #7cb3db;
     --border: #222222;
+    --tree-guide: #333333;
     --status-success: #4ec9b0;
     --status-error: #f48771;
     
@@ -37,6 +38,7 @@ body.light-theme {
     --accent: #0066cc;
     --accent-hover: #0052a3;
     --border: #dcdcdc;
+    --tree-guide: #b0b0b0;
     --status-success: #107c41;
     --status-error: #a80000;
 }
@@ -51,6 +53,7 @@ body.soft-dark-theme {
     --accent: #5a9fd4;
     --accent-hover: #7cb3db;
     --border: #3a3a3a;
+    --tree-guide: #4f5666;
     --status-success: #4ec9b0;
     --status-error: #f48771;
 }
@@ -780,17 +783,14 @@ body {
 }
 
 .tree-children {
-    padding-left: 18px;
+    margin-left: 20px;
+    border-left: 1px solid var(--tree-guide);
+    padding-left: 0;
 }
 
 /* 子要素の前に └ のツリーガイドを表示 */
 .tree-children .tree-item::before {
-    content: "└";
-    color: var(--text-secondary);
-    opacity: 0.7;
-    font-weight: normal;
-    position: absolute;
-    left: -4px;
+    content: none;
 }
 
 .tree-empty, .tree-error, .tree-loading {
