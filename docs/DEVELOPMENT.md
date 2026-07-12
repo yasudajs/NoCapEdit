@@ -30,7 +30,7 @@ cargo tauri build
 # ポータブル版のビルドとZIPアーカイブの作成
 cargo build --release
 New-Item -ItemType Directory -Force -Path "target/release/bundle"
-Compress-Archive -Path "target/release/NoCapEdit.exe" -DestinationPath "target/release/bundle/NoCapEdit_v0.2.4_x64_portable.zip" -Force
+Compress-Archive -Path "target/release/NoCapEdit.exe" -DestinationPath "target/release/bundle/NoCapEdit_v0.2.5_x64_portable.zip" -Force
 ```
 
 ## 📄 仕様詳細
@@ -38,6 +38,10 @@ Compress-Archive -Path "target/release/NoCapEdit.exe" -DestinationPath "target/r
 過去の作業履歴や実装履歴は Git のコミットログにて管理されています。
 
 ## 💡 開発ノウハウ・トラブルシューティング
+
+### 将来の多言語化（i18n）に向けた準備方針
+現在、将来的なMicrosoft Store配信やクロスプラットフォーム（Mac/Linux）展開、および多言語化を見据え、フロントエンドのUIテキストを `src/dist/i18n.js` に集約する方針としています。
+- 新しくJS内で動的に表示するテキスト（エラー表示やダイアログ）を追加する場合は、ハードコードを避け、`i18n.js` 側へキーと日本語文言を登録し、`t('キー名')` 経由で呼び出してください。
 
 ### Windows環境におけるファイル監視とパスの取り扱いに関する注意点
 Windows上で `notify` クレートを用いたファイル監視を実装する際、以下の仕様による影響を考慮する必要があります。
