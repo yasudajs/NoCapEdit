@@ -782,6 +782,15 @@ body {
     padding-left: 16px;
 }
 
+/* 子要素の前に └ のツリーガイドを表示 */
+.tree-children .tree-item::before {
+    content: "└";
+    color: var(--border);
+    margin-right: 6px;
+    margin-left: -4px;
+    font-weight: normal;
+}
+
 .tree-empty, .tree-error, .tree-loading {
     padding: 8px 12px;
     color: var(--text-muted);
