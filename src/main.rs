@@ -264,16 +264,25 @@ fn get_settings() -> SettingsResponse {
 #[derive(serde::Serialize, Clone)]
 struct FileChangeEventPayload {
     event_type: String, // "create", "remove", "rename", "modify"
+    detail: String,     // "from", "to", "both", "" など
     paths: Vec<String>,
 }
 
 fn handle_watch_event(app_handle: &tauri::AppHandle, event: Event) {
-    use notify::event::EventKind;
-    let event_type = match event.kind {
-        EventKind::Create(_) => "create",
-        EventKind::Remove(_) => "remove",
-        EventKind::Modify(notify::event::ModifyKind::Name(_)) => "rename",
-        EventKind::Modify(_) => "modify",
+    use notify::event::{EventKind, ModifyKind, RenameMode};
+    
+    let (event_type, detail) = match event.kind {
+        EventKind::Create(_) => ("create", ""),
+        EventKind::Remove(_) => ("remove", ""),
+        EventKind::Modify(ModifyKind::Name(mode)) => {
+            match mode {
+                RenameMode::From => ("rename", "from"),
+                RenameMode::To => ("rename", "to"),
+                RenameMode::Both => ("rename", "both"),
+                _ => ("rename", "other"),
+            }
+        },
+        EventKind::Modify(_) => ("modify", ""),
         _ => return, // 他のイベントは無視
     };
 
@@ -284,6 +293,7 @@ fn handle_watch_event(app_handle: &tauri::AppHandle, event: Event) {
     if !paths.is_empty() {
         let payload = FileChangeEventPayload {
             event_type: event_type.to_string(),
+            detail: detail.to_string(),
             paths,
         };
         let _ = app_handle.emit_all("file-system-changed", payload);

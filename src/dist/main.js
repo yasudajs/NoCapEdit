@@ -986,21 +986,18 @@ function setupUIEventListeners() {
 
     if (listen) {
         listen('file-system-changed', async (event) => {
-            const { event_type, paths } = event.payload;
-            console.log('file-system-changed event received:', event_type, paths);
+            const { event_type, detail, paths } = event.payload;
+            console.log('file-system-changed event received:', event_type, detail, paths);
 
             // 1. 開いているタブとの連動処理
             if (event_type === 'remove') {
                 for (const path of paths) {
-                    const normalizedPath = path.replace(/\\/g, '/');
+                    const normalizedPath = path.replace(/\\/g, '/').replace(/\/$/, '');
                     await closeTabByPathWithoutSaving(normalizedPath);
                 }
             } else if (event_type === 'rename') {
-                if (paths.length >= 2) {
-                    const oldPath = paths[0].replace(/\\/g, '/');
-                    const newPath = paths[1].replace(/\\/g, '/');
-                    
-                    const tab = appState.tabs.find(t => t.filePath && t.filePath.replace(/\\/g, '/') === oldPath);
+                const handleRenameTab = (oldPath, newPath) => {
+                    const tab = appState.tabs.find(t => t.filePath && t.filePath.toLowerCase().replace(/\\/g, '/').replace(/\/$/, '') === oldPath.toLowerCase());
                     if (tab) {
                         tab.filePath = newPath;
                         const newName = newPath.split('/').pop();
@@ -1015,17 +1012,53 @@ function setupUIEventListeners() {
                             document.title = `NoCapEdit [ Ver ${masterVersion} ] - ${cleanName}`;
                         }
                     }
+                };
+
+                if (detail === 'both' && paths.length >= 2) {
+                    handleRenameTab(paths[0].replace(/\\/g, '/').replace(/\/$/, ''), paths[1].replace(/\\/g, '/').replace(/\/$/, ''));
+                } else if (paths.length >= 2) {
+                    handleRenameTab(paths[0].replace(/\\/g, '/').replace(/\/$/, ''), paths[1].replace(/\\/g, '/').replace(/\/$/, ''));
+                } else if (paths.length === 1) {
+                    const normalizedPath = paths[0].replace(/\\/g, '/').replace(/\/$/, '');
+                    if (detail === 'from') {
+                        appState.pendingRenameFrom = normalizedPath;
+                    } else if (detail === 'to') {
+                        if (appState.pendingRenameFrom) {
+                            handleRenameTab(appState.pendingRenameFrom, normalizedPath);
+                            appState.pendingRenameFrom = null;
+                        }
+                    } else {
+                        // from/toが不明だが1件ずつ来た場合、最初の1件をfrom、次をtoとみなす
+                        if (!appState.pendingRenameFrom) {
+                            appState.pendingRenameFrom = normalizedPath;
+                        } else {
+                            handleRenameTab(appState.pendingRenameFrom, normalizedPath);
+                            appState.pendingRenameFrom = null;
+                        }
+                    }
                 }
             }
 
             // 2. ツリーのリロード処理（デバウンス）
             for (const path of paths) {
-                const normalizedPath = path.replace(/\\/g, '/');
+                const normalizedPath = path.replace(/\\/g, '/').replace(/\/$/, '');
                 
-                // もし対象のパスがフォルダとしてすでにツリーに存在し、かつ単なる更新イベント（modify）である場合は、
+                // 大文字小文字を無視してツリー内のフォルダを探す
+                const isExistingFolder = Array.from(document.querySelectorAll('.tree-item[data-is-dir="true"]')).some(el => {
+                    return el.dataset.filePath && el.dataset.filePath.toLowerCase().replace(/\\/g, '/').replace(/\/$/, '') === normalizedPath.toLowerCase();
+                });
+
+                const isHomeFolder = appState.homeFolder && normalizedPath.toLowerCase() === appState.homeFolder.replace(/\\/g, '/').replace(/\/$/, '').toLowerCase();
+                
+                // もし対象のパスがフォルダ（ツリーに存在するか、ホームフォルダ自身）で、単なる更新イベント（modify）である場合は、
                 // 親フォルダのリロードをスキップする（フォルダが閉じるのを防ぐため）
-                const folderItem = document.querySelector(`.tree-item[data-file-path="${normalizedPath}"][data-is-dir="true"]`);
-                if (folderItem && event_type === 'modify') {
+                if ((isExistingFolder || isHomeFolder) && event_type === 'modify') {
+                    continue;
+                }
+
+                // リネーム時にフォルダが消えたり作成されたと判定された場合の対策として、
+                // homeFolder自体が rename の対象になることはアプリ上想定しないのでスキップ
+                if (isHomeFolder && (event_type === 'rename' || event_type === 'remove')) {
                     continue;
                 }
 
@@ -1033,7 +1066,7 @@ function setupUIEventListeners() {
                 if (parent) {
                     pendingChangedDirs.add(parent);
                 } else if (appState.homeFolder) {
-                    pendingChangedDirs.add(appState.homeFolder.replace(/\\/g, '/'));
+                    pendingChangedDirs.add(appState.homeFolder.replace(/\\/g, '/').replace(/\/$/, ''));
                 }
             }
 
@@ -1043,18 +1076,22 @@ function setupUIEventListeners() {
                 pendingChangedDirs.clear();
 
                 for (const dir of dirsToReload) {
-                    const normalizedDir = dir.replace(/\\/g, '/');
-                    const normalizedHome = appState.homeFolder ? appState.homeFolder.replace(/\\/g, '/') : '';
+                    const normalizedDir = dir.replace(/\\/g, '/').replace(/\/$/, '');
+                    const normalizedHome = appState.homeFolder ? appState.homeFolder.replace(/\\/g, '/').replace(/\/$/, '') : '';
 
-                    if (normalizedDir === normalizedHome || normalizedDir === '') {
+                    if (normalizedDir.toLowerCase() === normalizedHome.toLowerCase() || normalizedDir === '') {
                         await loadDirectory(null, elements.fileTree);
                     } else {
-                        const folderItem = document.querySelector(`.tree-item[data-file-path="${normalizedDir}"]`);
+                        // 該当するディレクトリの children コンテナを見つける（大文字小文字無視）
+                        const folderItem = Array.from(document.querySelectorAll('.tree-item[data-is-dir="true"]')).find(el => {
+                            return el.dataset.filePath && el.dataset.filePath.toLowerCase().replace(/\\/g, '/').replace(/\/$/, '') === normalizedDir.toLowerCase();
+                        });
+
                         if (folderItem) {
                             const childrenContainer = folderItem.nextElementSibling;
                             if (childrenContainer && childrenContainer.classList.contains('tree-children')) {
                                 if (!childrenContainer.classList.contains('hidden')) {
-                                    await loadDirectory(normalizedDir, childrenContainer);
+                                    await loadDirectory(folderItem.dataset.filePath, childrenContainer);
                                 }
                             }
                         }
