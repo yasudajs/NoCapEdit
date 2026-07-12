@@ -1010,7 +1010,7 @@ function setupUIEventListeners() {
                     const tab = appState.tabs.find(t => t.filePath && normalizePathForComparison(t.filePath) === oldNorm);
                     if (tab) {
                         tab.filePath = newPath;
-                        const newName = newPath.split('/').pop().replace(/\\/g, '/');
+                        const newName = newPath.replace(/\\/g, '/').split('/').pop();
                         tab.fileName = newName;
                         
                         renderTabs();
