@@ -1,4 +1,4 @@
-import { updateStatus } from './ui/tabs.js'; // Note: updateStatus will need to be exported from somewhere, maybe ui/tabs.js or ui/status.js. Let's assume ui/status.js
+import { updateStatus } from '../ui/tabs.js';
 
 const tauriApi = window.__TAURI__ || null;
 export const invoke = tauriApi?.tauri?.invoke || tauriApi?.invoke || null;
