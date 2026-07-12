@@ -814,8 +814,11 @@ body {
     border-radius: 6px;
     padding: 4px 0;
     min-width: 160px;
+    width: max-content;
     font-size: 13px;
     color: var(--text-primary);
+    left: 0;
+    top: 0;
 }
 
 .context-menu-item {

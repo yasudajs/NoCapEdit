@@ -1713,14 +1713,16 @@ function showContextMenu(e, path, isDir, name, element) {
     // 表示位置の決定
     const menuWidth = 160;
     const menuHeight = 150;
-    let x = e.clientX;
-    let y = e.clientY;
+    let x = (e && typeof e.clientX === 'number') ? e.clientX : 0;
+    let y = (e && typeof e.clientY === 'number') ? e.clientY : 0;
+
+    console.log('showContextMenu layout:', { x, y, innerWidth: window.innerWidth, innerHeight: window.innerHeight });
 
     if (x + menuWidth > window.innerWidth) {
-        x -= menuWidth;
+        x = Math.max(0, window.innerWidth - menuWidth);
     }
     if (y + menuHeight > window.innerHeight) {
-        y -= menuHeight;
+        y = Math.max(0, window.innerHeight - menuHeight);
     }
 
     elements.contextMenu.style.left = `${x}px`;
