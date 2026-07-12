@@ -50,6 +50,7 @@ let appState = {
 - タイムスタンプの事前計算（`timestamp`）を削除する
   - 代わりに `tab.createdTimestamp` は**空文字**のまま生成する（実際のタイムスタンプは初回保存時に決定）
 - `fileName` を `未保存N` / `[未保存N]` 形式にする
+- タブオブジェクトに `unsavedNumber` プロパティを追加し、連番の数値を保持する（モード切り替えや空ファイル削除時の名前復元に使用する）
 
 ```diff
 // 変更前
@@ -82,6 +83,7 @@ const tab = {
     fileName: fileName,
     filePath: '',
     createdTimestamp: '',  // 初回保存時に設定
+    unsavedNumber: unsavedTabCounter, // 連番の数値を保持
 };
 ```
 
@@ -208,11 +210,110 @@ const isFirstSave = !tab.filePath;
 
 ---
 
+### ⑧ `saveSettings()` の変更（保存モード切り替え）
+
+**変更箇所**: L.643〜L.681（`saveSettings` 内のモード切り替えブロック）
+
+**変更内容**:
+- 手動保存モード（無保存モード）から自動保存モードに切り替えた時：
+  - 内容が空（`tab.content.trim() === ''`）の未保存タブについては、ファイルを作成せず遅延作成を維持し、タブ名を `[未保存N]` から `未保存N` に変更する。
+  - 内容がある未保存タブについては、自動的にファイルが作成されるように `tab.isDirty = true` に設定する（その後の `autoSave()` により保存が実行され、正規のタイムスタンプ名に切り替わる）。
+- 自動保存モードから手動保存モードに切り替えた時：
+  - 空ファイルが存在する場合（`shouldDeleteEmptyFile(tab)` を満たすタブ）は、ファイルを削除して `filePath = ''` にした上で、タブ名を `[未保存N]` に書き換える。
+  - すでに `未保存N` と表示されていた未作成タブも `[未保存N]` に書き換える。
+  - 復元する連番 `N` には、タブオブジェクトが保持する `tab.unsavedNumber` を使用する。
+
+```diff
+// 変更前
+        if (previousSaveMode === 'manual' && saveMode === 'auto') {
+            for (const tab of appState.tabs) {
+                if (!tab.filePath) {
+                    try {
+                        const file = await invoke('create_auto_file', {
+                            homeFolder: appState.homeFolder,
+                        });
+                        tab.fileName = file.file_name;
+                        tab.filePath = file.file_path;
+                        tab.isDirty = true;
+                    } catch (err) {
+                        console.error('Failed to create file for tab:', err);
+                    }
+                }
+            }
+            renderTabs();
+            autoSave();
+        } else if (previousSaveMode === 'auto' && saveMode === 'manual') {
+            for (const tab of appState.tabs) {
+                if (shouldDeleteEmptyFile(tab)) {
+                    try {
+                        await invoke('delete_text_file', { filePath: tab.filePath });
+                        tab.filePath = '';
+                        
+                        const now = new Date();
+                        const yyyy = now.getFullYear();
+                        const mm = String(now.getMonth() + 1).padStart(2, '0');
+                        const dd = String(now.getDate()).padStart(2, '0');
+                        const hh = String(now.getHours()).padStart(2, '0');
+                        const min = String(now.getMinutes()).padStart(2, '0');
+                        const ss = String(now.getSeconds()).padStart(2, '0');
+                        tab.fileName = `[${yyyy}/${mm}/${dd} ${hh}:${min}:${ss}]`;
+                    } catch (err) {
+                        console.error('Failed to delete empty file on mode switch:', err);
+                    }
+                }
+            }
+            renderTabs();
+        }
+
+// 変更後
+        if (previousSaveMode === 'manual' && saveMode === 'auto') {
+            for (const tab of appState.tabs) {
+                if (!tab.filePath) {
+                    // [未保存N] -> 未保存N に置換
+                    if (tab.fileName.startsWith('[未保存') && tab.fileName.endsWith(']')) {
+                        tab.fileName = tab.fileName.slice(1, -1);
+                    } else if (!tab.fileName.startsWith('未保存')) {
+                        tab.fileName = `未保存${tab.unsavedNumber}`;
+                    }
+                    // 文字が入力されている場合は、自動保存の対象にする
+                    if (tab.content.trim() !== '') {
+                        tab.isDirty = true;
+                    }
+                }
+            }
+            renderTabs();
+            autoSave();
+        } else if (previousSaveMode === 'auto' && saveMode === 'manual') {
+            for (const tab of appState.tabs) {
+                if (shouldDeleteEmptyFile(tab)) {
+                    try {
+                        await invoke('delete_text_file', { filePath: tab.filePath });
+                        tab.filePath = '';
+                    } catch (err) {
+                        console.error('Failed to delete empty file on mode switch:', err);
+                    }
+                }
+                
+                if (!tab.filePath) {
+                    // 未保存N -> [未保存N] に置換
+                    if (tab.fileName.startsWith('未保存')) {
+                        tab.fileName = `[${tab.fileName}]`;
+                    } else if (!tab.fileName.startsWith('[未保存')) {
+                        tab.fileName = `[未保存${tab.unsavedNumber}]`;
+                    }
+                }
+            }
+            renderTabs();
+        }
+```
+
+---
+
 ## 変更ファイルまとめ
 
 | ファイル | 変更内容 |
 |---|---|
-| `src/dist/main.js` | ①〜⑤の変更 |
+| `src/dist/main.js` | ①〜⑤, ⑧の変更 |
 | `docs/spec.md` | 更新済み（ブランチ作成時に実施） |
 
 ---
@@ -233,3 +334,8 @@ const isFirstSave = !tab.filePath;
 | 8 | `未保存1`（内容なし）のまま新規タブを開く | `未保存1` はそのまま残り、`未保存2` が開く |
 | 9 | `未保存1`（内容なし）タブを閉じる | ディスク操作なしでタブが閉じる |
 | 10 | 既存ファイルを開く | タブ名が従来通り正常表示される |
+| 11 | `未保存1` (空) の状態で設定から手動モードに変更 | タブ名が `[未保存1]` になり、ディスク上にファイルは作成されない |
+| 12 | `[未保存1]` (空) の状態で設定から自動モードに変更 | タブ名が `未保存1` になり、ディスク上にファイルは作成されない |
+| 13 | `[未保存1]` (文字入力あり) で設定から自動モードに変更 | 自動的に保存処理が走り、ファイルが作成され、タブ名がタイムスタンプ表示になる |
+| 14 | 自動モードで文字入力し、保存された状態（ファイルあり・内容あり）で手動モードに変更 | ファイルは削除されず、タブ名もタイムスタンプ `[2026/07/12 11:xx:xx]` を維持する |
+
