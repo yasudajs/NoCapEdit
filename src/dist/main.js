@@ -1610,12 +1610,7 @@ function renderFileTree(files, container) {
 }
 
 function openFileFromTree(file) {
-    const existingTab = appState.tabs.find(t => t.path === file.file_path);
-    if (existingTab) {
-        switchTab(existingTab.id);
-        return;
-    }
-    readFileContent(file.file_path);
+    openExistingFile(file.file_path);
 }
 
 function saveSettingsDelay() {
