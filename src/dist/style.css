@@ -785,7 +785,8 @@ body {
 /* 子要素の前に └ のツリーガイドを表示 */
 .tree-children .tree-item::before {
     content: "└";
-    color: var(--border);
+    color: var(--text-secondary);
+    opacity: 0.7;
     margin-right: 6px;
     margin-left: -4px;
     font-weight: normal;
