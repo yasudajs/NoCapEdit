@@ -29,6 +29,8 @@ let appState = {
     tabBehavior: null,
     saveMode: null,
     charCountMode: null,
+    sidebarVisible: false,
+    sidebarWidth: 220,
     isDirty: false,
     autosaveTimer: null,
     initialized: false,
@@ -63,6 +65,9 @@ function ensureTauriApi() {
 // DOM要素キャッシュ
 const elements = {
     app: document.getElementById('app'),
+    sidebarToggleBtn: document.getElementById('sidebar-toggle-btn'),
+    sidebar: document.getElementById('sidebar'),
+    sidebarResizeHandle: document.getElementById('sidebar-resize-handle'),
     tabsContainer: document.getElementById('tabsContainer'),
     addTabBtn: document.getElementById('addTabBtn'),
     settingsBtn: document.getElementById('settingsBtn'),
@@ -130,7 +135,9 @@ function updateEditorMetrics() {
     const line = lines.length;
     const col = (lines[lines.length - 1] || '').length + 1;
 
-    elements.statusMetrics.textContent = `Ln ${line}, Col ${col} | ${charDisplay} | Font ${appState.fontSize} pt | LH x ${appState.lineHeight.toFixed(1)}`;
+    const lh = appState.lineHeight || 1.5;
+    const fs = appState.fontSize || 13;
+    elements.statusMetrics.textContent = `Ln ${line}, Col ${col} | ${charDisplay} | Font ${fs} pt | LH x ${lh.toFixed(1)}`;
 }
 
 function getFileNameFromPath(path) {
@@ -452,6 +459,18 @@ async function init() {
         appState.tabBehavior = settings.tab_behavior || 'tab';
         appState.saveMode = settings.save_mode || 'auto';
         appState.charCountMode = settings.char_count_mode || 'with_newline';
+        appState.sidebarVisible = settings.sidebar_visible || false;
+        appState.sidebarWidth = settings.sidebar_width || 220;
+
+        // サイドバーの初期状態を反映
+        if (appState.sidebarVisible) {
+            if (elements.sidebar) elements.sidebar.classList.remove('hidden');
+            if (elements.sidebarResizeHandle) elements.sidebarResizeHandle.classList.remove('hidden');
+        } else {
+            if (elements.sidebar) elements.sidebar.classList.add('hidden');
+            if (elements.sidebarResizeHandle) elements.sidebarResizeHandle.classList.add('hidden');
+        }
+        document.documentElement.style.setProperty('--sidebar-width', `${appState.sidebarWidth}px`);
 
         if (elements.tabBehaviorSelectModal) {
             elements.tabBehaviorSelectModal.value = appState.tabBehavior;
@@ -620,7 +639,9 @@ async function saveApplicationSettings() {
                 line_height: appState.lineHeight,
                 tab_behavior: appState.tabBehavior,
                 save_mode: appState.saveMode,
-                char_count_mode: appState.charCountMode
+                char_count_mode: appState.charCountMode,
+                sidebar_visible: appState.sidebarVisible,
+                sidebar_width: appState.sidebarWidth
             }
         });
     } catch (error) {
@@ -1386,10 +1407,70 @@ async function triggerManualSave() {
 }
 
 // アプリケーション起動
-document.addEventListener('DOMContentLoaded', () => {
-    init();
+document.addEventListener('DOMContentLoaded', async () => {
+    await init();
     updateEditorMetrics();
+    initSidebar();
 });
+
+// サイドバー関連の初期化
+function initSidebar() {
+    console.log('initSidebar called, elements:', {
+        btn: !!elements.sidebarToggleBtn,
+        sidebar: !!elements.sidebar,
+        handle: !!elements.sidebarResizeHandle
+    });
+    if (!elements.sidebarToggleBtn || !elements.sidebar || !elements.sidebarResizeHandle) return;
+
+    // トグル機能
+    elements.sidebarToggleBtn.addEventListener('click', () => {
+        console.log('Toggle button clicked, current state:', appState.sidebarVisible);
+        appState.sidebarVisible = !appState.sidebarVisible;
+        if (appState.sidebarVisible) {
+            elements.sidebar.classList.remove('hidden');
+            elements.sidebarResizeHandle.classList.remove('hidden');
+        } else {
+            elements.sidebar.classList.add('hidden');
+            elements.sidebarResizeHandle.classList.add('hidden');
+        }
+        console.log('Sidebar is now:', appState.sidebarVisible ? 'visible' : 'hidden');
+        saveSettingsDelay();
+    });
+
+    // リサイズ機能
+    let isResizing = false;
+    let startX = 0;
+    let startWidth = 0;
+
+    elements.sidebarResizeHandle.addEventListener('mousedown', (e) => {
+        isResizing = true;
+        startX = e.clientX;
+        startWidth = appState.sidebarWidth;
+        elements.sidebarResizeHandle.classList.add('active');
+        document.body.style.cursor = 'col-resize';
+        e.preventDefault(); // テキスト選択等を防ぐ
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isResizing) return;
+        const deltaX = e.clientX - startX;
+        let newWidth = startWidth + deltaX;
+        // 幅の最小値・最大値を設定
+        newWidth = Math.max(150, Math.min(newWidth, 600));
+        
+        appState.sidebarWidth = newWidth;
+        document.documentElement.style.setProperty('--sidebar-width', `${newWidth}px`);
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (isResizing) {
+            isResizing = false;
+            elements.sidebarResizeHandle.classList.remove('active');
+            document.body.style.cursor = '';
+            saveSettingsDelay();
+        }
+    });
+}
 
 window.addEventListener('error', (event) => {
     console.error('Unhandled window error:', event.error || event.message);
