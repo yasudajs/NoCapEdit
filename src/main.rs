@@ -6,11 +6,20 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::PathBuf;
+use std::sync::Mutex;
+use notify::{RecommendedWatcher, Watcher, RecursiveMode, Event};
 
 use tauri::Manager;
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
 use std::thread;
+
+struct WatcherState {
+    watcher: Option<RecommendedWatcher>,
+    current_path: Option<PathBuf>,
+}
+
+struct WatcherManager(Mutex<WatcherState>);
 
 const SINGLE_INSTANCE_PORT: u16 = 49423;
 const SINGLE_INSTANCE_HOST: &str = "127.0.0.1";
@@ -252,14 +261,101 @@ fn get_settings() -> SettingsResponse {
     }
 }
 
+#[derive(serde::Serialize, Clone)]
+struct FileChangeEventPayload {
+    event_type: String, // "create", "remove", "rename", "modify"
+    detail: String,     // "from", "to", "both", "" など
+    paths: Vec<String>,
+}
+
+fn handle_watch_event(app_handle: &tauri::AppHandle, event: Event) {
+    use notify::event::{EventKind, ModifyKind, RenameMode};
+
+    let (event_type, detail) = match event.kind {
+        EventKind::Create(_) => ("create", ""),
+        EventKind::Remove(_) => ("remove", ""),
+        EventKind::Modify(ModifyKind::Name(mode)) => {
+            match mode {
+                RenameMode::From => ("rename", "from"),
+                RenameMode::To => ("rename", "to"),
+                RenameMode::Both => ("rename", "both"),
+                _ => ("rename", "other"),
+            }
+        },
+        EventKind::Modify(_) => ("modify", ""),
+        _ => return, // 他のイベントは無視
+    };
+
+    let paths: Vec<String> = event.paths.iter()
+        .map(|p| p.to_string_lossy().to_string())
+        .collect();
+
+    if !paths.is_empty() {
+        let payload = FileChangeEventPayload {
+            event_type: event_type.to_string(),
+            detail: detail.to_string(),
+            paths,
+        };
+        let _ = app_handle.emit_all("file-system-changed", payload);
+    }
+}
+
+fn start_watching(app_handle: &tauri::AppHandle, path: PathBuf) -> Result<(), String> {
+    let state = app_handle.state::<WatcherManager>();
+    let mut lock = state.0.lock().map_err(|e| e.to_string())?;
+
+    // すでに同じパスを監視中なら何もしない
+    if let Some(ref current) = lock.current_path {
+        if current == &path {
+            return Ok(());
+        }
+    }
+
+    // 古い監視を停止
+    if let Some(mut old_watcher) = lock.watcher.take() {
+        if let Some(ref old_path) = lock.current_path {
+            let _ = old_watcher.unwatch(old_path);
+        }
+    }
+
+    let app_handle_clone = app_handle.clone();
+
+    // 新しい監視の作成
+    let mut watcher = RecommendedWatcher::new(move |res| {
+        match res {
+            Ok(event) => {
+                handle_watch_event(&app_handle_clone, event);
+            }
+            Err(e) => eprintln!("watch error: {:?}", e),
+        }
+    }, notify::Config::default()).map_err(|e| e.to_string())?;
+
+    // パスが存在することを確認した上で監視
+    if path.exists() {
+        watcher.watch(&path, RecursiveMode::Recursive).map_err(|e| e.to_string())?;
+    }
+
+    lock.watcher = Some(watcher);
+    lock.current_path = Some(path);
+
+    Ok(())
+}
+
 #[tauri::command]
 fn save_settings(
     settings: AppSettings,
+    app_handle: tauri::AppHandle,
 ) -> Result<(), String> {
     // ホームフォルダが存在しなければ作成
     fs::create_dir_all(&settings.home_folder).map_err(|e| e.to_string())?;
     
-    settings.save().map_err(|e| e.to_string())
+    let home_folder = settings.home_folder.clone();
+    settings.save().map_err(|e| e.to_string())?;
+
+    // 監視パスの切り替え
+    let _ = start_watching(&app_handle, home_folder);
+
+    Ok(())
 }
 
 #[tauri::command]
@@ -272,11 +368,9 @@ fn create_and_save_file(
 
     let (file_name, file_path) = next_available_file_path(&home_folder, &timestamp)?;
 
-    // 内容を正規化してアトミック書き込み
+    // 内容を正規化して直接書き込み
     let normalized = normalize_crlf(&content);
-    let tmp_path = file_path.with_extension("tmp");
-    fs::write(&tmp_path, &normalized).map_err(|e| e.to_string())?;
-    fs::rename(&tmp_path, &file_path).map_err(|e| e.to_string())?;
+    fs::write(&file_path, &normalized).map_err(|e| e.to_string())?;
 
     Ok(FileInfo {
         file_name,
@@ -298,14 +392,9 @@ fn save_text_file(file_path: PathBuf, content: String) -> Result<(), String> {
     fs::create_dir_all(parent).map_err(|e| e.to_string())?;
 
     let normalized = normalize_crlf(&content);
-    let tmp_path = file_path.with_extension("tmp");
-
-    fs::write(&tmp_path, normalized).map_err(|e| e.to_string())?;
-
-    if file_path.exists() {
-        fs::remove_file(&file_path).map_err(|e| e.to_string())?;
-    }
-    fs::rename(&tmp_path, &file_path).map_err(|e| e.to_string())?;
+    
+    // アトミック保存(rename)による一時的な削除(remove)イベント発火を防ぐため、直接上書きする
+    fs::write(&file_path, normalized).map_err(|e| e.to_string())?;
 
     Ok(())
 }
@@ -381,6 +470,104 @@ fn delete_text_file(file_path: PathBuf) -> Result<(), String> {
     if file_path.exists() {
         fs::remove_file(file_path).map_err(|e| e.to_string())?;
     }
+    Ok(())
+}
+
+#[tauri::command]
+fn create_file_or_dir(parent_path: String, name: String, is_dir: bool) -> Result<String, String> {
+    let settings = AppSettings::load();
+    let home_folder = settings.home_folder;
+    let parent = if parent_path.is_empty() {
+        home_folder.clone()
+    } else {
+        PathBuf::from(parent_path)
+    };
+
+    // セキュリティチェック
+    let canon_parent = parent.canonicalize().map_err(|e| e.to_string())?;
+    let canon_home = home_folder.canonicalize().map_err(|e| e.to_string())?;
+    if !canon_parent.starts_with(&canon_home) {
+        return Err("アクセスが許可されていないパスです".to_string());
+    }
+
+    let mut target_path = canon_parent.join(&name);
+
+    if is_dir {
+        // フォルダの連番衝突回避
+        let mut count = 0;
+        while target_path.exists() {
+            count += 1;
+            let final_name = format!("{}_{:02}", name, count);
+            target_path = canon_parent.join(&final_name);
+        }
+        fs::create_dir(&target_path).map_err(|e| e.to_string())?;
+    } else {
+        // ファイルの連番衝突回避
+        let path_for_ext = PathBuf::from(&name);
+        let ext = path_for_ext.extension()
+            .map(|e| e.to_string_lossy().to_string())
+            .unwrap_or_else(|| "nctx".to_string());
+        
+        let stem = path_for_ext.file_stem()
+            .map(|s| s.to_string_lossy().to_string())
+            .unwrap_or_else(|| "名称未設定".to_string());
+
+        let mut count = 0;
+        while target_path.exists() {
+            count += 1;
+            let final_name = format!("{}_{:02}.{}", stem, count, ext);
+            target_path = canon_parent.join(&final_name);
+        }
+        fs::write(&target_path, "").map_err(|e| e.to_string())?;
+    }
+
+    Ok(target_path.to_string_lossy().to_string())
+}
+
+#[tauri::command]
+fn rename_file_or_dir(old_path: String, new_name: String) -> Result<String, String> {
+    let settings = AppSettings::load();
+    let home_folder = settings.home_folder;
+    let old = PathBuf::from(old_path);
+
+    // セキュリティチェック
+    let canon_old = old.canonicalize().map_err(|e| e.to_string())?;
+    let canon_home = home_folder.canonicalize().map_err(|e| e.to_string())?;
+    if !canon_old.starts_with(&canon_home) {
+        return Err("アクセスが許可されていないパスです".to_string());
+    }
+
+    let parent = canon_old.parent().ok_or_else(|| "親ディレクトリが見つかりません".to_string())?;
+    let new_path = parent.join(&new_name);
+
+    // セキュリティチェック（新しいパスも home_folder 配下にあること）
+    if !new_path.starts_with(&canon_home) {
+        return Err("アクセスが許可されていないパスです".to_string());
+    }
+
+    if new_path.exists() {
+        return Err("同名のファイルまたはフォルダが既に存在します".to_string());
+    }
+
+    fs::rename(&canon_old, &new_path).map_err(|e| e.to_string())?;
+
+    Ok(new_path.to_string_lossy().to_string())
+}
+
+#[tauri::command]
+fn trash_file_or_dir(file_path: String) -> Result<(), String> {
+    let settings = AppSettings::load();
+    let home_folder = settings.home_folder;
+    let path = PathBuf::from(file_path);
+
+    // セキュリティチェック
+    let canon_path = path.canonicalize().map_err(|e| e.to_string())?;
+    let canon_home = home_folder.canonicalize().map_err(|e| e.to_string())?;
+    if !canon_path.starts_with(&canon_home) {
+        return Err("アクセスが許可されていないパスです".to_string());
+    }
+
+    trash::delete(canon_path).map_err(|e| e.to_string())?;
     Ok(())
 }
 
@@ -491,8 +678,23 @@ fn main() {
 
     tauri::Builder::default()
         .setup(|app| {
+            let settings = AppSettings::load();
+            let home_folder = settings.home_folder.clone();
+
+            // WatcherState の初期化と管理登録
+            app.manage(WatcherManager(Mutex::new(WatcherState {
+                watcher: None,
+                current_path: None,
+            })));
+
             let app_handle = app.handle();
-            start_instance_listener(app_handle);
+            start_instance_listener(app_handle.clone());
+
+            // 起動時に監視を開始
+            let app_handle_clone = app_handle.clone();
+            tauri::async_runtime::spawn(async move {
+                let _ = start_watching(&app_handle_clone, home_folder);
+            });
 
             let window = tauri::WindowBuilder::new(
                 app,
@@ -541,6 +743,9 @@ fn main() {
             save_text_file,
             delete_text_file,
             read_directory,
+            create_file_or_dir,
+            rename_file_or_dir,
+            trash_file_or_dir,
             exit_app,
             get_launch_file,
             apply_theme,

@@ -800,6 +800,53 @@ body {
     font-style: italic;
 }
 
-.tree-error {
-    color: #ff6b6b;
+
+/* =========================================
+   カスタムコンテキストメニュー (Context Menu)
+   ========================================= */
+.context-menu {
+    position: fixed;
+    z-index: 10000;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    border-radius: 6px;
+    padding: 4px 0;
+    min-width: 160px;
+    width: max-content;
+    font-size: 13px;
+    color: var(--text-primary);
+    left: 0;
+    top: 0;
+}
+
+.context-menu-item {
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: background-color 0.15s, color 0.15s;
+    display: flex;
+    align-items: center;
+}
+
+.context-menu-item:hover {
+    background-color: var(--bg-tertiary);
+}
+
+/* =========================================
+   ツリーインライン入力欄 (Tree Input)
+   ========================================= */
+.tree-input {
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: inherit;
+    padding: 2px 6px;
+    border-radius: 4px;
+    outline: none;
+    width: calc(100% - 24px);
+    margin-left: 2px;
+}
+.tree-input:focus {
+    border-color: var(--accent);
 }
