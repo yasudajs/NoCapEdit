@@ -1021,6 +1021,14 @@ function setupUIEventListeners() {
             // 2. ツリーのリロード処理（デバウンス）
             for (const path of paths) {
                 const normalizedPath = path.replace(/\\/g, '/');
+                
+                // もし対象のパスがフォルダとしてすでにツリーに存在し、かつ単なる更新イベント（modify）である場合は、
+                // 親フォルダのリロードをスキップする（フォルダが閉じるのを防ぐため）
+                const folderItem = document.querySelector(`.tree-item[data-file-path="${normalizedPath}"][data-is-dir="true"]`);
+                if (folderItem && event_type === 'modify') {
+                    continue;
+                }
+
                 const parent = getParentPath(normalizedPath);
                 if (parent) {
                     pendingChangedDirs.add(parent);
@@ -2126,7 +2134,11 @@ async function deleteItemInTree() {
 
 // 削除されたファイルのタブを保存をスキップして強制的に閉じる
 async function closeTabByPathWithoutSaving(filePath) {
-    const idx = appState.tabs.findIndex(t => t.filePath === filePath);
+    const targetNormalized = filePath ? filePath.replace(/\\/g, '/').toLowerCase() : '';
+    const idx = appState.tabs.findIndex(t => {
+        const tabNormalized = t.filePath ? t.filePath.replace(/\\/g, '/').toLowerCase() : '';
+        return tabNormalized === targetNormalized && targetNormalized !== '';
+    });
     if (idx === -1) return;
 
     const tab = appState.tabs[idx];
