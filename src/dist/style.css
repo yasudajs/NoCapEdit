@@ -753,6 +753,7 @@ body {
     border-radius: 4px;
     margin: 0 4px;
     white-space: nowrap;
+    position: relative;
 }
 
 .tree-item:hover {
@@ -779,7 +780,7 @@ body {
 }
 
 .tree-children {
-    padding-left: 22px;
+    padding-left: 18px;
 }
 
 /* 子要素の前に └ のツリーガイドを表示 */
@@ -787,9 +788,9 @@ body {
     content: "└";
     color: var(--text-secondary);
     opacity: 0.7;
-    margin-right: 6px;
-    margin-left: -8px;
     font-weight: normal;
+    position: absolute;
+    left: -4px;
 }
 
 .tree-empty, .tree-error, .tree-loading {
