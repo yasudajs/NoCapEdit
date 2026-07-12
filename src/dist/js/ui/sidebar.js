@@ -123,17 +123,27 @@ export function initSidebar() {
     });
 }
 
-export async function loadDirectory(path, parentElement) {
+export async function loadDirectory(path, parentElement, openFolders = null) {
+    if (!openFolders && parentElement) {
+        openFolders = new Set();
+        parentElement.querySelectorAll('.tree-children:not(.hidden)').forEach(el => {
+            const prev = el.previousElementSibling;
+            if (prev && prev.dataset.filePath) {
+                openFolders.add(normalizePathForComparison(prev.dataset.filePath));
+            }
+        });
+    }
+
     try {
         const files = await invoke('read_directory', { path });
-        renderFileTree(files, parentElement);
+        renderFileTree(files, parentElement, openFolders);
     } catch (e) {
         console.error('Failed to load directory:', e);
         parentElement.innerHTML = `<div class="tree-error">読み込みエラー: ${e}</div>`;
     }
 }
 
-export function renderFileTree(files, container) {
+export function renderFileTree(files, container, openFolders = null) {
     container.innerHTML = '';
     if (files.length === 0) {
         container.innerHTML = '<div class="tree-empty">フォルダは空です</div>';
@@ -190,6 +200,13 @@ export function renderFileTree(files, container) {
             
             container.appendChild(itemDiv);
             container.appendChild(childrenContainer);
+
+            if (openFolders && openFolders.has(normalizePathForComparison(file.file_path))) {
+                childrenContainer.classList.remove('hidden');
+                iconSpan.textContent = '📂';
+                childrenContainer.innerHTML = '<div class="tree-loading">読み込み中...</div>';
+                loadDirectory(file.file_path, childrenContainer, openFolders);
+            }
         } else {
             itemDiv.addEventListener('click', (e) => {
                 e.stopPropagation();
