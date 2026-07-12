@@ -270,12 +270,6 @@ struct FileChangeEventPayload {
 
 fn handle_watch_event(app_handle: &tauri::AppHandle, event: Event) {
     use notify::event::{EventKind, ModifyKind, RenameMode};
-    
-    // デバッグログ出力（ユーザー環境調査用）
-    if let Ok(mut file) = std::fs::OpenOptions::new().create(true).append(true).open("debug_notify.log") {
-        use std::io::Write;
-        let _ = writeln!(file, "Raw Event: {:?}", event);
-    }
 
     let (event_type, detail) = match event.kind {
         EventKind::Create(_) => ("create", ""),
