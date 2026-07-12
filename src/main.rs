@@ -374,11 +374,9 @@ fn create_and_save_file(
 
     let (file_name, file_path) = next_available_file_path(&home_folder, &timestamp)?;
 
-    // 内容を正規化してアトミック書き込み
+    // 内容を正規化して直接書き込み
     let normalized = normalize_crlf(&content);
-    let tmp_path = file_path.with_extension("tmp");
-    fs::write(&tmp_path, &normalized).map_err(|e| e.to_string())?;
-    fs::rename(&tmp_path, &file_path).map_err(|e| e.to_string())?;
+    fs::write(&file_path, &normalized).map_err(|e| e.to_string())?;
 
     Ok(FileInfo {
         file_name,
@@ -400,10 +398,9 @@ fn save_text_file(file_path: PathBuf, content: String) -> Result<(), String> {
     fs::create_dir_all(parent).map_err(|e| e.to_string())?;
 
     let normalized = normalize_crlf(&content);
-    let tmp_path = file_path.with_extension("tmp");
-
-    fs::write(&tmp_path, normalized).map_err(|e| e.to_string())?;
-    fs::rename(&tmp_path, &file_path).map_err(|e| e.to_string())?;
+    
+    // アトミック保存(rename)による一時的な削除(remove)イベント発火を防ぐため、直接上書きする
+    fs::write(&file_path, normalized).map_err(|e| e.to_string())?;
 
     Ok(())
 }
