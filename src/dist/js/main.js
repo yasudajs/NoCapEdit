@@ -172,7 +172,23 @@ function setupUIEventListeners() {
     }, { passive: false });
 
     window.addEventListener('keydown', (e) => {
+        // F5 キーによるリロードを禁止
+        if (e.key === 'F5' || e.code === 'F5') {
+            e.preventDefault();
+            return;
+        }
+
         if (e.ctrlKey) {
+            // Ctrl + R によるリロードを禁止 (Shiftキーが同時に押されている場合も含む)
+            if (e.key === 'r' || e.key === 'R' || e.code === 'KeyR') {
+                e.preventDefault();
+                return;
+            }
+            // Ctrl + P による印刷を禁止
+            if (e.key === 'p' || e.key === 'P' || e.code === 'KeyP') {
+                e.preventDefault();
+                return;
+            }
             if (e.shiftKey) {
                 if (e.code === 'NumpadAdd' || e.code === 'Equal' || e.code === 'Semicolon' || e.key === '+') {
                     e.preventDefault();
