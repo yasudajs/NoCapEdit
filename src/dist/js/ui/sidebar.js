@@ -21,6 +21,12 @@ export let selectedElement = null;
 let draggingPath = null;
 let draggingIsDir = false;
 
+// パスから \\?\ プレフィックスを取り除くヘルパー（Windows OLE D&Dのキャンセル防止）
+function cleanPathForDnD(path) {
+    if (!path) return '';
+    return path.replace(/^\\\\\?\\/, '');
+}
+
 // 選択状態の操作ヘルパー
 export function clearSelection() {
     if (selectedElement) {
@@ -300,11 +306,21 @@ export function renderFileTree(files, container, openFolders = null) {
         itemDiv.addEventListener('dragstart', (e) => {
             console.log('dragstart fired for:', file.file_path);
             e.stopPropagation();
+            
+            const cleanPath = cleanPathForDnD(file.file_path);
             e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/plain', file.file_path);
-            draggingPath = file.file_path;
+            e.dataTransfer.setData('text/plain', cleanPath);
+            draggingPath = cleanPath;
             draggingIsDir = file.is_dir;
-            console.log('draggingPath set to:', draggingPath);
+            console.log('draggingPath set to (clean):', draggingPath);
+
+            // ダミードラッグイメージを設定（Chromiumでの即時キャンセルのハック）
+            if (e.dataTransfer.setDragImage) {
+                const img = new Image();
+                img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+                e.dataTransfer.setDragImage(img, 0, 0);
+                console.log('Dummy drag image set');
+            }
         });
 
         itemDiv.addEventListener('dragover', (e) => {
