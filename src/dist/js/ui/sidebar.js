@@ -44,7 +44,6 @@ function preserveTabOnMove(srcPath, destParentPath) {
     // アプリ状態から該当するタブを探す
     const tab = appState.tabs.find(t => normalizePathForComparison(t.filePath) === normalizedSrc);
     if (tab) {
-        console.log('Preserving tab for moved file:', tab.fileName, 'path updated to:', newPath);
         tab.filePath = newPath;
         tab.fileName = fileName;
         
@@ -79,21 +78,16 @@ export function makeSelectionActive() {
 }
 
 export function selectItem(element, path) {
-    console.log('selectItem called for:', path);
     clearSelection();
     selectedElement = element;
     selectedPath = path;
     selectedElement.classList.add('selected');
     if (selectedElement && typeof selectedElement.focus === 'function') {
         selectedElement.focus();
-        console.log('selectedElement focused, activeElement is now:', document.activeElement ? `${document.activeElement.tagName}.${document.activeElement.className}` : 'none');
-    } else {
-        console.log('selectedElement focus failed or not supported');
     }
 }
 
 async function handleGlobalKeyDown(e) {
-    console.log('handleGlobalKeyDown:', e.key, 'ctrl:', e.ctrlKey, 'shift:', e.shiftKey, 'activeElement:', document.activeElement ? `${document.activeElement.tagName}.${document.activeElement.className}` : 'none');
     const activeEl = document.activeElement;
     if (
         activeEl &&
@@ -101,17 +95,14 @@ async function handleGlobalKeyDown(e) {
          activeEl.tagName === 'TEXTAREA' ||
          activeEl.isContentEditable)
     ) {
-        console.log('Keydown ignored because focus is in input/textarea');
         return;
     }
 
     if (!selectedPath || !selectedElement) {
-        console.log('Keydown ignored because selectedPath or selectedElement is null:', { selectedPath, selectedElement: !!selectedElement });
         return;
     }
 
     if (e.key === 'Delete') {
-        console.log('Delete key pressed, shiftKey:', e.shiftKey);
         e.preventDefault();
         if (e.shiftKey) {
             await deleteItemPermanentlyInTree(selectedPath, selectedElement);
@@ -273,20 +264,17 @@ export function initSidebar() {
         elements.sidebar.addEventListener('drop', async (e) => {
             // 余白部分へのドロップかを判定（ツリーアイテム上ではない場合）
             if (!e.target.closest('.tree-item')) {
-                console.log('drop on root area (sidebar) triggered');
                 e.preventDefault();
                 e.stopPropagation();
 
                 const srcPath = draggingPath;
                 if (!srcPath) {
-                    console.log('drop on root canceled: draggingPath is empty');
                     return;
                 }
 
                 // 移動先の親パスはルートディレクトリ
                 const destParentPath = appState.homeFolder;
                 if (!destParentPath) {
-                    console.log('drop on root canceled: homeFolder is empty');
                     return;
                 }
 
@@ -294,14 +282,12 @@ export function initSidebar() {
 
                 // 不正な移動チェック（JS側）
                 if (srcPath === destParentPath || destParentPath === srcParent) {
-                    console.log('drop on root canceled: identical parent or path');
                     return; 
                 }
 
                 const normalizedSrc = srcPath.replace(/\\/g, '/');
                 const normalizedDest = destParentPath.replace(/\\/g, '/');
                 if (normalizedDest === normalizedSrc || normalizedDest.startsWith(normalizedSrc + '/')) {
-                    console.log('drop on root canceled: moving to self or descendant');
                     updateStatus('自分自身またはサブフォルダへは移動できません', 'error', true);
                     return;
                 }
@@ -310,7 +296,6 @@ export function initSidebar() {
                 preserveTabOnMove(srcPath, destParentPath);
 
                 try {
-                    console.log('moving to root:', srcPath, '->', destParentPath);
                     await invoke('move_file_or_dir', { sourcePath: srcPath, targetParentPath: destParentPath });
                     
                     // 再読み込み
@@ -396,7 +381,6 @@ export function renderFileTree(files, container, openFolders = null) {
         itemDiv.setAttribute('draggable', 'true');
 
         itemDiv.addEventListener('dragstart', (e) => {
-            console.log('dragstart fired for:', file.file_path);
             e.stopPropagation();
             
             const cleanPath = cleanPathForDnD(file.file_path);
@@ -404,14 +388,12 @@ export function renderFileTree(files, container, openFolders = null) {
             e.dataTransfer.setData('text/plain', cleanPath);
             draggingPath = cleanPath;
             draggingIsDir = file.is_dir;
-            console.log('draggingPath set to (clean):', draggingPath);
 
             // ダミードラッグイメージを設定（Chromiumでの即時キャンセルのハック）
             if (e.dataTransfer.setDragImage) {
                 const img = new Image();
                 img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
                 e.dataTransfer.setDragImage(img, 0, 0);
-                console.log('Dummy drag image set');
             }
         });
 
@@ -444,7 +426,6 @@ export function renderFileTree(files, container, openFolders = null) {
 
         itemDiv.addEventListener('dragenter', (e) => {
             if (!draggingPath) return; 
-            console.log('dragenter targetPath:', itemDiv.dataset.filePath);
             e.preventDefault();
             e.stopPropagation();
 
@@ -457,7 +438,6 @@ export function renderFileTree(files, container, openFolders = null) {
                     !targetPath.startsWith(draggingPath + "/") && 
                     targetPath !== srcParent) {
                     itemDiv.classList.add('drag-hover');
-                    console.log('drag-hover class added to target');
                 }
             }
         });
@@ -468,28 +448,23 @@ export function renderFileTree(files, container, openFolders = null) {
         });
 
         itemDiv.addEventListener('dragend', (e) => {
-            console.log('dragend fired');
             e.stopPropagation();
             document.querySelectorAll('.tree-item').forEach(el => el.classList.remove('drag-hover'));
             draggingPath = null;
         });
 
         itemDiv.addEventListener('drop', async (e) => {
-            console.log('drop event fired');
             e.preventDefault();
             e.stopPropagation();
             itemDiv.classList.remove('drag-hover');
 
             const srcPath = draggingPath || e.dataTransfer.getData('text/plain');
-            console.log('drop srcPath:', srcPath);
             if (!srcPath) {
-                console.log('drop canceled: srcPath is empty');
                 return;
             }
 
             const targetPath = itemDiv.dataset.filePath;
             const targetIsDir = itemDiv.dataset.isDir === "true";
-            console.log('drop targetPath:', targetPath, 'isDir:', targetIsDir);
 
             let destParentPath = "";
             if (targetIsDir) {
@@ -502,14 +477,12 @@ export function renderFileTree(files, container, openFolders = null) {
 
             // 不正な移動チェック（JS側）
             if (srcPath === destParentPath || destParentPath === srcParent) {
-                console.log('drop canceled: identical parent or path');
                 return; 
             }
 
             const normalizedSrc = srcPath.replace(/\\/g, '/');
             const normalizedDest = destParentPath.replace(/\\/g, '/');
             if (normalizedDest === normalizedSrc || normalizedDest.startsWith(normalizedSrc + '/')) {
-                console.log('drop canceled: moving to self or descendant');
                 updateStatus('自分自身またはサブフォルダへは移動できません', 'error', true);
                 return;
             }
@@ -584,8 +557,6 @@ export function renderFileTree(files, container, openFolders = null) {
                 
                 if (!isCurrentlyActive) {
                     openFileFromTree(file);
-                } else {
-                    console.log('File is already active, keeping focus on tree item');
                 }
                 
                 document.querySelectorAll('.tree-item').forEach(el => el.classList.remove('active'));
