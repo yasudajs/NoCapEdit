@@ -284,9 +284,9 @@ export function initSidebar() {
                 }
 
                 // 移動先の親パスはルートディレクトリ
-                const destParentPath = appState.currentDir;
+                const destParentPath = appState.homeFolder;
                 if (!destParentPath) {
-                    console.log('drop on root canceled: currentDir is empty');
+                    console.log('drop on root canceled: homeFolder is empty');
                     return;
                 }
 
