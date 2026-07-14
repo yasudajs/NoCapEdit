@@ -572,6 +572,63 @@ fn trash_file_or_dir(file_path: String) -> Result<(), String> {
 }
 
 #[tauri::command]
+fn delete_file_or_dir_permanently(file_path: String) -> Result<(), String> {
+    let settings = AppSettings::load();
+    let home_folder = settings.home_folder;
+    let path = PathBuf::from(file_path);
+
+    // セキュリティチェック
+    let canon_path = path.canonicalize().map_err(|e| e.to_string())?;
+    let canon_home = home_folder.canonicalize().map_err(|e| e.to_string())?;
+    if !canon_path.starts_with(&canon_home) {
+        return Err("アクセスが許可されていないパスです".to_string());
+    }
+
+    if canon_path.is_file() {
+        fs::remove_file(canon_path).map_err(|e| e.to_string())?;
+    } else if canon_path.is_dir() {
+        fs::remove_dir_all(canon_path).map_err(|e| e.to_string())?;
+    } else {
+        return Err("指定されたパスはファイルでもディレクトリでもありません".to_string());
+    }
+    Ok(())
+}
+
+#[tauri::command]
+fn move_file_or_dir(source_path: String, target_parent_path: String) -> Result<String, String> {
+    let settings = AppSettings::load();
+    let home_folder = settings.home_folder;
+    let src = PathBuf::from(source_path);
+    let target_parent = PathBuf::from(target_parent_path);
+
+    // セキュリティチェック
+    let canon_src = src.canonicalize().map_err(|e| e.to_string())?;
+    let canon_target_parent = target_parent.canonicalize().map_err(|e| e.to_string())?;
+    let canon_home = home_folder.canonicalize().map_err(|e| e.to_string())?;
+
+    if !canon_src.starts_with(&canon_home) || !canon_target_parent.starts_with(&canon_home) {
+        return Err("アクセスが許可されていないパスです".to_string());
+    }
+
+    let file_name = canon_src.file_name().ok_or_else(|| "ファイル名が不正です".to_string())?;
+    let dest_path = canon_target_parent.join(file_name);
+
+    // 循環移動の防止
+    if canon_target_parent.starts_with(&canon_src) {
+        return Err("自分自身またはサブフォルダへは移動できません".to_string());
+    }
+
+    // 同名ファイル存在チェック
+    if dest_path.exists() {
+        return Err("同名のファイルまたはフォルダが既に存在します".to_string());
+    }
+
+    fs::rename(&canon_src, &dest_path).map_err(|e| e.to_string())?;
+
+    Ok(dest_path.to_string_lossy().to_string())
+}
+
+#[tauri::command]
 fn exit_app(app: tauri::AppHandle) {
     app.exit(0);
 }
@@ -707,6 +764,7 @@ fn main() {
             .resizable(true)
             .fullscreen(false)
             .visible(false)
+            .disable_file_drop_handler()
             .build()?;
             
             // 起動時のテーマを適用
@@ -746,6 +804,8 @@ fn main() {
             create_file_or_dir,
             rename_file_or_dir,
             trash_file_or_dir,
+            delete_file_or_dir_permanently,
+            move_file_or_dir,
             exit_app,
             get_launch_file,
             apply_theme,

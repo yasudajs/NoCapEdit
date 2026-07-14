@@ -1,8 +1,8 @@
 import { appState, elements } from '../state.js';
 import { invoke, appWindow } from '../core/tauri.js';
-import { normalizePathForComparison, getParentPath } from '../utils/helpers.js';
+import { normalizePathForComparison, getParentPath, getFileNameFromPath } from '../utils/helpers.js';
 import { openExistingFile } from '../core/fileSystem.js';
-import { closeTabByPathWithoutSaving } from './tabs.js';
+import { closeTabByPathWithoutSaving, updateStatus, renderTabs } from './tabs.js';
 import { saveSettingsDelay } from './settings.js';
 
 // コンテキストメニュー関連の状態管理
@@ -12,6 +12,113 @@ export let contextMenuTarget = {
     fileName: null,
     element: null
 };
+
+// 選択中アイテムの状態管理
+export let selectedPath = null;
+export let selectedElement = null;
+
+// ドラッグ＆ドロップ用の一時状態
+let draggingPath = null;
+let draggingIsDir = false;
+
+// パスから \\?\ プレフィックスを取り除くヘルパー（Windows OLE D&Dのキャンセル防止）
+function cleanPathForDnD(path) {
+    if (!path) return '';
+    return path.replace(/^\\\\\?\\/, '');
+}
+
+// D&D移動時に該当するタブのパス情報を事前に更新し、タブの自動クローズを防ぐ
+function preserveTabOnMove(srcPath, destParentPath) {
+    if (!srcPath || !destParentPath) return;
+    
+    // パスを標準化して比較
+    const normalizedSrc = normalizePathForComparison(srcPath);
+    
+    // 移動対象のファイル名を取得
+    const fileName = getFileNameFromPath(srcPath);
+    if (!fileName) return;
+
+    // 移動後の新しいパスを作成
+    const newPath = destParentPath.replace(/\\/g, '/').replace(/\/$/, '') + '/' + fileName;
+
+    // アプリ状態から該当するタブを探す
+    const tab = appState.tabs.find(t => normalizePathForComparison(t.filePath) === normalizedSrc);
+    if (tab) {
+        tab.filePath = newPath;
+        tab.fileName = fileName;
+        
+        // タブリストの再描画
+        if (typeof renderTabs === 'function') {
+            renderTabs();
+        }
+    }
+}
+
+// 選択状態の操作ヘルパー
+export function clearSelection() {
+    if (selectedElement) {
+        selectedElement.classList.remove('selected', 'selected-inactive');
+    }
+    selectedPath = null;
+    selectedElement = null;
+}
+
+export function makeSelectionInactive() {
+    if (selectedElement) {
+        selectedElement.classList.remove('selected');
+        selectedElement.classList.add('selected-inactive');
+    }
+}
+
+export function makeSelectionActive() {
+    if (selectedElement) {
+        selectedElement.classList.remove('selected-inactive');
+        selectedElement.classList.add('selected');
+    }
+}
+
+export function selectItem(element, path) {
+    clearSelection();
+    selectedElement = element;
+    selectedPath = path;
+    selectedElement.classList.add('selected');
+    if (selectedElement && typeof selectedElement.focus === 'function') {
+        selectedElement.focus();
+    }
+}
+
+async function handleGlobalKeyDown(e) {
+    const activeEl = document.activeElement;
+    if (
+        activeEl &&
+        (activeEl.tagName === 'INPUT' ||
+         activeEl.tagName === 'TEXTAREA' ||
+         activeEl.isContentEditable)
+    ) {
+        return;
+    }
+
+    if (!selectedPath || !selectedElement) {
+        return;
+    }
+
+    if (e.key === 'Delete') {
+        e.preventDefault();
+        if (e.shiftKey) {
+            await deleteItemPermanentlyInTree(selectedPath, selectedElement);
+        } else {
+            const prevTarget = { ...contextMenuTarget };
+            contextMenuTarget = {
+                filePath: selectedPath,
+                isDir: selectedElement.dataset.isDir === "true",
+                fileName: selectedElement.dataset.fileName,
+                element: selectedElement
+            };
+            await deleteItemInTree();
+            contextMenuTarget = prevTarget;
+        }
+    }
+}
 
 // サイドバー関連の初期化
 export function initSidebar() {
@@ -121,6 +228,90 @@ export function initSidebar() {
             hideContextMenu();
         }
     });
+
+    // サイドバー背景クリックで選択解除
+    elements.sidebar.addEventListener('click', (e) => {
+        if (!e.target.closest('.tree-item')) {
+            clearSelection();
+        }
+    });
+
+    // エディタ（またはサイドバー外）をクリックした際、選択ハイライトを非アクティブ表示（薄いグレー）にする
+    document.addEventListener('click', (e) => {
+        if (elements.sidebar && !elements.sidebar.contains(e.target)) {
+            makeSelectionInactive();
+        }
+    });
+
+    // エディタがフォーカスを得た際、選択ハイライトを非アクティブ表示（薄いグレー）にする
+    if (elements.editor) {
+        elements.editor.addEventListener('focus', () => {
+            makeSelectionInactive();
+        });
+    }
+
+    // キー監視（Delete / Shift + Delete）
+    document.addEventListener('keydown', handleGlobalKeyDown);
+
+    // サイドバー全体へのドラッグオーバーとドロップを許可（余白部分へのドロップでルートへ移動するため）
+    if (elements.sidebar) {
+        elements.sidebar.addEventListener('dragover', (e) => {
+            if (draggingPath) {
+                e.preventDefault();
+            }
+        });
+
+        elements.sidebar.addEventListener('drop', async (e) => {
+            // 余白部分へのドロップかを判定（ツリーアイテム上ではない場合）
+            if (!e.target.closest('.tree-item')) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                const srcPath = draggingPath;
+                if (!srcPath) {
+                    return;
+                }
+
+                // 移動先の親パスはルートディレクトリ
+                const destParentPath = appState.homeFolder;
+                if (!destParentPath) {
+                    return;
+                }
+
+                const srcParent = getParentPath(srcPath);
+
+                // 不正な移動チェック（JS側）
+                if (srcPath === destParentPath || destParentPath === srcParent) {
+                    return; 
+                }
+
+                const normalizedSrc = srcPath.replace(/\\/g, '/');
+                const normalizedDest = destParentPath.replace(/\\/g, '/');
+                if (normalizedDest === normalizedSrc || normalizedDest.startsWith(normalizedSrc + '/')) {
+                    updateStatus('自分自身またはサブフォルダへは移動できません', 'error', true);
+                    return;
+                }
+
+                // 移動前に該当するタブのパスを更新して維持する
+                preserveTabOnMove(srcPath, destParentPath);
+
+                try {
+                    await invoke('move_file_or_dir', { sourcePath: srcPath, targetParentPath: destParentPath });
+                    
+                    // 再読み込み
+                    await loadDirectory(null, elements.fileTree);
+
+                    // 選択のクリア
+                    clearSelection();
+
+                    updateStatus('ルートへ移動しました');
+                } catch (err) {
+                    console.error('Failed to move file/dir to root:', err);
+                    updateStatus(`移動に失敗しました: ${err}`, 'error', true);
+                }
+            }
+        });
+    }
 }
 
 export async function loadDirectory(path, parentElement, openFolders = null) {
@@ -153,7 +344,14 @@ export function renderFileTree(files, container, openFolders = null) {
     files.forEach(file => {
         const itemDiv = document.createElement('div');
         itemDiv.className = 'tree-item';
+        itemDiv.tabIndex = 0; // フォーカス可能にする
         
+        // 以前の選択状態を復元（再描画時に選択が解除されるのを防ぐ）
+        if (selectedPath && normalizePathForComparison(file.file_path) === normalizePathForComparison(selectedPath)) {
+            selectedElement = itemDiv;
+            itemDiv.classList.add('selected');
+        }
+
         const iconSpan = document.createElement('span');
         iconSpan.className = 'tree-icon';
         iconSpan.textContent = file.is_dir ? '📁' : '📄';
@@ -170,10 +368,142 @@ export function renderFileTree(files, container, openFolders = null) {
         itemDiv.dataset.fileName = file.file_name;
         itemDiv.dataset.isDir = file.is_dir;
 
+        // 右クリックで選択状態にする
         itemDiv.addEventListener('contextmenu', (e) => {
             e.preventDefault();
             e.stopPropagation();
+            selectItem(itemDiv, file.file_path);
+            makeSelectionActive();
             showContextMenu(e, file.file_path, file.is_dir, file.file_name, itemDiv);
+        });
+
+        // ドラッグ＆ドロップ設定
+        itemDiv.setAttribute('draggable', 'true');
+
+        itemDiv.addEventListener('dragstart', (e) => {
+            e.stopPropagation();
+            
+            const cleanPath = cleanPathForDnD(file.file_path);
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', cleanPath);
+            draggingPath = cleanPath;
+            draggingIsDir = file.is_dir;
+
+            // ダミードラッグイメージを設定（Chromiumでの即時キャンセルのハック）
+            if (e.dataTransfer.setDragImage) {
+                const img = new Image();
+                img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+                e.dataTransfer.setDragImage(img, 0, 0);
+            }
+        });
+
+        itemDiv.addEventListener('dragover', (e) => {
+            if (!draggingPath) {
+                return; 
+            }
+            e.preventDefault();
+            e.stopPropagation();
+
+            const targetPath = itemDiv.dataset.filePath;
+            const targetIsDir = itemDiv.dataset.isDir === "true";
+
+            // ドラッグ元の親
+            const srcParent = getParentPath(draggingPath);
+            // 移動先親
+            const destParent = targetIsDir ? targetPath : getParentPath(targetPath);
+
+            // 循環移動、自分自身、現在の親フォルダと同一の場合はドロップ不可
+            if (draggingPath === targetPath || 
+                destParent === draggingPath ||
+                destParent.startsWith(draggingPath + "/") || 
+                destParent === srcParent) {
+                e.dataTransfer.dropEffect = 'none';
+                return;
+            }
+
+            e.dataTransfer.dropEffect = 'move';
+        });
+
+        itemDiv.addEventListener('dragenter', (e) => {
+            if (!draggingPath) return; 
+            e.preventDefault();
+            e.stopPropagation();
+
+            const targetIsDir = itemDiv.dataset.isDir === "true";
+            if (targetIsDir) {
+                const targetPath = itemDiv.dataset.filePath;
+                const srcParent = getParentPath(draggingPath);
+                
+                if (draggingPath !== targetPath && 
+                    !targetPath.startsWith(draggingPath + "/") && 
+                    targetPath !== srcParent) {
+                    itemDiv.classList.add('drag-hover');
+                }
+            }
+        });
+
+        itemDiv.addEventListener('dragleave', (e) => {
+            e.stopPropagation();
+            itemDiv.classList.remove('drag-hover');
+        });
+
+        itemDiv.addEventListener('dragend', (e) => {
+            e.stopPropagation();
+            document.querySelectorAll('.tree-item').forEach(el => el.classList.remove('drag-hover'));
+            draggingPath = null;
+        });
+
+        itemDiv.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            itemDiv.classList.remove('drag-hover');
+
+            const srcPath = draggingPath || e.dataTransfer.getData('text/plain');
+            if (!srcPath) {
+                return;
+            }
+
+            const targetPath = itemDiv.dataset.filePath;
+            const targetIsDir = itemDiv.dataset.isDir === "true";
+
+            let destParentPath = "";
+            if (targetIsDir) {
+                destParentPath = targetPath;
+            } else {
+                destParentPath = getParentPath(targetPath);
+            }
+
+            const srcParent = getParentPath(srcPath);
+
+            // 不正な移動チェック（JS側）
+            if (srcPath === destParentPath || destParentPath === srcParent) {
+                return; 
+            }
+
+            const normalizedSrc = srcPath.replace(/\\/g, '/');
+            const normalizedDest = destParentPath.replace(/\\/g, '/');
+            if (normalizedDest === normalizedSrc || normalizedDest.startsWith(normalizedSrc + '/')) {
+                updateStatus('自分自身またはサブフォルダへは移動できません', 'error', true);
+                return;
+            }
+
+            // 移動前に該当するタブのパスを更新して維持する
+            preserveTabOnMove(srcPath, destParentPath);
+
+            try {
+                await invoke('move_file_or_dir', { sourcePath: srcPath, targetParentPath: destParentPath });
+                
+                // 再読み込み
+                await loadDirectory(null, elements.fileTree);
+
+                // 選択のクリア
+                clearSelection();
+
+                updateStatus('移動しました');
+            } catch (err) {
+                console.error('Failed to move file/dir:', err);
+                updateStatus(`移動に失敗しました: ${err}`, 'error', true);
+            }
         });
 
         if (file.is_dir) {
@@ -182,6 +512,8 @@ export function renderFileTree(files, container, openFolders = null) {
             
             itemDiv.addEventListener('click', async (e) => {
                 e.stopPropagation();
+                selectItem(itemDiv, file.file_path);
+                makeSelectionActive();
                 
                 const isHidden = childrenContainer.classList.contains('hidden');
                 if (isHidden) {
@@ -208,9 +540,24 @@ export function renderFileTree(files, container, openFolders = null) {
                 loadDirectory(file.file_path, childrenContainer, openFolders);
             }
         } else {
+            // 開いているファイルがアクティブであるかのチェック
+            const tab = appState.tabs.find(t => normalizePathForComparison(t.filePath) === normalizePathForComparison(file.file_path));
+            if (tab && tab.id === appState.currentTab) {
+                itemDiv.classList.add('active');
+            }
+
             itemDiv.addEventListener('click', (e) => {
                 e.stopPropagation();
-                openFileFromTree(file);
+                
+                const tab = appState.tabs.find(t => normalizePathForComparison(t.filePath) === normalizePathForComparison(file.file_path));
+                const isCurrentlyActive = tab && tab.id === appState.currentTab;
+
+                selectItem(itemDiv, file.file_path);
+                makeSelectionActive();
+                
+                if (!isCurrentlyActive) {
+                    openFileFromTree(file);
+                }
                 
                 document.querySelectorAll('.tree-item').forEach(el => el.classList.remove('active'));
                 itemDiv.classList.add('active');
@@ -551,5 +898,43 @@ export async function deleteItemInTree() {
         } else {
             alert(`削除に失敗しました: ${e}`);
         }
+    }
+}
+
+export async function deleteItemPermanentlyInTree(targetPath, targetElement) {
+    if (!targetPath || !targetElement) return;
+
+    const fileName = targetElement.dataset.fileName;
+    let confirmed = false;
+    if (window.__TAURI__ && window.__TAURI__.dialog) {
+        confirmed = await window.__TAURI__.dialog.ask(
+            `「${fileName}」をごみ箱に入れず、完全に削除しますか？\n※この操作は取り消せません。`,
+            { title: '警告', type: 'warning' }
+        );
+    } else {
+        confirmed = confirm(`「${fileName}」をごみ箱に入れず、完全に削除しますか？\n※この操作は取り消せません。`);
+    }
+
+    if (!confirmed) return;
+
+    try {
+        await invoke('delete_file_or_dir_permanently', { filePath: targetPath });
+
+        const parentPath = getParentPath(targetPath);
+        const parentContainer = targetElement.parentElement;
+        if (parentPath === "") {
+            await loadDirectory(null, elements.fileTree);
+        } else {
+            await loadDirectory(parentPath, parentContainer);
+        }
+
+        clearSelection();
+
+        await closeTabByPathWithoutSaving(targetPath);
+
+        updateStatus('完全に削除しました');
+    } catch (e) {
+        console.error('Failed to permanently delete item:', e);
+        updateStatus(`削除に失敗しました: ${e}`, 'error', true);
     }
 }

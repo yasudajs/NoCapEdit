@@ -769,6 +769,31 @@ body {
     color: var(--text-primary);
 }
 
+.tree-item.selected {
+    background-color: var(--accent) !important;
+    color: #ffffff !important;
+}
+
+.tree-item.selected-inactive {
+    background-color: var(--bg-tertiary);
+    color: var(--text-secondary);
+}
+
+body.light-theme .tree-item.selected-inactive {
+    background-color: #d0d0d0 !important;
+    color: var(--text-primary) !important;
+}
+
+.tree-item:focus {
+    outline: none !important;
+}
+
+.tree-item.drag-hover {
+    background-color: var(--bg-tertiary);
+    outline: 1px dashed var(--accent);
+    outline-offset: -1px;
+}
+
 .tree-icon {
     margin-right: 6px;
     font-size: 14px;
