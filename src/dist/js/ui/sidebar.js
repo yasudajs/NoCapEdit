@@ -464,9 +464,18 @@ export function renderFileTree(files, container, openFolders = null) {
 
             itemDiv.addEventListener('click', (e) => {
                 e.stopPropagation();
+                
+                const tab = appState.tabs.find(t => normalizePathForComparison(t.filePath) === normalizePathForComparison(file.file_path));
+                const isCurrentlyActive = tab && tab.id === appState.currentTab;
+
                 selectItem(itemDiv, file.file_path);
                 makeSelectionActive();
-                openFileFromTree(file);
+                
+                if (!isCurrentlyActive) {
+                    openFileFromTree(file);
+                } else {
+                    console.log('File is already active, keeping focus on tree item');
+                }
                 
                 document.querySelectorAll('.tree-item').forEach(el => el.classList.remove('active'));
                 itemDiv.classList.add('active');
