@@ -764,6 +764,7 @@ fn main() {
             .resizable(true)
             .fullscreen(false)
             .visible(false)
+            .disable_file_drop_handler()
             .build()?;
             
             // 起動時のテーマを適用
