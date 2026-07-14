@@ -45,16 +45,21 @@ export function makeSelectionActive() {
 }
 
 export function selectItem(element, path) {
+    console.log('selectItem called for:', path);
     clearSelection();
     selectedElement = element;
     selectedPath = path;
     selectedElement.classList.add('selected');
     if (selectedElement && typeof selectedElement.focus === 'function') {
         selectedElement.focus();
+        console.log('selectedElement focused, activeElement is now:', document.activeElement ? `${document.activeElement.tagName}.${document.activeElement.className}` : 'none');
+    } else {
+        console.log('selectedElement focus failed or not supported');
     }
 }
 
 async function handleGlobalKeyDown(e) {
+    console.log('handleGlobalKeyDown:', e.key, 'ctrl:', e.ctrlKey, 'shift:', e.shiftKey, 'activeElement:', document.activeElement ? `${document.activeElement.tagName}.${document.activeElement.className}` : 'none');
     const activeEl = document.activeElement;
     if (
         activeEl &&
@@ -62,12 +67,17 @@ async function handleGlobalKeyDown(e) {
          activeEl.tagName === 'TEXTAREA' ||
          activeEl.isContentEditable)
     ) {
+        console.log('Keydown ignored because focus is in input/textarea');
         return;
     }
 
-    if (!selectedPath || !selectedElement) return;
+    if (!selectedPath || !selectedElement) {
+        console.log('Keydown ignored because selectedPath or selectedElement is null:', { selectedPath, selectedElement: !!selectedElement });
+        return;
+    }
 
     if (e.key === 'Delete') {
+        console.log('Delete key pressed, shiftKey:', e.shiftKey);
         e.preventDefault();
         if (e.shiftKey) {
             await deleteItemPermanentlyInTree(selectedPath, selectedElement);
@@ -288,15 +298,19 @@ export function renderFileTree(files, container, openFolders = null) {
         itemDiv.setAttribute('draggable', 'true');
 
         itemDiv.addEventListener('dragstart', (e) => {
+            console.log('dragstart fired for:', file.file_path);
             e.stopPropagation();
             e.dataTransfer.effectAllowed = 'move';
             e.dataTransfer.setData('text/plain', file.file_path);
             draggingPath = file.file_path;
             draggingIsDir = file.is_dir;
+            console.log('draggingPath set to:', draggingPath);
         });
 
         itemDiv.addEventListener('dragover', (e) => {
-            if (!draggingPath) return; // ガードを追加
+            if (!draggingPath) {
+                return; 
+            }
             e.preventDefault();
             e.stopPropagation();
 
@@ -321,7 +335,8 @@ export function renderFileTree(files, container, openFolders = null) {
         });
 
         itemDiv.addEventListener('dragenter', (e) => {
-            if (!draggingPath) return; // ガードを追加
+            if (!draggingPath) return; 
+            console.log('dragenter targetPath:', itemDiv.dataset.filePath);
             e.preventDefault();
             e.stopPropagation();
 
@@ -334,6 +349,7 @@ export function renderFileTree(files, container, openFolders = null) {
                     !targetPath.startsWith(draggingPath + "/") && 
                     targetPath !== srcParent) {
                     itemDiv.classList.add('drag-hover');
+                    console.log('drag-hover class added to target');
                 }
             }
         });
@@ -344,21 +360,28 @@ export function renderFileTree(files, container, openFolders = null) {
         });
 
         itemDiv.addEventListener('dragend', (e) => {
+            console.log('dragend fired');
             e.stopPropagation();
             document.querySelectorAll('.tree-item').forEach(el => el.classList.remove('drag-hover'));
             draggingPath = null;
         });
 
         itemDiv.addEventListener('drop', async (e) => {
+            console.log('drop event fired');
             e.preventDefault();
             e.stopPropagation();
             itemDiv.classList.remove('drag-hover');
 
             const srcPath = draggingPath || e.dataTransfer.getData('text/plain');
-            if (!srcPath) return;
+            console.log('drop srcPath:', srcPath);
+            if (!srcPath) {
+                console.log('drop canceled: srcPath is empty');
+                return;
+            }
 
             const targetPath = itemDiv.dataset.filePath;
             const targetIsDir = itemDiv.dataset.isDir === "true";
+            console.log('drop targetPath:', targetPath, 'isDir:', targetIsDir);
 
             let destParentPath = "";
             if (targetIsDir) {
@@ -371,12 +394,14 @@ export function renderFileTree(files, container, openFolders = null) {
 
             // 不正な移動チェック（JS側）
             if (srcPath === destParentPath || destParentPath === srcParent) {
-                return; // 実質上変化がないので何もせず終了
+                console.log('drop canceled: identical parent or path');
+                return; 
             }
 
             const normalizedSrc = srcPath.replace(/\\/g, '/');
             const normalizedDest = destParentPath.replace(/\\/g, '/');
             if (normalizedDest === normalizedSrc || normalizedDest.startsWith(normalizedSrc + '/')) {
+                console.log('drop canceled: moving to self or descendant');
                 updateStatus('自分自身またはサブフォルダへは移動できません', 'error', true);
                 return;
             }
