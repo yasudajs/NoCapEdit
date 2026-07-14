@@ -1,8 +1,8 @@
 import { appState, elements } from '../state.js';
 import { invoke, appWindow } from '../core/tauri.js';
-import { normalizePathForComparison, getParentPath } from '../utils/helpers.js';
+import { normalizePathForComparison, getParentPath, getFileNameFromPath } from '../utils/helpers.js';
 import { openExistingFile } from '../core/fileSystem.js';
-import { closeTabByPathWithoutSaving, updateStatus } from './tabs.js';
+import { closeTabByPathWithoutSaving, updateStatus, renderTabs } from './tabs.js';
 import { saveSettingsDelay } from './settings.js';
 
 // コンテキストメニュー関連の状態管理
@@ -25,6 +25,34 @@ let draggingIsDir = false;
 function cleanPathForDnD(path) {
     if (!path) return '';
     return path.replace(/^\\\\\?\\/, '');
+}
+
+// D&D移動時に該当するタブのパス情報を事前に更新し、タブの自動クローズを防ぐ
+function preserveTabOnMove(srcPath, destParentPath) {
+    if (!srcPath || !destParentPath) return;
+    
+    // パスを標準化して比較
+    const normalizedSrc = normalizePathForComparison(srcPath);
+    
+    // 移動対象のファイル名を取得
+    const fileName = getFileNameFromPath(srcPath);
+    if (!fileName) return;
+
+    // 移動後の新しいパスを作成
+    const newPath = destParentPath.replace(/\\/g, '/').replace(/\/$/, '') + '/' + fileName;
+
+    // アプリ状態から該当するタブを探す
+    const tab = appState.tabs.find(t => normalizePathForComparison(t.filePath) === normalizedSrc);
+    if (tab) {
+        console.log('Preserving tab for moved file:', tab.fileName, 'path updated to:', newPath);
+        tab.filePath = newPath;
+        tab.fileName = fileName;
+        
+        // タブリストの再描画
+        if (typeof renderTabs === 'function') {
+            renderTabs();
+        }
+    }
 }
 
 // 選択状態の操作ヘルパー
@@ -234,11 +262,68 @@ export function initSidebar() {
     // キー監視（Delete / Shift + Delete）
     document.addEventListener('keydown', handleGlobalKeyDown);
 
-    // ファイルツリーコンテナへのドラッグオーバーを許可
+    // ファイルツリーコンテナへのドラッグオーバーとドロップを許可
     if (elements.fileTree) {
         elements.fileTree.addEventListener('dragover', (e) => {
             if (draggingPath) {
                 e.preventDefault();
+            }
+        });
+
+        elements.fileTree.addEventListener('drop', async (e) => {
+            // 余白部分へのドロップかを判定
+            if (!e.target.closest('.tree-item')) {
+                console.log('drop on root area triggered');
+                e.preventDefault();
+                e.stopPropagation();
+
+                const srcPath = draggingPath;
+                if (!srcPath) {
+                    console.log('drop on root canceled: draggingPath is empty');
+                    return;
+                }
+
+                // 移動先の親パスはルートディレクトリ
+                const destParentPath = appState.currentDir;
+                if (!destParentPath) {
+                    console.log('drop on root canceled: currentDir is empty');
+                    return;
+                }
+
+                const srcParent = getParentPath(srcPath);
+
+                // 不正な移動チェック（JS側）
+                if (srcPath === destParentPath || destParentPath === srcParent) {
+                    console.log('drop on root canceled: identical parent or path');
+                    return; 
+                }
+
+                const normalizedSrc = srcPath.replace(/\\/g, '/');
+                const normalizedDest = destParentPath.replace(/\\/g, '/');
+                if (normalizedDest === normalizedSrc || normalizedDest.startsWith(normalizedSrc + '/')) {
+                    console.log('drop on root canceled: moving to self or descendant');
+                    updateStatus('自分自身またはサブフォルダへは移動できません', 'error', true);
+                    return;
+                }
+
+                // 移動前に該当するタブのパスを更新して維持する
+                preserveTabOnMove(srcPath, destParentPath);
+
+                try {
+                    console.log('moving to root:', srcPath, '->', destParentPath);
+                    await invoke('move_file_or_dir', { sourcePath: srcPath, targetParentPath: destParentPath });
+                    
+                    // 再読み込み
+                    await loadDirectory(null, elements.fileTree);
+
+                    // 選択のクリア
+                    clearSelection();
+
+                    updateStatus('ルートへ移動しました');
+                } catch (err) {
+                    console.error('Failed to move file/dir to root:', err);
+                    updateStatus(`移動に失敗しました: ${err}`, 'error', true);
+                }
             }
         });
     }
@@ -428,6 +513,9 @@ export function renderFileTree(files, container, openFolders = null) {
                 updateStatus('自分自身またはサブフォルダへは移動できません', 'error', true);
                 return;
             }
+
+            // 移動前に該当するタブのパスを更新して維持する
+            preserveTabOnMove(srcPath, destParentPath);
 
             try {
                 await invoke('move_file_or_dir', { sourcePath: srcPath, targetParentPath: destParentPath });
