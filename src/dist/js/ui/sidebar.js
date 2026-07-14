@@ -49,6 +49,9 @@ export function selectItem(element, path) {
     selectedElement = element;
     selectedPath = path;
     selectedElement.classList.add('selected');
+    if (selectedElement && typeof selectedElement.focus === 'function') {
+        selectedElement.focus();
+    }
 }
 
 async function handleGlobalKeyDown(e) {
@@ -207,6 +210,15 @@ export function initSidebar() {
 
     // キー監視（Delete / Shift + Delete）
     document.addEventListener('keydown', handleGlobalKeyDown);
+
+    // ファイルツリーコンテナへのドラッグオーバーを許可
+    if (elements.fileTree) {
+        elements.fileTree.addEventListener('dragover', (e) => {
+            if (draggingPath) {
+                e.preventDefault();
+            }
+        });
+    }
 }
 
 export async function loadDirectory(path, parentElement, openFolders = null) {
@@ -239,6 +251,7 @@ export function renderFileTree(files, container, openFolders = null) {
     files.forEach(file => {
         const itemDiv = document.createElement('div');
         itemDiv.className = 'tree-item';
+        itemDiv.tabIndex = 0; // フォーカス可能にする
         
         // 以前の選択状態を復元（再描画時に選択が解除されるのを防ぐ）
         if (selectedPath && normalizePathForComparison(file.file_path) === normalizePathForComparison(selectedPath)) {
@@ -272,7 +285,7 @@ export function renderFileTree(files, container, openFolders = null) {
         });
 
         // ドラッグ＆ドロップ設定
-        itemDiv.draggable = true;
+        itemDiv.setAttribute('draggable', 'true');
 
         itemDiv.addEventListener('dragstart', (e) => {
             e.stopPropagation();
@@ -283,6 +296,7 @@ export function renderFileTree(files, container, openFolders = null) {
         });
 
         itemDiv.addEventListener('dragover', (e) => {
+            if (!draggingPath) return; // ガードを追加
             e.preventDefault();
             e.stopPropagation();
 
@@ -307,6 +321,7 @@ export function renderFileTree(files, container, openFolders = null) {
         });
 
         itemDiv.addEventListener('dragenter', (e) => {
+            if (!draggingPath) return; // ガードを追加
             e.preventDefault();
             e.stopPropagation();
 
