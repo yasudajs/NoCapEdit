@@ -262,18 +262,18 @@ export function initSidebar() {
     // キー監視（Delete / Shift + Delete）
     document.addEventListener('keydown', handleGlobalKeyDown);
 
-    // ファイルツリーコンテナへのドラッグオーバーとドロップを許可
-    if (elements.fileTree) {
-        elements.fileTree.addEventListener('dragover', (e) => {
+    // サイドバー全体へのドラッグオーバーとドロップを許可（余白部分へのドロップでルートへ移動するため）
+    if (elements.sidebar) {
+        elements.sidebar.addEventListener('dragover', (e) => {
             if (draggingPath) {
                 e.preventDefault();
             }
         });
 
-        elements.fileTree.addEventListener('drop', async (e) => {
-            // 余白部分へのドロップかを判定
+        elements.sidebar.addEventListener('drop', async (e) => {
+            // 余白部分へのドロップかを判定（ツリーアイテム上ではない場合）
             if (!e.target.closest('.tree-item')) {
-                console.log('drop on root area triggered');
+                console.log('drop on root area (sidebar) triggered');
                 e.preventDefault();
                 e.stopPropagation();
 
