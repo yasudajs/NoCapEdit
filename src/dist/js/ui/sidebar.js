@@ -224,6 +224,13 @@ export function initSidebar() {
         }
     });
 
+    // エディタがフォーカスを得た際、選択ハイライトを非アクティブ表示（薄いグレー）にする
+    if (elements.editor) {
+        elements.editor.addEventListener('focus', () => {
+            makeSelectionInactive();
+        });
+    }
+
     // キー監視（Delete / Shift + Delete）
     document.addEventListener('keydown', handleGlobalKeyDown);
 
