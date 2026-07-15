@@ -554,6 +554,28 @@ fn rename_file_or_dir(old_path: String, new_name: String) -> Result<String, Stri
     Ok(new_path.to_string_lossy().to_string())
 }
 
+fn is_dir_empty_custom(path: &std::path::Path) -> Result<bool, std::io::Error> {
+    for entry in fs::read_dir(path)? {
+        let entry = entry?;
+        let file_name = entry.file_name();
+        let file_name_str = file_name.to_string_lossy();
+
+        // 除外対象：
+        // 1. ファイル名先頭がドット（.）で始まるもの（例: .DS_Store, .gitignore）
+        if file_name_str.starts_with('.') {
+            continue;
+        }
+        // 2. Thumbs.db （大文字小文字を区別しない）
+        if file_name_str.eq_ignore_ascii_case("Thumbs.db") {
+            continue;
+        }
+
+        // 除外対象以外のファイルやフォルダが存在する場合は、空ではない
+        return Ok(false);
+    }
+    Ok(true)
+}
+
 #[tauri::command]
 fn trash_file_or_dir(file_path: String) -> Result<(), String> {
     let settings = AppSettings::load();
@@ -565,6 +587,13 @@ fn trash_file_or_dir(file_path: String) -> Result<(), String> {
     let canon_home = home_folder.canonicalize().map_err(|e| e.to_string())?;
     if !canon_path.starts_with(&canon_home) {
         return Err("アクセスが許可されていないパスです".to_string());
+    }
+
+    if canon_path.is_dir() {
+        let is_empty = is_dir_empty_custom(&canon_path).map_err(|e| e.to_string())?;
+        if !is_empty {
+            return Err("FOLDER_NOT_EMPTY".to_string());
+        }
     }
 
     trash::delete(canon_path).map_err(|e| e.to_string())?;
@@ -584,6 +613,13 @@ fn delete_file_or_dir_permanently(file_path: String) -> Result<(), String> {
         return Err("アクセスが許可されていないパスです".to_string());
     }
 
+    if canon_path.is_dir() {
+        let is_empty = is_dir_empty_custom(&canon_path).map_err(|e| e.to_string())?;
+        if !is_empty {
+            return Err("FOLDER_NOT_EMPTY".to_string());
+        }
+    }
+
     if canon_path.is_file() {
         fs::remove_file(canon_path).map_err(|e| e.to_string())?;
     } else if canon_path.is_dir() {
@@ -591,6 +627,50 @@ fn delete_file_or_dir_permanently(file_path: String) -> Result<(), String> {
     } else {
         return Err("指定されたパスはファイルでもディレクトリでもありません".to_string());
     }
+    Ok(())
+}
+
+#[tauri::command]
+fn open_folder_in_explorer(file_path: String) -> Result<(), String> {
+    let settings = AppSettings::load();
+    let home_folder = settings.home_folder;
+    let path = PathBuf::from(file_path);
+
+    // セキュリティチェック
+    let canon_path = path.canonicalize().map_err(|e| e.to_string())?;
+    let canon_home = home_folder.canonicalize().map_err(|e| e.to_string())?;
+    if !canon_path.starts_with(&canon_home) {
+        return Err("アクセスが許可されていないパスです".to_string());
+    }
+
+    let target_dir = if canon_path.is_dir() {
+        canon_path
+    } else {
+        canon_path.parent().ok_or("親ディレクトリが見つかりません".to_string())?.to_path_buf()
+    };
+
+    #[cfg(target_os = "windows")]
+    {
+        std::process::Command::new("explorer")
+            .arg(target_dir)
+            .spawn()
+            .map_err(|e| e.to_string())?;
+    }
+    #[cfg(target_os = "macos")]
+    {
+        std::process::Command::new("open")
+            .arg(target_dir)
+            .spawn()
+            .map_err(|e| e.to_string())?;
+    }
+    #[cfg(target_os = "linux")]
+    {
+        std::process::Command::new("xdg-open")
+            .arg(target_dir)
+            .spawn()
+            .map_err(|e| e.to_string())?;
+    }
+
     Ok(())
 }
 
@@ -908,6 +988,7 @@ fn main() {
             rename_file_or_dir,
             trash_file_or_dir,
             delete_file_or_dir_permanently,
+            open_folder_in_explorer,
             move_file_or_dir,
             copy_file_or_dir,
             exit_app,
@@ -918,4 +999,57 @@ fn main() {
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs::File;
+
+    #[test]
+    fn test_is_dir_empty_custom() {
+        let mut path = std::env::temp_dir();
+        path.push(format!("nce_test_{}", chrono::Local::now().timestamp_nanos_opt().unwrap_or(0)));
+        fs::create_dir(&path).unwrap();
+
+        // 1. 最初は空
+        assert!(is_dir_empty_custom(&path).unwrap());
+
+        // 2. ドットファイルを作成
+        let dot_file = path.join(".DS_Store");
+        File::create(&dot_file).unwrap();
+        assert!(is_dir_empty_custom(&path).unwrap());
+
+        // 3. ドットで始まる別のファイルを作成
+        let dot_test = path.join(".test");
+        File::create(&dot_test).unwrap();
+        assert!(is_dir_empty_custom(&path).unwrap());
+
+        // 4. Thumbs.db を作成
+        let thumbs = path.join("Thumbs.db");
+        File::create(&thumbs).unwrap();
+        assert!(is_dir_empty_custom(&path).unwrap());
+
+        // 5. Thumbs.db の大文字小文字違いを作成
+        let thumbs_lower = path.join("thumbs.db");
+        File::create(&thumbs_lower).unwrap();
+        assert!(is_dir_empty_custom(&path).unwrap());
+
+        // 6. 通常のファイルを作成
+        let normal_file = path.join("hello.txt");
+        File::create(&normal_file).unwrap();
+        assert!(!is_dir_empty_custom(&path).unwrap());
+
+        // 通常ファイルを削除
+        fs::remove_file(&normal_file).unwrap();
+        assert!(is_dir_empty_custom(&path).unwrap());
+
+        // 7. サブフォルダを作成 (中身は空)
+        let sub_dir = path.join("subfolder");
+        fs::create_dir(&sub_dir).unwrap();
+        assert!(!is_dir_empty_custom(&path).unwrap());
+
+        // 後片付け
+        fs::remove_dir_all(&path).unwrap();
+    }
 }
