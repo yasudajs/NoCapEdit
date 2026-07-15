@@ -249,6 +249,24 @@ export function initSidebar() {
             makeSelectionInactive();
         });
     }
+    // ツリー内の要素がフォーカスを得た/失った際の状態遷移を一元管理
+    elements.fileTree.addEventListener('focusin', (e) => {
+        if (e.target.classList.contains('tree-item')) {
+            selectedElement = e.target;
+            selectedPath = e.target.dataset.filePath;
+            makeSelectionActive();
+        }
+    });
+
+    elements.fileTree.addEventListener('focusout', (e) => {
+        setTimeout(() => {
+            const activeEl = document.activeElement;
+            const isTreeFocused = elements.fileTree && elements.fileTree.contains(activeEl);
+            if (!isTreeFocused) {
+                makeSelectionInactive();
+            }
+        }, 0);
+    });
 
     // キー監視（Delete / Shift + Delete）
     document.addEventListener('keydown', handleGlobalKeyDown);
@@ -842,6 +860,10 @@ export async function renderFileTree(files, container, openFolders = null) {
                 
                 document.querySelectorAll('.tree-item').forEach(el => el.classList.remove('active'));
                 itemDiv.classList.add('active');
+
+                if (elements.editor) {
+                    elements.editor.focus();
+                }
             });
             container.appendChild(itemDiv);
         }
@@ -995,6 +1017,26 @@ export async function createNewItemInTree(isDir) {
 
             if (!isDir) {
                 await openExistingFile(newPath);
+                if (elements.editor) {
+                    elements.editor.focus();
+                }
+            } else {
+                if (newPath) {
+                    const normNewPath = normalizePathForComparison(newPath);
+                    const items = elements.fileTree.querySelectorAll('.tree-item');
+                    let targetEl = null;
+                    for (const item of items) {
+                        if (normalizePathForComparison(item.dataset.filePath) === normNewPath) {
+                            targetEl = item;
+                            break;
+                        }
+                    }
+                    if (targetEl) {
+                        selectItem(targetEl, newPath);
+                        makeSelectionActive();
+                        targetEl.focus();
+                    }
+                }
             }
         } catch (e) {
             console.error('Failed to create item:', e);
@@ -1017,6 +1059,29 @@ export async function createNewItemInTree(isDir) {
         tempItem.remove();
         if (parentContainer.children.length === 0) {
             parentContainer.innerHTML = '<div class="tree-empty">フォルダは空です</div>';
+        }
+        if (parentPath) {
+            const normParent = normalizePathForComparison(parentPath);
+            const items = elements.fileTree.querySelectorAll('.tree-item');
+            let targetEl = null;
+            for (const item of items) {
+                if (normalizePathForComparison(item.dataset.filePath) === normParent) {
+                    targetEl = item;
+                    break;
+                }
+            }
+            if (targetEl) {
+                selectItem(targetEl, parentPath);
+                makeSelectionActive();
+                targetEl.focus();
+            }
+        } else {
+            const firstItem = elements.fileTree.querySelector('.tree-item');
+            if (firstItem) {
+                selectItem(firstItem, firstItem.dataset.filePath);
+                makeSelectionActive();
+                firstItem.focus();
+            }
         }
     };
 
@@ -1071,6 +1136,11 @@ export async function startRenameInTree() {
         const newName = input.value.trim();
         if (!newName || newName === oldName) {
             nameSpan.textContent = originalText;
+            if (targetElement) {
+                selectItem(targetElement, targetPath);
+                makeSelectionActive();
+                targetElement.focus();
+            }
             return;
         }
 
@@ -1111,6 +1181,23 @@ export async function startRenameInTree() {
                     }
                 }
             }
+
+            if (newPath) {
+                const normNewPath = normalizePathForComparison(newPath);
+                const items = elements.fileTree.querySelectorAll('.tree-item');
+                let targetEl = null;
+                for (const item of items) {
+                    if (normalizePathForComparison(item.dataset.filePath) === normNewPath) {
+                        targetEl = item;
+                        break;
+                    }
+                }
+                if (targetEl) {
+                    selectItem(targetEl, newPath);
+                    makeSelectionActive();
+                    targetEl.focus();
+                }
+            }
         } catch (e) {
             console.error('Failed to rename item:', e);
             if (window.__TAURI__ && window.__TAURI__.dialog) {
@@ -1119,6 +1206,11 @@ export async function startRenameInTree() {
                 alert(`名前変更に失敗しました: ${e}`);
             }
             nameSpan.textContent = originalText;
+            if (targetElement) {
+                selectItem(targetElement, targetPath);
+                makeSelectionActive();
+                targetElement.focus();
+            }
         }
     };
 
@@ -1126,6 +1218,11 @@ export async function startRenameInTree() {
         if (finished) return;
         finished = true;
         nameSpan.textContent = originalText;
+        if (targetElement) {
+            selectItem(targetElement, targetPath);
+            makeSelectionActive();
+            targetElement.focus();
+        }
     };
 
     input.addEventListener('keydown', (e) => {
@@ -1160,6 +1257,42 @@ export async function deleteItemInTree() {
 
     if (!confirmed) return;
 
+    // 次にフォーカスするアイテムのパスを決定
+    let nextFocusPath = null;
+    if (targetElement) {
+        let nextFocusEl = null;
+        let sibling = targetElement.nextElementSibling;
+        while (sibling) {
+            if (sibling.classList.contains('tree-item')) {
+                nextFocusEl = sibling;
+                break;
+            }
+            sibling = sibling.nextElementSibling;
+        }
+        if (!nextFocusEl) {
+            sibling = targetElement.previousElementSibling;
+            while (sibling) {
+                if (sibling.classList.contains('tree-item')) {
+                    nextFocusEl = sibling;
+                    break;
+                }
+                sibling = sibling.previousElementSibling;
+            }
+        }
+        if (!nextFocusEl) {
+            const parentContainer = targetElement.parentElement;
+            if (parentContainer && parentContainer.classList.contains('tree-children')) {
+                const parentItem = parentContainer.previousElementSibling;
+                if (parentItem && parentItem.classList.contains('tree-item')) {
+                    nextFocusEl = parentItem;
+                }
+            }
+        }
+        if (nextFocusEl) {
+            nextFocusPath = nextFocusEl.dataset.filePath;
+        }
+    }
+
     try {
         await invoke('trash_file_or_dir', { filePath: targetPath });
 
@@ -1172,6 +1305,38 @@ export async function deleteItemInTree() {
         }
 
         await closeTabByPathWithoutSaving(targetPath);
+
+        // 次のアイテムを選択＆フォーカス
+        if (nextFocusPath) {
+            const normPath = normalizePathForComparison(nextFocusPath);
+            const items = elements.fileTree.querySelectorAll('.tree-item');
+            let targetEl = null;
+            for (const item of items) {
+                if (normalizePathForComparison(item.dataset.filePath) === normPath) {
+                    targetEl = item;
+                    break;
+                }
+            }
+            if (targetEl) {
+                selectItem(targetEl, nextFocusPath);
+                makeSelectionActive();
+                targetEl.focus();
+            } else {
+                const firstItem = elements.fileTree.querySelector('.tree-item');
+                if (firstItem) {
+                    selectItem(firstItem, firstItem.dataset.filePath);
+                    makeSelectionActive();
+                    firstItem.focus();
+                }
+            }
+        } else {
+            const firstItem = elements.fileTree.querySelector('.tree-item');
+            if (firstItem) {
+                selectItem(firstItem, firstItem.dataset.filePath);
+                makeSelectionActive();
+                firstItem.focus();
+            }
+        }
     } catch (e) {
         console.error('Failed to delete item:', e);
         if (window.__TAURI__ && window.__TAURI__.dialog) {
@@ -1198,6 +1363,42 @@ export async function deleteItemPermanentlyInTree(targetPath, targetElement) {
 
     if (!confirmed) return;
 
+    // 次にフォーカスするアイテムのパスを決定
+    let nextFocusPath = null;
+    if (targetElement) {
+        let nextFocusEl = null;
+        let sibling = targetElement.nextElementSibling;
+        while (sibling) {
+            if (sibling.classList.contains('tree-item')) {
+                nextFocusEl = sibling;
+                break;
+            }
+            sibling = sibling.nextElementSibling;
+        }
+        if (!nextFocusEl) {
+            sibling = targetElement.previousElementSibling;
+            while (sibling) {
+                if (sibling.classList.contains('tree-item')) {
+                    nextFocusEl = sibling;
+                    break;
+                }
+                sibling = sibling.previousElementSibling;
+            }
+        }
+        if (!nextFocusEl) {
+            const parentContainer = targetElement.parentElement;
+            if (parentContainer && parentContainer.classList.contains('tree-children')) {
+                const parentItem = parentContainer.previousElementSibling;
+                if (parentItem && parentItem.classList.contains('tree-item')) {
+                    nextFocusEl = parentItem;
+                }
+            }
+        }
+        if (nextFocusEl) {
+            nextFocusPath = nextFocusEl.dataset.filePath;
+        }
+    }
+
     try {
         await invoke('delete_file_or_dir_permanently', { filePath: targetPath });
 
@@ -1212,6 +1413,38 @@ export async function deleteItemPermanentlyInTree(targetPath, targetElement) {
         clearSelection();
 
         await closeTabByPathWithoutSaving(targetPath);
+
+        // 次のアイテムを選択＆フォーカス
+        if (nextFocusPath) {
+            const normPath = normalizePathForComparison(nextFocusPath);
+            const items = elements.fileTree.querySelectorAll('.tree-item');
+            let targetEl = null;
+            for (const item of items) {
+                if (normalizePathForComparison(item.dataset.filePath) === normPath) {
+                    targetEl = item;
+                    break;
+                }
+            }
+            if (targetEl) {
+                selectItem(targetEl, nextFocusPath);
+                makeSelectionActive();
+                targetEl.focus();
+            } else {
+                const firstItem = elements.fileTree.querySelector('.tree-item');
+                if (firstItem) {
+                    selectItem(firstItem, firstItem.dataset.filePath);
+                    makeSelectionActive();
+                    firstItem.focus();
+                }
+            }
+        } else {
+            const firstItem = elements.fileTree.querySelector('.tree-item');
+            if (firstItem) {
+                selectItem(firstItem, firstItem.dataset.filePath);
+                makeSelectionActive();
+                firstItem.focus();
+            }
+        }
 
         updateStatus('完全に削除しました');
     } catch (e) {
