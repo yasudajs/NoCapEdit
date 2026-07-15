@@ -631,6 +631,50 @@ fn delete_file_or_dir_permanently(file_path: String) -> Result<(), String> {
 }
 
 #[tauri::command]
+fn open_folder_in_explorer(file_path: String) -> Result<(), String> {
+    let settings = AppSettings::load();
+    let home_folder = settings.home_folder;
+    let path = PathBuf::from(file_path);
+
+    // セキュリティチェック
+    let canon_path = path.canonicalize().map_err(|e| e.to_string())?;
+    let canon_home = home_folder.canonicalize().map_err(|e| e.to_string())?;
+    if !canon_path.starts_with(&canon_home) {
+        return Err("アクセスが許可されていないパスです".to_string());
+    }
+
+    let target_dir = if canon_path.is_dir() {
+        canon_path
+    } else {
+        canon_path.parent().ok_or("親ディレクトリが見つかりません".to_string())?.to_path_buf()
+    };
+
+    #[cfg(target_os = "windows")]
+    {
+        std::process::Command::new("explorer")
+            .arg(target_dir)
+            .spawn()
+            .map_err(|e| e.to_string())?;
+    }
+    #[cfg(target_os = "macos")]
+    {
+        std::process::Command::new("open")
+            .arg(target_dir)
+            .spawn()
+            .map_err(|e| e.to_string())?;
+    }
+    #[cfg(target_os = "linux")]
+    {
+        std::process::Command::new("xdg-open")
+            .arg(target_dir)
+            .spawn()
+            .map_err(|e| e.to_string())?;
+    }
+
+    Ok(())
+}
+
+#[tauri::command]
 fn move_file_or_dir(source_path: String, target_parent_path: String) -> Result<String, String> {
     let settings = AppSettings::load();
     let home_folder = settings.home_folder;
@@ -944,6 +988,7 @@ fn main() {
             rename_file_or_dir,
             trash_file_or_dir,
             delete_file_or_dir_permanently,
+            open_folder_in_explorer,
             move_file_or_dir,
             copy_file_or_dir,
             exit_app,

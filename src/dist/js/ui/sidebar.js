@@ -1374,9 +1374,9 @@ export async function deleteItemInTree() {
             } else {
                 openExplorer = confirm(msg);
             }
-            if (openExplorer && window.__TAURI__ && window.__TAURI__.shell) {
+            if (openExplorer) {
                 try {
-                    await window.__TAURI__.shell.open(targetPath);
+                    await invoke('open_folder_in_explorer', { filePath: targetPath });
                 } catch (err) {
                     console.error('Failed to open folder in explorer:', err);
                 }
@@ -1502,9 +1502,9 @@ export async function deleteItemPermanentlyInTree(targetPath, targetElement) {
             } else {
                 openExplorer = confirm(msg);
             }
-            if (openExplorer && window.__TAURI__ && window.__TAURI__.shell) {
+            if (openExplorer) {
                 try {
-                    await window.__TAURI__.shell.open(targetPath);
+                    await invoke('open_folder_in_explorer', { filePath: targetPath });
                 } catch (err) {
                     console.error('Failed to open folder in explorer:', err);
                 }
