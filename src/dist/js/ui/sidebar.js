@@ -545,7 +545,7 @@ export function renderFileTree(files, container, openFolders = null) {
 
                         try {
                             updateStatus('移動中...');
-                            await invoke('move_file_or_dir', { sourcePath: clipboardState.path, targetParentPath: destParentPath });
+                            const newPath = await invoke('move_file_or_dir', { sourcePath: clipboardState.path, targetParentPath: destParentPath });
                             
                             // 再読み込み
                             const openFolders = new Set();
@@ -560,6 +560,25 @@ export function renderFileTree(files, container, openFolders = null) {
                             await loadDirectory(null, elements.fileTree, openFolders);
                             clearSelection();
                             clearClipboard();
+
+                            // 移動後の新ファイルを選択＆フォーカス
+                            if (newPath) {
+                                const normNewPath = normalizePathForComparison(newPath);
+                                const items = elements.fileTree.querySelectorAll('.tree-item');
+                                let targetEl = null;
+                                for (const item of items) {
+                                    if (normalizePathForComparison(item.dataset.filePath) === normNewPath) {
+                                        targetEl = item;
+                                        break;
+                                    }
+                                }
+                                if (targetEl) {
+                                    selectItem(targetEl, newPath);
+                                    makeSelectionActive();
+                                    targetEl.focus();
+                                    targetEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                                }
+                            }
                             updateStatus('移動が完了しました');
                         } catch (err) {
                             console.error('Failed to move file/dir:', err);
@@ -574,7 +593,7 @@ export function renderFileTree(files, container, openFolders = null) {
 
                         try {
                             updateStatus('貼り付け中...');
-                            await invoke('copy_file_or_dir', { sourcePath: clipboardState.path, targetParentPath: destParentPath });
+                            const newPath = await invoke('copy_file_or_dir', { sourcePath: clipboardState.path, targetParentPath: destParentPath });
                             
                             // 再読み込み
                             const openFolders = new Set();
@@ -588,6 +607,25 @@ export function renderFileTree(files, container, openFolders = null) {
                             
                             await loadDirectory(null, elements.fileTree, openFolders);
                             clearSelection();
+
+                            // コピー後の新ファイルを選択＆フォーカス
+                            if (newPath) {
+                                const normNewPath = normalizePathForComparison(newPath);
+                                const items = elements.fileTree.querySelectorAll('.tree-item');
+                                let targetEl = null;
+                                for (const item of items) {
+                                    if (normalizePathForComparison(item.dataset.filePath) === normNewPath) {
+                                        targetEl = item;
+                                        break;
+                                    }
+                                }
+                                if (targetEl) {
+                                    selectItem(targetEl, newPath);
+                                    makeSelectionActive();
+                                    targetEl.focus();
+                                    targetEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                                }
+                            }
                             updateStatus('貼り付けが完了しました');
                         } catch (err) {
                             console.error('Failed to copy file/dir:', err);
@@ -1293,6 +1331,11 @@ export async function focusSidebarTree() {
 }
 
 export async function createItemGlobally(isDir) {
+    const activeEl = document.activeElement;
+    // フォーカスがツリー上のアイテムにない、またはサイドバーが非表示の場合はルート直下に作成する
+    const isTreeFocused = activeEl && activeEl.classList.contains('tree-item');
+    const shouldCreateAtRoot = !appState.sidebarVisible || !isTreeFocused;
+
     // 1. ツリーが閉じていれば開く
     if (!appState.sidebarVisible) {
         appState.sidebarVisible = true;
@@ -1309,7 +1352,7 @@ export async function createItemGlobally(isDir) {
     }
 
     // 2. 現在選択されているアイテムがあればそれを対象にする。無ければルート直下（contextMenuTargetをクリア）
-    if (selectedElement && selectedPath) {
+    if (!shouldCreateAtRoot && selectedElement && selectedPath) {
         contextMenuTarget = {
             filePath: selectedPath,
             isDir: selectedElement.dataset.isDir === "true",
