@@ -353,6 +353,8 @@ export async function loadDirectory(path, parentElement, openFolders = null) {
 }
 
 export async function renderFileTree(files, container, openFolders = null) {
+    const treeHadFocus = elements.fileTree && elements.fileTree.contains(document.activeElement);
+
     container.innerHTML = '';
     if (files.length === 0) {
         container.innerHTML = '<div class="tree-empty">フォルダは空です</div>';
@@ -366,9 +368,11 @@ export async function renderFileTree(files, container, openFolders = null) {
         // 以前の選択状態を復元（再描画時に選択が解除されるのを防ぐ）
         if (selectedPath && normalizePathForComparison(file.file_path) === normalizePathForComparison(selectedPath)) {
             selectedElement = itemDiv;
-            const isTreeFocused = elements.fileTree && elements.fileTree.contains(document.activeElement);
-            if (isTreeFocused) {
+            if (treeHadFocus) {
                 itemDiv.classList.add('selected');
+                setTimeout(() => {
+                    itemDiv.focus();
+                }, 0);
             } else {
                 itemDiv.classList.add('selected-inactive');
             }
@@ -856,14 +860,15 @@ export async function renderFileTree(files, container, openFolders = null) {
                 
                 if (!isCurrentlyActive) {
                     openFileFromTree(file);
+                    if (elements.editor) {
+                        elements.editor.focus();
+                    }
+                } else {
+                    itemDiv.focus();
                 }
-                
+
                 document.querySelectorAll('.tree-item').forEach(el => el.classList.remove('active'));
                 itemDiv.classList.add('active');
-
-                if (elements.editor) {
-                    elements.editor.focus();
-                }
             });
             container.appendChild(itemDiv);
         }
