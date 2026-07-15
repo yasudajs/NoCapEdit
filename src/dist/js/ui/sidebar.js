@@ -355,7 +355,8 @@ export async function loadDirectory(path, parentElement, openFolders = null) {
 }
 
 export async function renderFileTree(files, container, openFolders = null) {
-    const treeHadFocus = elements.fileTree && elements.fileTree.contains(document.activeElement);
+    const treeHadFocus = (elements.fileTree && elements.fileTree.contains(document.activeElement)) ||
+                         (selectedElement && selectedElement.classList.contains('selected'));
 
     container.innerHTML = '';
     if (files.length === 0) {
@@ -573,6 +574,9 @@ export async function renderFileTree(files, container, openFolders = null) {
                             updateStatus('移動中...');
                             const newPath = await invoke('move_file_or_dir', { sourcePath: clipboardState.path, targetParentPath: destParentPath });
                             
+                            selectedPath = newPath;
+                            clearClipboard();
+
                             // 再読み込み
                             const openFolders = new Set();
                             elements.fileTree.querySelectorAll('.tree-children:not(.hidden)').forEach(el => {
@@ -584,27 +588,6 @@ export async function renderFileTree(files, container, openFolders = null) {
                             openFolders.add(normalizePathForComparison(destParentPath));
                             
                             await loadDirectory(null, elements.fileTree, openFolders);
-                            clearSelection();
-                            clearClipboard();
-
-                            // 移動後の新ファイルを選択＆フォーカス
-                            if (newPath) {
-                                const normNewPath = normalizePathForComparison(newPath);
-                                const items = elements.fileTree.querySelectorAll('.tree-item');
-                                let targetEl = null;
-                                for (const item of items) {
-                                    if (normalizePathForComparison(item.dataset.filePath) === normNewPath) {
-                                        targetEl = item;
-                                        break;
-                                    }
-                                }
-                                if (targetEl) {
-                                    selectItem(targetEl, newPath);
-                                    makeSelectionActive();
-                                    targetEl.focus();
-                                    targetEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-                                }
-                            }
                             updateStatus('移動が完了しました');
                         } catch (err) {
                             console.error('Failed to move file/dir:', err);
@@ -621,6 +604,8 @@ export async function renderFileTree(files, container, openFolders = null) {
                             updateStatus('貼り付け中...');
                             const newPath = await invoke('copy_file_or_dir', { sourcePath: clipboardState.path, targetParentPath: destParentPath });
                             
+                            selectedPath = newPath;
+
                             // 再読み込み
                             const openFolders = new Set();
                             elements.fileTree.querySelectorAll('.tree-children:not(.hidden)').forEach(el => {
@@ -632,26 +617,6 @@ export async function renderFileTree(files, container, openFolders = null) {
                             openFolders.add(normalizePathForComparison(destParentPath));
                             
                             await loadDirectory(null, elements.fileTree, openFolders);
-                            clearSelection();
-
-                            // コピー後の新ファイルを選択＆フォーカス
-                            if (newPath) {
-                                const normNewPath = normalizePathForComparison(newPath);
-                                const items = elements.fileTree.querySelectorAll('.tree-item');
-                                let targetEl = null;
-                                for (const item of items) {
-                                    if (normalizePathForComparison(item.dataset.filePath) === normNewPath) {
-                                        targetEl = item;
-                                        break;
-                                    }
-                                }
-                                if (targetEl) {
-                                    selectItem(targetEl, newPath);
-                                    makeSelectionActive();
-                                    targetEl.focus();
-                                    targetEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-                                }
-                            }
                             updateStatus('貼り付けが完了しました');
                         } catch (err) {
                             console.error('Failed to copy file/dir:', err);
