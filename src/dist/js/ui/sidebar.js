@@ -345,14 +345,16 @@ export function renderFileTree(files, container, openFolders = null) {
         const itemDiv = document.createElement('div');
         itemDiv.className = 'tree-item';
         itemDiv.tabIndex = 0; // フォーカス可能にする
-        
         // 以前の選択状態を復元（再描画時に選択が解除されるのを防ぐ）
         if (selectedPath && normalizePathForComparison(file.file_path) === normalizePathForComparison(selectedPath)) {
             selectedElement = itemDiv;
-            itemDiv.classList.add('selected');
-        }
-
-        // 切り取り中の半透明状態を復元
+            const isTreeFocused = elements.fileTree && elements.fileTree.contains(document.activeElement);
+            if (isTreeFocused) {
+                itemDiv.classList.add('selected');
+            } else {
+                itemDiv.classList.add('selected-inactive');
+            }
+        }        // 切り取り中の半透明状態を復元
         if (clipboardState.mode === 'cut' && clipboardState.path && normalizePathForComparison(file.file_path) === normalizePathForComparison(clipboardState.path)) {
             itemDiv.classList.add('cut-pending');
         }
