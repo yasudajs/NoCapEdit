@@ -56,6 +56,7 @@ function preserveTabOnMove(srcPath, destParentPath) {
 
 // 選択状態の操作ヘルパー
 export function clearSelection() {
+    console.log('Sidebar: clearSelection called. selectedPath was:', selectedPath);
     if (elements.fileTree) {
         elements.fileTree.querySelectorAll('.tree-item.selected, .tree-item.selected-inactive').forEach(el => {
             el.classList.remove('selected', 'selected-inactive');
@@ -66,6 +67,7 @@ export function clearSelection() {
 }
 
 export function makeSelectionInactive() {
+    console.log('Sidebar: makeSelectionInactive called for:', selectedPath);
     if (selectedElement) {
         selectedElement.classList.remove('selected');
         selectedElement.classList.add('selected-inactive');
@@ -73,6 +75,7 @@ export function makeSelectionInactive() {
 }
 
 export function makeSelectionActive() {
+    console.log('Sidebar: makeSelectionActive called for:', selectedPath);
     if (selectedElement) {
         selectedElement.classList.remove('selected-inactive');
         selectedElement.classList.add('selected');
@@ -80,6 +83,7 @@ export function makeSelectionActive() {
 }
 
 export function selectItem(element, path) {
+    console.log('Sidebar: selectItem called for path:', path);
     clearSelection();
     selectedElement = element;
     selectedPath = path;
@@ -254,6 +258,7 @@ export function initSidebar() {
     // ツリー内の要素がフォーカスを得た/失った際の状態遷移を一元管理
     elements.fileTree.addEventListener('focusin', (e) => {
         if (e.target.classList.contains('tree-item')) {
+            console.log('Sidebar: focusin on tree-item:', e.target.dataset.filePath);
             selectedElement = e.target;
             selectedPath = e.target.dataset.filePath;
             makeSelectionActive();
@@ -261,9 +266,11 @@ export function initSidebar() {
     });
 
     elements.fileTree.addEventListener('focusout', (e) => {
+        console.log('Sidebar: focusout event triggered.');
         setTimeout(() => {
             const activeEl = document.activeElement;
             const isTreeFocused = elements.fileTree && elements.fileTree.contains(activeEl);
+            console.log('Sidebar: focusout setTimeout running. activeElement is:', activeEl ? (activeEl.dataset.filePath || activeEl.tagName) : 'null', 'isTreeFocused:', isTreeFocused);
             if (!isTreeFocused) {
                 makeSelectionInactive();
             }
@@ -359,6 +366,8 @@ export async function renderFileTree(files, container, openFolders = null) {
                          (elements.fileTree && elements.fileTree.contains(document.activeElement)) ||
                          (selectedElement && selectedElement.classList.contains('selected'));
     
+    console.log('Sidebar: renderFileTree started. container:', container.className || container.id || 'childContainer', 'treeHadFocus:', treeHadFocus, 'forceTreeFocusOnNextRender:', forceTreeFocusOnNextRender, 'selectedPath:', selectedPath);
+    
     if (container === elements.fileTree) {
         forceTreeFocusOnNextRender = false;
     }
@@ -376,9 +385,11 @@ export async function renderFileTree(files, container, openFolders = null) {
         // 以前の選択状態を復元（再描画時に選択が解除されるのを防ぐ）
         if (selectedPath && normalizePathForComparison(file.file_path) === normalizePathForComparison(selectedPath)) {
             selectedElement = itemDiv;
+            console.log('Sidebar: Restoring selection for:', file.file_path, 'treeHadFocus:', treeHadFocus);
             if (treeHadFocus) {
                 itemDiv.classList.add('selected');
                 setTimeout(() => {
+                    console.log('Sidebar: Executing delayed focus() restore for:', file.file_path);
                     itemDiv.focus();
                 }, 0);
             } else {
@@ -576,9 +587,11 @@ export async function renderFileTree(files, container, openFolders = null) {
                         }
 
                         try {
+                            console.log('Sidebar: Ctrl+V (move) started. source:', clipboardState.path, 'destParent:', destParentPath);
                             updateStatus('移動中...');
                             const newPath = await invoke('move_file_or_dir', { sourcePath: clipboardState.path, targetParentPath: destParentPath });
                             
+                            console.log('Sidebar: Ctrl+V (move) backend done. newPath:', newPath);
                             selectedPath = newPath;
                             forceTreeFocusOnNextRender = true;
                             clearClipboard();
@@ -593,6 +606,7 @@ export async function renderFileTree(files, container, openFolders = null) {
                             });
                             openFolders.add(normalizePathForComparison(destParentPath));
                             
+                            console.log('Sidebar: Ctrl+V (move) loading directory with folders:', Array.from(openFolders));
                             await loadDirectory(null, elements.fileTree, openFolders);
                             updateStatus('移動が完了しました');
                         } catch (err) {
@@ -607,9 +621,11 @@ export async function renderFileTree(files, container, openFolders = null) {
                         }
 
                         try {
+                            console.log('Sidebar: Ctrl+V (copy) started. source:', clipboardState.path, 'destParent:', destParentPath);
                             updateStatus('貼り付け中...');
                             const newPath = await invoke('copy_file_or_dir', { sourcePath: clipboardState.path, targetParentPath: destParentPath });
                             
+                            console.log('Sidebar: Ctrl+V (copy) backend done. newPath:', newPath);
                             selectedPath = newPath;
                             forceTreeFocusOnNextRender = true;
 
@@ -623,6 +639,7 @@ export async function renderFileTree(files, container, openFolders = null) {
                             });
                             openFolders.add(normalizePathForComparison(destParentPath));
                             
+                            console.log('Sidebar: Ctrl+V (copy) loading directory with folders:', Array.from(openFolders));
                             await loadDirectory(null, elements.fileTree, openFolders);
                             updateStatus('貼り付けが完了しました');
                         } catch (err) {
