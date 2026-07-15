@@ -355,8 +355,13 @@ export async function loadDirectory(path, parentElement, openFolders = null) {
 }
 
 export async function renderFileTree(files, container, openFolders = null) {
-    const treeHadFocus = (elements.fileTree && elements.fileTree.contains(document.activeElement)) ||
+    const treeHadFocus = forceTreeFocusOnNextRender ||
+                         (elements.fileTree && elements.fileTree.contains(document.activeElement)) ||
                          (selectedElement && selectedElement.classList.contains('selected'));
+    
+    if (container === elements.fileTree) {
+        forceTreeFocusOnNextRender = false;
+    }
 
     container.innerHTML = '';
     if (files.length === 0) {
@@ -575,6 +580,7 @@ export async function renderFileTree(files, container, openFolders = null) {
                             const newPath = await invoke('move_file_or_dir', { sourcePath: clipboardState.path, targetParentPath: destParentPath });
                             
                             selectedPath = newPath;
+                            forceTreeFocusOnNextRender = true;
                             clearClipboard();
 
                             // 再読み込み
@@ -605,6 +611,7 @@ export async function renderFileTree(files, container, openFolders = null) {
                             const newPath = await invoke('copy_file_or_dir', { sourcePath: clipboardState.path, targetParentPath: destParentPath });
                             
                             selectedPath = newPath;
+                            forceTreeFocusOnNextRender = true;
 
                             // 再読み込み
                             const openFolders = new Set();
@@ -1424,6 +1431,8 @@ export async function deleteItemPermanentlyInTree(targetPath, targetElement) {
         updateStatus(`削除に失敗しました: ${e}`, 'error', true);
     }
 }
+
+export let forceTreeFocusOnNextRender = false;
 
 // クリップボード用の状態管理 (コピー / 切り取り)
 export let clipboardState = {
