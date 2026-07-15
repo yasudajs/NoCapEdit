@@ -1,13 +1,13 @@
 # タスクリスト - ツリーの独立動作化とフォーカス復元 (Phase 5.1)
 
-- [ ] フロントエンド (JavaScript) の実装
-  - [ ] `sidebar.js` の `focusSidebarTree()` を改修
+- [x] フロントエンド (JavaScript) の実装
+  - [x] `sidebar.js` の `focusSidebarTree()` を改修
     - [x] アクティブファイルへの追従（Reveal）処理を削除
     - [x] `selectedElement` または `selectedPath` から該当DOMを取得し、存在すればフォーカスを戻す処理の実装
     - [x] 選択項目がない場合の「ツリー最上部（ホームフォルダ）」への初期選択・フォーカスロジックの実装
-  - [ ] 新規作成（`createNewItemInTree`）確定時の処理で、新ファイルパスを `selectedPath` に記憶させグレー選択されるように調整
-- [ ] 動作確認と検証
-  - [ ] `cargo check` によるビルド確認
+  - [x] 新規作成（`createNewItemInTree`）確定時の処理で、新ファイルパスを `selectedPath` に記憶させグレー選択されるように調整
+- [/] 動作確認と検証
+  - [x] `cargo check` によるビルド確認
   - [ ] 手動テスト（検証）の実施
     - [ ] 1. 起動後初回の `Ctrl+E` でツリー最上部にフォーカスされることの確認
     - [ ] 2. 任意の項目を選択した状態でエディタに抜け、タブを切り替えてもツリー側のグレー選択状態が変わらないことの確認

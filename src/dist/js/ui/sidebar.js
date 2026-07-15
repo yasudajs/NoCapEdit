@@ -999,6 +999,20 @@ export async function createNewItemInTree(isDir) {
             }
 
             if (!isDir) {
+                if (newPath) {
+                    const normNewPath = normalizePathForComparison(newPath);
+                    const items = elements.fileTree.querySelectorAll('.tree-item');
+                    let targetEl = null;
+                    for (const item of items) {
+                        if (normalizePathForComparison(item.dataset.filePath) === normNewPath) {
+                            targetEl = item;
+                            break;
+                        }
+                    }
+                    if (targetEl) {
+                        selectItem(targetEl, newPath);
+                    }
+                }
                 await openExistingFile(newPath);
                 if (elements.editor) {
                     elements.editor.focus();
@@ -1486,62 +1500,32 @@ export async function focusSidebarTree() {
         saveSettingsDelay();
     }
 
-    // 現在アクティブなタブの実ファイルを探す
-    let activeFilePath = null;
-    if (appState.tabs && appState.currentTab) {
-        const activeTab = appState.tabs.find(t => t.id === appState.currentTab);
-        if (activeTab && activeTab.filePath) {
-            activeFilePath = activeTab.filePath;
-        }
-    }
-
-    if (activeFilePath) {
-        const normActive = normalizePathForComparison(activeFilePath).replace(/\\/g, '/');
-        const homeNorm = normalizePathForComparison(appState.homeFolder).replace(/\\/g, '/');
-        
-        if (normActive.startsWith(homeNorm)) {
-            // 親フォルダのパスを全て収集
-            const openFolders = new Set();
-            elements.fileTree.querySelectorAll('.tree-children:not(.hidden)').forEach(el => {
-                const prev = el.previousElementSibling;
-                if (prev && prev.dataset.filePath) {
-                    openFolders.add(normalizePathForComparison(prev.dataset.filePath));
-                }
-            });
-
-            const relativePart = normActive.substring(homeNorm.length).replace(/^\//, '');
-            const segments = relativePart.split('/');
-            
-            let currentPath = homeNorm;
-            for (let i = 0; i < segments.length - 1; i++) {
-                currentPath = (currentPath + '/' + segments[i]).replace(/\/$/, '');
-                openFolders.add(normalizePathForComparison(currentPath));
-            }
-
-            // ツリー全体を再描画（自動展開される）
-            await loadDirectory(null, elements.fileTree, openFolders);
-
-            const normTarget = normalizePathForComparison(activeFilePath);
-            const items = elements.fileTree.querySelectorAll('.tree-item');
-            let targetEl = null;
-            for (const item of items) {
-                if (normalizePathForComparison(item.dataset.filePath) === normTarget) {
-                    targetEl = item;
-                    break;
-                }
-            }
-
-            if (targetEl) {
-                selectItem(targetEl, activeFilePath);
-                makeSelectionActive();
-                targetEl.focus();
-                targetEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-                return;
+    // 最後に選択されていた項目を復元してフォーカス
+    let targetEl = selectedElement;
+    
+    // selectedElement が DOM 上に存在しない、または null であるが、selectedPath がある場合、
+    // DOM の中から該当のパスを持つ .tree-item を検索する
+    if ((!targetEl || !elements.fileTree.contains(targetEl)) && selectedPath) {
+        const normTarget = normalizePathForComparison(selectedPath);
+        const items = elements.fileTree.querySelectorAll('.tree-item');
+        for (const item of items) {
+            if (normalizePathForComparison(item.dataset.filePath) === normTarget) {
+                targetEl = item;
+                selectedElement = item;
+                break;
             }
         }
     }
 
-    // 開いている実ファイルがない場合は先頭のアイテムを選択
+    if (targetEl && elements.fileTree.contains(targetEl)) {
+        selectItem(targetEl, targetEl.dataset.filePath);
+        makeSelectionActive();
+        targetEl.focus();
+        targetEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        return;
+    }
+
+    // 開いている実ファイルがない、または選択されていない場合は先頭のアイテムを選択
     const firstItem = elements.fileTree.querySelector('.tree-item');
     if (firstItem) {
         selectItem(firstItem, firstItem.dataset.filePath);
