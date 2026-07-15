@@ -421,6 +421,7 @@ export async function renderFileTree(files, container, openFolders = null) {
             // 1. フォーカス・選択移動 (ArrowDown, ArrowUp, ArrowRight, ArrowLeft)
             if (e.key === 'ArrowDown') {
                 e.preventDefault();
+                e.stopPropagation();
                 const allItems = Array.from(elements.fileTree.querySelectorAll('.tree-item'));
                 const visibleItems = allItems.filter(isItemVisible);
                 const currentIndex = visibleItems.indexOf(itemDiv);
@@ -434,6 +435,7 @@ export async function renderFileTree(files, container, openFolders = null) {
             } 
             else if (e.key === 'ArrowUp') {
                 e.preventDefault();
+                e.stopPropagation();
                 const allItems = Array.from(elements.fileTree.querySelectorAll('.tree-item'));
                 const visibleItems = allItems.filter(isItemVisible);
                 const currentIndex = visibleItems.indexOf(itemDiv);
@@ -448,6 +450,7 @@ export async function renderFileTree(files, container, openFolders = null) {
             else if (e.key === 'ArrowRight') {
                 if (isDir) {
                     e.preventDefault();
+                    e.stopPropagation();
                     const childrenContainer = itemDiv.nextElementSibling;
                     if (childrenContainer && childrenContainer.classList.contains('tree-children')) {
                         const isHidden = childrenContainer.classList.contains('hidden');
@@ -468,6 +471,7 @@ export async function renderFileTree(files, container, openFolders = null) {
             } 
             else if (e.key === 'ArrowLeft') {
                 e.preventDefault();
+                e.stopPropagation();
                 if (isDir) {
                     const childrenContainer = itemDiv.nextElementSibling;
                     if (childrenContainer && childrenContainer.classList.contains('tree-children') && !childrenContainer.classList.contains('hidden')) {
@@ -490,6 +494,7 @@ export async function renderFileTree(files, container, openFolders = null) {
             // 2. 決定処理 (Enter)
             else if (e.key === 'Enter') {
                 e.preventDefault();
+                e.stopPropagation();
                 if (isDir) {
                     itemDiv.click();
                 } else {
@@ -507,6 +512,7 @@ export async function renderFileTree(files, container, openFolders = null) {
             // 3. エディタへフォーカスを戻す (Esc)
             else if (e.key === 'Escape') {
                 e.preventDefault();
+                e.stopPropagation();
                 if (clipboardState.mode === 'cut') {
                     clearClipboard();
                 }
@@ -518,6 +524,7 @@ export async function renderFileTree(files, container, openFolders = null) {
             else if (e.ctrlKey) {
                 if (e.key === 'n' || e.key === 'N' || e.code === 'KeyN') {
                     e.preventDefault();
+                    e.stopPropagation();
                     // 新規ファイル作成
                     contextMenuTarget = {
                         filePath: filePath,
@@ -529,6 +536,7 @@ export async function renderFileTree(files, container, openFolders = null) {
                 } 
                 else if (e.key === 'd' || e.key === 'D' || e.code === 'KeyD') {
                     e.preventDefault();
+                    e.stopPropagation();
                     // 新規フォルダ作成
                     contextMenuTarget = {
                         filePath: filePath,
@@ -540,6 +548,7 @@ export async function renderFileTree(files, container, openFolders = null) {
                 } 
                 else if (e.key === 'c' || e.key === 'C' || e.code === 'KeyC') {
                     e.preventDefault();
+                    e.stopPropagation();
                     clearCutPendingStyles();
                     clipboardState.path = filePath;
                     clipboardState.isDir = isDir;
@@ -548,6 +557,7 @@ export async function renderFileTree(files, container, openFolders = null) {
                 } 
                 else if (e.key === 'x' || e.key === 'X' || e.code === 'KeyX') {
                     e.preventDefault();
+                    e.stopPropagation();
                     clearCutPendingStyles();
                     clipboardState.path = filePath;
                     clipboardState.isDir = isDir;
@@ -557,6 +567,7 @@ export async function renderFileTree(files, container, openFolders = null) {
                 }
                 else if (e.key === 'v' || e.key === 'V' || e.code === 'KeyV') {
                     e.preventDefault();
+                    e.stopPropagation();
                     if (!clipboardState.path) {
                         updateStatus('コピーまたは切り取りされたファイル/フォルダがありません', 'error', true);
                         return;
@@ -638,6 +649,7 @@ export async function renderFileTree(files, container, openFolders = null) {
             } 
             else if (e.key === 'F2') {
                 e.preventDefault();
+                e.stopPropagation();
                 // インライン名前変更
                 contextMenuTarget = {
                     filePath: filePath,
