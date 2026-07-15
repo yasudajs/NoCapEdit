@@ -794,6 +794,10 @@ body.light-theme .tree-item.selected-inactive {
     outline-offset: -1px;
 }
 
+.tree-item.cut-pending {
+    opacity: 0.5;
+}
+
 .tree-icon {
     margin-right: 6px;
     font-size: 14px;
