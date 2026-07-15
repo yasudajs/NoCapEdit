@@ -352,6 +352,11 @@ export function renderFileTree(files, container, openFolders = null) {
             itemDiv.classList.add('selected');
         }
 
+        // 切り取り中の半透明状態を復元
+        if (clipboardState.mode === 'cut' && clipboardState.path && normalizePathForComparison(file.file_path) === normalizePathForComparison(clipboardState.path)) {
+            itemDiv.classList.add('cut-pending');
+        }
+
         const iconSpan = document.createElement('span');
         iconSpan.className = 'tree-icon';
         iconSpan.textContent = file.is_dir ? '📁' : '📄';
@@ -468,11 +473,14 @@ export function renderFileTree(files, container, openFolders = null) {
             // 3. エディタへフォーカスを戻す (Esc)
             else if (e.key === 'Escape') {
                 e.preventDefault();
+                if (clipboardState.mode === 'cut') {
+                    clearClipboard();
+                }
                 if (elements.editor) {
                     elements.editor.focus();
                 }
             }
-            // 4. ショートカット操作 (Ctrl + N, Ctrl + D, F2, Ctrl + C, Ctrl + V)
+            // 4. ショートカット操作 (Ctrl + N, Ctrl + D, F2, Ctrl + C, Ctrl + X, Ctrl + V)
             else if (e.ctrlKey) {
                 if (e.key === 'n' || e.key === 'N' || e.code === 'KeyN') {
                     e.preventDefault();
@@ -498,15 +506,25 @@ export function renderFileTree(files, container, openFolders = null) {
                 } 
                 else if (e.key === 'c' || e.key === 'C' || e.code === 'KeyC') {
                     e.preventDefault();
-                    // パスをコピー
-                    copiedPath = filePath;
-                    copiedIsDir = isDir;
+                    clearCutPendingStyles();
+                    clipboardState.path = filePath;
+                    clipboardState.isDir = isDir;
+                    clipboardState.mode = 'copy';
                     updateStatus(`"${itemDiv.dataset.fileName}" をコピーしました`);
                 } 
+                else if (e.key === 'x' || e.key === 'X' || e.code === 'KeyX') {
+                    e.preventDefault();
+                    clearCutPendingStyles();
+                    clipboardState.path = filePath;
+                    clipboardState.isDir = isDir;
+                    clipboardState.mode = 'cut';
+                    itemDiv.classList.add('cut-pending');
+                    updateStatus(`"${itemDiv.dataset.fileName}" を切り取りました`);
+                }
                 else if (e.key === 'v' || e.key === 'V' || e.code === 'KeyV') {
                     e.preventDefault();
-                    if (!copiedPath) {
-                        updateStatus('コピーされたファイル/フォルダがありません', 'error', true);
+                    if (!clipboardState.path) {
+                        updateStatus('コピーまたは切り取りされたファイル/フォルダがありません', 'error', true);
                         return;
                     }
                     
@@ -515,36 +533,66 @@ export function renderFileTree(files, container, openFolders = null) {
                         destParentPath = appState.homeFolder;
                     }
 
-                    // 循環コピーチェック
-                    const normalizedSrc = normalizePathForComparison(copiedPath).replace(/\\/g, '/');
+                    const normalizedSrc = normalizePathForComparison(clipboardState.path).replace(/\\/g, '/');
                     const normalizedDest = normalizePathForComparison(destParentPath).replace(/\\/g, '/');
-                    if (copiedIsDir && (normalizedDest === normalizedSrc || normalizedDest.startsWith(normalizedSrc + '/'))) {
-                        updateStatus('自分自身またはサブフォルダへはコピーできません', 'error', true);
-                        return;
-                    }
 
-                    try {
-                        updateStatus('貼り付け中...');
-                        const newPath = await invoke('copy_file_or_dir', { sourcePath: copiedPath, targetParentPath: destParentPath });
-                        
-                        // 再読み込み
-                        const openFolders = new Set();
-                        elements.fileTree.querySelectorAll('.tree-children:not(.hidden)').forEach(el => {
-                            const prev = el.previousElementSibling;
-                            if (prev && prev.dataset.filePath) {
-                                openFolders.add(normalizePathForComparison(prev.dataset.filePath));
-                            }
-                        });
-                        
-                        // 貼り付け先の親フォルダを展開状態として記憶する
-                        openFolders.add(normalizePathForComparison(destParentPath));
-                        
-                        await loadDirectory(null, elements.fileTree, openFolders);
-                        clearSelection();
-                        updateStatus('貼り付けが完了しました');
-                    } catch (err) {
-                        console.error('Failed to copy file/dir:', err);
-                        updateStatus(`コピーに失敗しました: ${err}`, 'error', true);
+                    if (clipboardState.mode === 'cut') {
+                        // 循環移動チェック
+                        if (normalizedDest === normalizedSrc || normalizedDest.startsWith(normalizedSrc + '/')) {
+                            updateStatus('自分自身またはサブフォルダへは移動できません', 'error', true);
+                            return;
+                        }
+
+                        try {
+                            updateStatus('移動中...');
+                            await invoke('move_file_or_dir', { sourcePath: clipboardState.path, targetParentPath: destParentPath });
+                            
+                            // 再読み込み
+                            const openFolders = new Set();
+                            elements.fileTree.querySelectorAll('.tree-children:not(.hidden)').forEach(el => {
+                                const prev = el.previousElementSibling;
+                                if (prev && prev.dataset.filePath) {
+                                    openFolders.add(normalizePathForComparison(prev.dataset.filePath));
+                                }
+                            });
+                            openFolders.add(normalizePathForComparison(destParentPath));
+                            
+                            await loadDirectory(null, elements.fileTree, openFolders);
+                            clearSelection();
+                            clearClipboard();
+                            updateStatus('移動が完了しました');
+                        } catch (err) {
+                            console.error('Failed to move file/dir:', err);
+                            updateStatus(`移動に失敗しました: ${err}`, 'error', true);
+                        }
+                    } else {
+                        // 循環コピーチェック
+                        if (clipboardState.isDir && (normalizedDest === normalizedSrc || normalizedDest.startsWith(normalizedSrc + '/'))) {
+                            updateStatus('自分自身またはサブフォルダへはコピーできません', 'error', true);
+                            return;
+                        }
+
+                        try {
+                            updateStatus('貼り付け中...');
+                            await invoke('copy_file_or_dir', { sourcePath: clipboardState.path, targetParentPath: destParentPath });
+                            
+                            // 再読み込み
+                            const openFolders = new Set();
+                            elements.fileTree.querySelectorAll('.tree-children:not(.hidden)').forEach(el => {
+                                const prev = el.previousElementSibling;
+                                if (prev && prev.dataset.filePath) {
+                                    openFolders.add(normalizePathForComparison(prev.dataset.filePath));
+                                }
+                            });
+                            openFolders.add(normalizePathForComparison(destParentPath));
+                            
+                            await loadDirectory(null, elements.fileTree, openFolders);
+                            clearSelection();
+                            updateStatus('貼り付けが完了しました');
+                        } catch (err) {
+                            console.error('Failed to copy file/dir:', err);
+                            updateStatus(`コピーに失敗しました: ${err}`, 'error', true);
+                        }
                     }
                 }
             } 
@@ -1132,9 +1180,25 @@ export async function deleteItemPermanentlyInTree(targetPath, targetElement) {
     }
 }
 
-// コピー＆ペースト用の状態管理
-export let copiedPath = null;
-export let copiedIsDir = false;
+// クリップボード用の状態管理 (コピー / 切り取り)
+export let clipboardState = {
+    path: null,
+    isDir: false,
+    mode: null // 'copy' または 'cut'
+};
+
+export function clearCutPendingStyles() {
+    elements.fileTree.querySelectorAll('.tree-item.cut-pending').forEach(el => {
+        el.classList.remove('cut-pending');
+    });
+}
+
+export function clearClipboard() {
+    clipboardState.path = null;
+    clipboardState.isDir = false;
+    clipboardState.mode = null;
+    clearCutPendingStyles();
+}
 
 function isItemVisible(el) {
     let parent = el.parentElement;
