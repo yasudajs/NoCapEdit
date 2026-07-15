@@ -365,6 +365,11 @@ fn apply_theme(window: tauri::Window, theme: String) -> Result<(), String> {
     Ok(())
 }
 
+#[tauri::command]
+fn is_debug() -> bool {
+    cfg!(debug_assertions)
+}
+
 fn main() {
     let args: Vec<String> = std::env::args().collect();
     let file_arg = if args.len() > 1 {
@@ -456,7 +461,8 @@ fn main() {
             exit_app,
             get_launch_file,
             apply_theme,
-            get_system_fonts
+            get_system_fonts,
+            is_debug
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
