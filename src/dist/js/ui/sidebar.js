@@ -1365,11 +1365,29 @@ export async function deleteItemInTree() {
             }
         }
     } catch (e) {
-        console.error('Failed to delete item:', e);
-        if (window.__TAURI__ && window.__TAURI__.dialog) {
-            await window.__TAURI__.dialog.message(`削除に失敗しました: ${e}`, { title: 'エラー', type: 'error' });
+        if (e === 'FOLDER_NOT_EMPTY') {
+            const title = window.t ? window.t('folder_delete_error_not_empty_title') : 'フォルダ削除エラー';
+            const msg = window.t ? window.t('folder_delete_error_not_empty_msg') : 'このフォルダは空ではないため削除できません。\nエクスプローラでフォルダを開いて中身を確認しますか？';
+            let openExplorer = false;
+            if (window.__TAURI__ && window.__TAURI__.dialog) {
+                openExplorer = await window.__TAURI__.dialog.ask(msg, { title, type: 'warning' });
+            } else {
+                openExplorer = confirm(msg);
+            }
+            if (openExplorer && window.__TAURI__ && window.__TAURI__.shell) {
+                try {
+                    await window.__TAURI__.shell.open(targetPath);
+                } catch (err) {
+                    console.error('Failed to open folder in explorer:', err);
+                }
+            }
         } else {
-            alert(`削除に失敗しました: ${e}`);
+            console.error('Failed to delete item:', e);
+            if (window.__TAURI__ && window.__TAURI__.dialog) {
+                await window.__TAURI__.dialog.message(`削除に失敗しました: ${e}`, { title: 'エラー', type: 'error' });
+            } else {
+                alert(`削除に失敗しました: ${e}`);
+            }
         }
     }
 }
@@ -1475,8 +1493,26 @@ export async function deleteItemPermanentlyInTree(targetPath, targetElement) {
 
         updateStatus('完全に削除しました');
     } catch (e) {
-        console.error('Failed to permanently delete item:', e);
-        updateStatus(`削除に失敗しました: ${e}`, 'error', true);
+        if (e === 'FOLDER_NOT_EMPTY') {
+            const title = window.t ? window.t('folder_delete_error_not_empty_title') : 'フォルダ削除エラー';
+            const msg = window.t ? window.t('folder_delete_error_not_empty_msg') : 'このフォルダは空ではないため削除できません。\nエクスプローラでフォルダを開いて中身を確認しますか？';
+            let openExplorer = false;
+            if (window.__TAURI__ && window.__TAURI__.dialog) {
+                openExplorer = await window.__TAURI__.dialog.ask(msg, { title, type: 'warning' });
+            } else {
+                openExplorer = confirm(msg);
+            }
+            if (openExplorer && window.__TAURI__ && window.__TAURI__.shell) {
+                try {
+                    await window.__TAURI__.shell.open(targetPath);
+                } catch (err) {
+                    console.error('Failed to open folder in explorer:', err);
+                }
+            }
+        } else {
+            console.error('Failed to permanently delete item:', e);
+            updateStatus(`削除に失敗しました: ${e}`, 'error', true);
+        }
     }
 }
 
