@@ -629,6 +629,86 @@ fn move_file_or_dir(source_path: String, target_parent_path: String) -> Result<S
 }
 
 #[tauri::command]
+fn copy_file_or_dir(source_path: String, target_parent_path: String) -> Result<String, String> {
+    let settings = AppSettings::load();
+    let home_folder = settings.home_folder;
+    let src = std::path::PathBuf::from(source_path);
+    let target_parent = std::path::PathBuf::from(target_parent_path);
+
+    // セキュリティチェック
+    let canon_src = src.canonicalize().map_err(|e| e.to_string())?;
+    let canon_target_parent = target_parent.canonicalize().map_err(|e| e.to_string())?;
+    let canon_home = home_folder.canonicalize().map_err(|e| e.to_string())?;
+
+    if !canon_src.starts_with(&canon_home) || !canon_target_parent.starts_with(&canon_home) {
+        return Err("アクセスが許可されていないパスです".to_string());
+    }
+
+    let file_name = canon_src.file_name().ok_or_else(|| "ファイル名が不正です".to_string())?;
+
+    // コピー元の名前からステムと拡張子を取得
+    let path_for_name = std::path::Path::new(file_name);
+    let stem = path_for_name.file_stem()
+        .map(|s| s.to_string_lossy().to_string())
+        .ok_or_else(|| "ファイル名が不正です".to_string())?;
+    
+    let ext = path_for_name.extension().map(|e| e.to_string_lossy().to_string());
+
+    // 衝突回避のための新規パス生成
+    let mut target_name = if let Some(ref ext_str) = ext {
+        format!("{}_copy.{}", stem, ext_str)
+    } else {
+        format!("{}_copy", stem)
+    };
+    let mut dest_path = canon_target_parent.join(&target_name);
+
+    let mut count = 0;
+    while dest_path.exists() {
+        count += 1;
+        target_name = if let Some(ref ext_str) = ext {
+            format!("{}_copy_{:02}.{}", stem, count, ext_str)
+        } else {
+            format!("{}_copy_{:02}", stem, count)
+        };
+        dest_path = canon_target_parent.join(&target_name);
+    }
+
+    // セキュリティチェック（新しいパスも home_folder 配下にあること）
+    if !dest_path.starts_with(&canon_home) {
+        return Err("アクセスが許可されていないパスです".to_string());
+    }
+
+    // コピー（複製）の実行
+    if canon_src.is_file() {
+        fs::copy(&canon_src, &dest_path).map_err(|e| e.to_string())?;
+    } else if canon_src.is_dir() {
+        // 循環コピーの防止
+        if dest_path.starts_with(&canon_src) {
+            return Err("自分自身またはサブフォルダへはコピーできません".to_string());
+        }
+        copy_dir_all(&canon_src, &dest_path).map_err(|e| e.to_string())?;
+    } else {
+        return Err("指定されたパスはファイルでもディレクトリでもありません".to_string());
+    }
+
+    Ok(dest_path.to_string_lossy().to_string())
+}
+
+fn copy_dir_all(src: impl AsRef<std::path::Path>, dst: impl AsRef<std::path::Path>) -> std::io::Result<()> {
+    fs::create_dir_all(&dst)?;
+    for entry in fs::read_dir(src)? {
+        let entry = entry?;
+        let ty = entry.file_type()?;
+        if ty.is_dir() {
+            copy_dir_all(entry.path(), dst.as_ref().join(entry.file_name()))?;
+        } else {
+            fs::copy(entry.path(), dst.as_ref().join(entry.file_name()))?;
+        }
+    }
+    Ok(())
+}
+
+#[tauri::command]
 fn exit_app(app: tauri::AppHandle) {
     app.exit(0);
 }
@@ -811,6 +891,7 @@ fn main() {
             trash_file_or_dir,
             delete_file_or_dir_permanently,
             move_file_or_dir,
+            copy_file_or_dir,
             exit_app,
             get_launch_file,
             apply_theme,
