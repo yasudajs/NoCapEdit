@@ -992,6 +992,11 @@ export async function createNewItemInTree(isDir) {
                 isDir: isDir
             });
 
+            if (newPath) {
+                selectedPath = newPath;
+                selectedElement = null;
+            }
+
             if (parentPath === "") {
                 await loadDirectory(null, elements.fileTree);
             } else {
@@ -999,40 +1004,27 @@ export async function createNewItemInTree(isDir) {
             }
 
             if (!isDir) {
-                if (newPath) {
-                    const normNewPath = normalizePathForComparison(newPath);
-                    const items = elements.fileTree.querySelectorAll('.tree-item');
-                    let targetEl = null;
-                    for (const item of items) {
-                        if (normalizePathForComparison(item.dataset.filePath) === normNewPath) {
-                            targetEl = item;
-                            break;
-                        }
-                    }
-                    if (targetEl) {
-                        selectItem(targetEl, newPath);
-                    }
-                }
                 await openExistingFile(newPath);
                 if (elements.editor) {
                     elements.editor.focus();
                 }
             } else {
-                if (newPath) {
+                let targetEl = selectedElement;
+                if (!targetEl && newPath) {
                     const normNewPath = normalizePathForComparison(newPath);
                     const items = elements.fileTree.querySelectorAll('.tree-item');
-                    let targetEl = null;
                     for (const item of items) {
                         if (normalizePathForComparison(item.dataset.filePath) === normNewPath) {
                             targetEl = item;
+                            selectedElement = item;
                             break;
                         }
                     }
-                    if (targetEl) {
-                        selectItem(targetEl, newPath);
-                        makeSelectionActive();
-                        targetEl.focus();
-                    }
+                }
+                if (targetEl) {
+                    selectItem(targetEl, newPath);
+                    makeSelectionActive();
+                    targetEl.focus();
                 }
             }
         } catch (e) {
