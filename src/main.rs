@@ -611,16 +611,34 @@ fn move_file_or_dir(source_path: String, target_parent_path: String) -> Result<S
     }
 
     let file_name = canon_src.file_name().ok_or_else(|| "ファイル名が不正です".to_string())?;
-    let dest_path = canon_target_parent.join(file_name);
+    let mut dest_path = canon_target_parent.join(file_name);
 
     // 循環移動の防止
     if canon_target_parent.starts_with(&canon_src) {
         return Err("自分自身またはサブフォルダへは移動できません".to_string());
     }
 
-    // 同名ファイル存在チェック
+    // 同名ファイル存在時は連番処理で衝突回避
     if dest_path.exists() {
-        return Err("同名のファイルまたはフォルダが既に存在します".to_string());
+        let path_for_name = std::path::Path::new(file_name);
+        let stem = path_for_name.file_stem()
+            .map(|s| s.to_string_lossy().to_string())
+            .ok_or_else(|| "ファイル名が不正です".to_string())?;
+        let ext = path_for_name.extension().map(|e| e.to_string_lossy().to_string());
+
+        let re = regex::Regex::new(r"_(\d{2})$").unwrap();
+        let base_stem = re.replace(&stem, "").into_owned();
+
+        let mut count = 0;
+        while dest_path.exists() {
+            count += 1;
+            let target_name = if let Some(ref ext_str) = ext {
+                format!("{}_{:02}.{}", base_stem, count, ext_str)
+            } else {
+                format!("{}_{:02}", base_stem, count)
+            };
+            dest_path = canon_target_parent.join(&target_name);
+        }
     }
 
     fs::rename(&canon_src, &dest_path).map_err(|e| e.to_string())?;
@@ -654,23 +672,23 @@ fn copy_file_or_dir(source_path: String, target_parent_path: String) -> Result<S
     
     let ext = path_for_name.extension().map(|e| e.to_string_lossy().to_string());
 
-    // 衝突回避のための新規パス生成
-    let mut target_name = if let Some(ref ext_str) = ext {
-        format!("{}_copy.{}", stem, ext_str)
-    } else {
-        format!("{}_copy", stem)
-    };
-    let mut dest_path = canon_target_parent.join(&target_name);
+    let mut dest_path = canon_target_parent.join(file_name);
 
-    let mut count = 0;
-    while dest_path.exists() {
-        count += 1;
-        target_name = if let Some(ref ext_str) = ext {
-            format!("{}_copy_{:02}.{}", stem, count, ext_str)
-        } else {
-            format!("{}_copy_{:02}", stem, count)
-        };
-        dest_path = canon_target_parent.join(&target_name);
+    // 同名ファイル存在時は連番処理で衝突回避
+    if dest_path.exists() {
+        let re = regex::Regex::new(r"_(\d{2})$").unwrap();
+        let base_stem = re.replace(&stem, "").into_owned();
+
+        let mut count = 0;
+        while dest_path.exists() {
+            count += 1;
+            let target_name = if let Some(ref ext_str) = ext {
+                format!("{}_{:02}.{}", base_stem, count, ext_str)
+            } else {
+                format!("{}_{:02}", base_stem, count)
+            };
+            dest_path = canon_target_parent.join(&target_name);
+        }
     }
 
     // セキュリティチェック（新しいパスも home_folder 配下にあること）

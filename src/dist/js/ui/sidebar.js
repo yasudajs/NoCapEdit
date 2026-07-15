@@ -1148,6 +1148,21 @@ function isItemVisible(el) {
 }
 
 export async function focusSidebarTree() {
+    // もしツリーが非表示なら開く
+    if (!appState.sidebarVisible) {
+        appState.sidebarVisible = true;
+        if (elements.sidebar) {
+            elements.sidebar.classList.remove('hidden');
+        }
+        if (elements.sidebarResizeHandle) {
+            elements.sidebarResizeHandle.classList.remove('hidden');
+        }
+        if (elements.iconBar) {
+            elements.iconBar.style.width = 'var(--sidebar-width)';
+        }
+        saveSettingsDelay();
+    }
+
     // 現在アクティブなタブの実ファイルを探す
     let activeFilePath = null;
     if (appState.tabs && appState.currentTab) {
@@ -1211,4 +1226,41 @@ export async function focusSidebarTree() {
         firstItem.focus();
         firstItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
+}
+
+export async function createItemGlobally(isDir) {
+    // 1. ツリーが閉じていれば開く
+    if (!appState.sidebarVisible) {
+        appState.sidebarVisible = true;
+        if (elements.sidebar) {
+            elements.sidebar.classList.remove('hidden');
+        }
+        if (elements.sidebarResizeHandle) {
+            elements.sidebarResizeHandle.classList.remove('hidden');
+        }
+        if (elements.iconBar) {
+            elements.iconBar.style.width = 'var(--sidebar-width)';
+        }
+        saveSettingsDelay();
+    }
+
+    // 2. 現在選択されているアイテムがあればそれを対象にする。無ければルート直下（contextMenuTargetをクリア）
+    if (selectedElement && selectedPath) {
+        contextMenuTarget = {
+            filePath: selectedPath,
+            isDir: selectedElement.dataset.isDir === "true",
+            fileName: selectedElement.dataset.fileName,
+            element: selectedElement
+        };
+    } else {
+        contextMenuTarget = {
+            filePath: null,
+            isDir: false,
+            fileName: null,
+            element: null
+        };
+    }
+
+    // 3. インライン作成開始
+    createNewItemInTree(isDir);
 }

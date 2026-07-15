@@ -4,7 +4,7 @@ import { createNewTab, updateStatus, updateTabStatus, renderTabs } from './ui/ta
 import { openExistingFile, triggerManualSave, persistAllTabsBeforeExit } from './core/fileSystem.js';
 import { updateEditorMetrics, onEditorInput, zoomIn, zoomOut, applyFontSize, applyLineHeight, increaseLineHeight, decreaseLineHeight } from './ui/editor.js';
 import { toggleSettingsDialog, closeSettingsDialog, openSettingsDialog, applyThemeUI, onThemeChange, onFontFamilyChange, loadSystemFonts, checkNewVersion } from './ui/settings.js';
-import { initSidebar, loadDirectory, focusSidebarTree } from './ui/sidebar.js';
+import { initSidebar, loadDirectory, focusSidebarTree, createItemGlobally } from './ui/sidebar.js';
 import { normalizePathForComparison, getParentPath } from './utils/helpers.js';
 
 function setupUIEventListeners() {
@@ -215,6 +215,22 @@ function setupUIEventListeners() {
             else if (e.key === 'e' || e.key === 'E' || e.code === 'KeyE') {
                 e.preventDefault();
                 focusSidebarTree();
+            }
+            else if (e.key === 'n' || e.key === 'N' || e.code === 'KeyN') {
+                const activeEl = document.activeElement;
+                if (activeEl && activeEl.tagName === 'INPUT' && activeEl.classList.contains('tree-input')) {
+                    return;
+                }
+                e.preventDefault();
+                createItemGlobally(false);
+            }
+            else if (e.key === 'd' || e.key === 'D' || e.code === 'KeyD') {
+                const activeEl = document.activeElement;
+                if (activeEl && activeEl.tagName === 'INPUT' && activeEl.classList.contains('tree-input')) {
+                    return;
+                }
+                e.preventDefault();
+                createItemGlobally(true);
             }
         }
     });
