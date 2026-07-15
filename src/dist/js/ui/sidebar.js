@@ -368,6 +368,199 @@ export function renderFileTree(files, container, openFolders = null) {
         itemDiv.dataset.fileName = file.file_name;
         itemDiv.dataset.isDir = file.is_dir;
 
+        // キーボード操作とショートカットのイベントリスナー
+        itemDiv.addEventListener('keydown', async (e) => {
+            // INPUTタグやTEXTAREA、あるいはインライン編集でのキー入力時は何もしない
+            const activeEl = document.activeElement;
+            if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.isContentEditable)) {
+                return;
+            }
+
+            const isDir = itemDiv.dataset.isDir === "true";
+            const filePath = itemDiv.dataset.filePath;
+
+            // 1. フォーカス・選択移動 (ArrowDown, ArrowUp, ArrowRight, ArrowLeft)
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                const allItems = Array.from(elements.fileTree.querySelectorAll('.tree-item'));
+                const visibleItems = allItems.filter(isItemVisible);
+                const currentIndex = visibleItems.indexOf(itemDiv);
+                if (currentIndex !== -1 && currentIndex < visibleItems.length - 1) {
+                    const nextItem = visibleItems[currentIndex + 1];
+                    selectItem(nextItem, nextItem.dataset.filePath);
+                    makeSelectionActive();
+                    nextItem.focus();
+                    nextItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                }
+            } 
+            else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                const allItems = Array.from(elements.fileTree.querySelectorAll('.tree-item'));
+                const visibleItems = allItems.filter(isItemVisible);
+                const currentIndex = visibleItems.indexOf(itemDiv);
+                if (currentIndex > 0) {
+                    const prevItem = visibleItems[currentIndex - 1];
+                    selectItem(prevItem, prevItem.dataset.filePath);
+                    makeSelectionActive();
+                    prevItem.focus();
+                    prevItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                }
+            } 
+            else if (e.key === 'ArrowRight') {
+                if (isDir) {
+                    e.preventDefault();
+                    const childrenContainer = itemDiv.nextElementSibling;
+                    if (childrenContainer && childrenContainer.classList.contains('tree-children')) {
+                        const isHidden = childrenContainer.classList.contains('hidden');
+                        if (isHidden) {
+                            itemDiv.click(); // 展開
+                        } else {
+                            // すでに展開されている場合、最初の子要素を選択
+                            const firstChild = childrenContainer.querySelector('.tree-item');
+                            if (firstChild && isItemVisible(firstChild)) {
+                                selectItem(firstChild, firstChild.dataset.filePath);
+                                makeSelectionActive();
+                                firstChild.focus();
+                                firstChild.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                            }
+                        }
+                    }
+                }
+            } 
+            else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                if (isDir) {
+                    const childrenContainer = itemDiv.nextElementSibling;
+                    if (childrenContainer && childrenContainer.classList.contains('tree-children') && !childrenContainer.classList.contains('hidden')) {
+                        itemDiv.click(); // 折りたたむ
+                        return;
+                    }
+                }
+                // 親フォルダに移動
+                const parentContainer = itemDiv.parentElement;
+                if (parentContainer && parentContainer.classList.contains('tree-children')) {
+                    const parentItem = parentContainer.previousElementSibling;
+                    if (parentItem && parentItem.classList.contains('tree-item')) {
+                        selectItem(parentItem, parentItem.dataset.filePath);
+                        makeSelectionActive();
+                        parentItem.focus();
+                        parentItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                    }
+                }
+            }
+            // 2. 決定処理 (Enter)
+            else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (isDir) {
+                    itemDiv.click();
+                } else {
+                    const tab = appState.tabs.find(t => normalizePathForComparison(t.filePath) === normalizePathForComparison(filePath));
+                    const isCurrentlyActive = tab && tab.id === appState.currentTab;
+                    if (!isCurrentlyActive) {
+                        openFileFromTree(file);
+                    }
+                    // エディタへフォーカス
+                    if (elements.editor) {
+                        elements.editor.focus();
+                    }
+                }
+            }
+            // 3. エディタへフォーカスを戻す (Esc)
+            else if (e.key === 'Escape') {
+                e.preventDefault();
+                if (elements.editor) {
+                    elements.editor.focus();
+                }
+            }
+            // 4. ショートカット操作 (Ctrl + N, Ctrl + D, F2, Ctrl + C, Ctrl + V)
+            else if (e.ctrlKey) {
+                if (e.key === 'n' || e.key === 'N' || e.code === 'KeyN') {
+                    e.preventDefault();
+                    // 新規ファイル作成
+                    contextMenuTarget = {
+                        filePath: filePath,
+                        isDir: isDir,
+                        fileName: itemDiv.dataset.fileName,
+                        element: itemDiv
+                    };
+                    createNewItemInTree(false);
+                } 
+                else if (e.key === 'd' || e.key === 'D' || e.code === 'KeyD') {
+                    e.preventDefault();
+                    // 新規フォルダ作成
+                    contextMenuTarget = {
+                        filePath: filePath,
+                        isDir: isDir,
+                        fileName: itemDiv.dataset.fileName,
+                        element: itemDiv
+                    };
+                    createNewItemInTree(true);
+                } 
+                else if (e.key === 'c' || e.key === 'C' || e.code === 'KeyC') {
+                    e.preventDefault();
+                    // パスをコピー
+                    copiedPath = filePath;
+                    copiedIsDir = isDir;
+                    updateStatus(`"${itemDiv.dataset.fileName}" をコピーしました`);
+                } 
+                else if (e.key === 'v' || e.key === 'V' || e.code === 'KeyV') {
+                    e.preventDefault();
+                    if (!copiedPath) {
+                        updateStatus('コピーされたファイル/フォルダがありません', 'error', true);
+                        return;
+                    }
+                    
+                    let destParentPath = isDir ? filePath : getParentPath(filePath);
+                    if (!destParentPath) {
+                        destParentPath = appState.homeFolder;
+                    }
+
+                    // 循環コピーチェック
+                    const normalizedSrc = normalizePathForComparison(copiedPath).replace(/\\/g, '/');
+                    const normalizedDest = normalizePathForComparison(destParentPath).replace(/\\/g, '/');
+                    if (copiedIsDir && (normalizedDest === normalizedSrc || normalizedDest.startsWith(normalizedSrc + '/'))) {
+                        updateStatus('自分自身またはサブフォルダへはコピーできません', 'error', true);
+                        return;
+                    }
+
+                    try {
+                        updateStatus('貼り付け中...');
+                        const newPath = await invoke('copy_file_or_dir', { sourcePath: copiedPath, targetParentPath: destParentPath });
+                        
+                        // 再読み込み
+                        const openFolders = new Set();
+                        elements.fileTree.querySelectorAll('.tree-children:not(.hidden)').forEach(el => {
+                            const prev = el.previousElementSibling;
+                            if (prev && prev.dataset.filePath) {
+                                openFolders.add(normalizePathForComparison(prev.dataset.filePath));
+                            }
+                        });
+                        
+                        // 貼り付け先の親フォルダを展開状態として記憶する
+                        openFolders.add(normalizePathForComparison(destParentPath));
+                        
+                        await loadDirectory(null, elements.fileTree, openFolders);
+                        clearSelection();
+                        updateStatus('貼り付けが完了しました');
+                    } catch (err) {
+                        console.error('Failed to copy file/dir:', err);
+                        updateStatus(`コピーに失敗しました: ${err}`, 'error', true);
+                    }
+                }
+            } 
+            else if (e.key === 'F2') {
+                e.preventDefault();
+                // インライン名前変更
+                contextMenuTarget = {
+                    filePath: filePath,
+                    isDir: isDir,
+                    fileName: itemDiv.dataset.fileName,
+                    element: itemDiv
+                };
+                startRenameInTree();
+            }
+        });
+
         // 右クリックで選択状態にする
         itemDiv.addEventListener('contextmenu', (e) => {
             e.preventDefault();
@@ -936,5 +1129,86 @@ export async function deleteItemPermanentlyInTree(targetPath, targetElement) {
     } catch (e) {
         console.error('Failed to permanently delete item:', e);
         updateStatus(`削除に失敗しました: ${e}`, 'error', true);
+    }
+}
+
+// コピー＆ペースト用の状態管理
+export let copiedPath = null;
+export let copiedIsDir = false;
+
+function isItemVisible(el) {
+    let parent = el.parentElement;
+    while (parent && parent !== elements.fileTree) {
+        if (parent.classList.contains('tree-children') && parent.classList.contains('hidden')) {
+            return false;
+        }
+        parent = parent.parentElement;
+    }
+    return true;
+}
+
+export async function focusSidebarTree() {
+    // 現在アクティブなタブの実ファイルを探す
+    let activeFilePath = null;
+    if (appState.tabs && appState.currentTab) {
+        const activeTab = appState.tabs.find(t => t.id === appState.currentTab);
+        if (activeTab && activeTab.filePath) {
+            activeFilePath = activeTab.filePath;
+        }
+    }
+
+    if (activeFilePath) {
+        const normActive = normalizePathForComparison(activeFilePath).replace(/\\/g, '/');
+        const homeNorm = normalizePathForComparison(appState.homeFolder).replace(/\\/g, '/');
+        
+        if (normActive.startsWith(homeNorm)) {
+            // 親フォルダのパスを全て収集
+            const openFolders = new Set();
+            elements.fileTree.querySelectorAll('.tree-children:not(.hidden)').forEach(el => {
+                const prev = el.previousElementSibling;
+                if (prev && prev.dataset.filePath) {
+                    openFolders.add(normalizePathForComparison(prev.dataset.filePath));
+                }
+            });
+
+            const relativePart = normActive.substring(homeNorm.length).replace(/^\//, '');
+            const segments = relativePart.split('/');
+            
+            let currentPath = homeNorm;
+            for (let i = 0; i < segments.length - 1; i++) {
+                currentPath = (currentPath + '/' + segments[i]).replace(/\/$/, '');
+                openFolders.add(normalizePathForComparison(currentPath));
+            }
+
+            // ツリー全体を再描画（自動展開される）
+            await loadDirectory(null, elements.fileTree, openFolders);
+
+            const normTarget = normalizePathForComparison(activeFilePath);
+            const items = elements.fileTree.querySelectorAll('.tree-item');
+            let targetEl = null;
+            for (const item of items) {
+                if (normalizePathForComparison(item.dataset.filePath) === normTarget) {
+                    targetEl = item;
+                    break;
+                }
+            }
+
+            if (targetEl) {
+                selectItem(targetEl, activeFilePath);
+                makeSelectionActive();
+                targetEl.focus();
+                targetEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                return;
+            }
+        }
+    }
+
+    // 開いている実ファイルがない場合は先頭のアイテムを選択
+    const firstItem = elements.fileTree.querySelector('.tree-item');
+    if (firstItem) {
+        selectItem(firstItem, firstItem.dataset.filePath);
+        makeSelectionActive();
+        firstItem.focus();
+        firstItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
 }
