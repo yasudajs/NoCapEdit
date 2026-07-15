@@ -341,7 +341,7 @@ export async function renderFileTree(files, container, openFolders = null) {
         return;
     }
 
-    files.forEach(file => {
+    for (const file of files) {
         const itemDiv = document.createElement('div');
         itemDiv.className = 'tree-item';
         itemDiv.tabIndex = 0; // フォーカス可能にする
@@ -845,7 +845,7 @@ export async function renderFileTree(files, container, openFolders = null) {
             });
             container.appendChild(itemDiv);
         }
-    });
+    }
 }
 
 export function openFileFromTree(file) {
