@@ -444,6 +444,15 @@ async function init() {
     try {
         // 設定を取得
         const settings = await invoke('get_settings');
+
+        // コンテキストメニュー制限の適用
+        const isDebug = await invoke('is_debug');
+        if (!isDebug) {
+            document.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+            });
+        }
+
         appState.homeFolder = settings.home_folder;
         appState.theme = settings.theme || 'dark';
         appState.fontSize = settings.font_size || 13;
