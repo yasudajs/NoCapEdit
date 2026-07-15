@@ -327,14 +327,14 @@ export async function loadDirectory(path, parentElement, openFolders = null) {
 
     try {
         const files = await invoke('read_directory', { path });
-        renderFileTree(files, parentElement, openFolders);
+        await renderFileTree(files, parentElement, openFolders);
     } catch (e) {
         console.error('Failed to load directory:', e);
         parentElement.innerHTML = `<div class="tree-error">読み込みエラー: ${e}</div>`;
     }
 }
 
-export function renderFileTree(files, container, openFolders = null) {
+export async function renderFileTree(files, container, openFolders = null) {
     container.innerHTML = '';
     if (files.length === 0) {
         container.innerHTML = '<div class="tree-empty">フォルダは空です</div>';
@@ -818,7 +818,7 @@ export function renderFileTree(files, container, openFolders = null) {
                 childrenContainer.classList.remove('hidden');
                 iconSpan.textContent = '📂';
                 childrenContainer.innerHTML = '<div class="tree-loading">読み込み中...</div>';
-                loadDirectory(file.file_path, childrenContainer, openFolders);
+                await loadDirectory(file.file_path, childrenContainer, openFolders);
             }
         } else {
             // 開いているファイルがアクティブであるかのチェック
