@@ -56,8 +56,10 @@ function preserveTabOnMove(srcPath, destParentPath) {
 
 // 選択状態の操作ヘルパー
 export function clearSelection() {
-    if (selectedElement) {
-        selectedElement.classList.remove('selected', 'selected-inactive');
+    if (elements.fileTree) {
+        elements.fileTree.querySelectorAll('.tree-item.selected, .tree-item.selected-inactive').forEach(el => {
+            el.classList.remove('selected', 'selected-inactive');
+        });
     }
     selectedPath = null;
     selectedElement = null;
