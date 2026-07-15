@@ -268,6 +268,10 @@ export function initSidebar() {
     elements.fileTree.addEventListener('focusout', (e) => {
         console.log('Sidebar: focusout event triggered.');
         setTimeout(() => {
+            if (isReloadingTree) {
+                console.log('Sidebar: focusout skipped because isReloadingTree is true.');
+                return;
+            }
             const activeEl = document.activeElement;
             const isTreeFocused = elements.fileTree && elements.fileTree.contains(activeEl);
             console.log('Sidebar: focusout setTimeout running. activeElement is:', activeEl ? (activeEl.dataset.filePath || activeEl.tagName) : 'null', 'isTreeFocused:', isTreeFocused);
@@ -353,11 +357,14 @@ export async function loadDirectory(path, parentElement, openFolders = null) {
     }
 
     try {
+        isReloadingTree = true;
         const files = await invoke('read_directory', { path });
         await renderFileTree(files, parentElement, openFolders);
     } catch (e) {
         console.error('Failed to load directory:', e);
         parentElement.innerHTML = `<div class="tree-error">読み込みエラー: ${e}</div>`;
+    } finally {
+        isReloadingTree = false;
     }
 }
 
@@ -368,10 +375,6 @@ export async function renderFileTree(files, container, openFolders = null) {
     
     console.log('Sidebar: renderFileTree started. container:', container.className || container.id || 'childContainer', 'treeHadFocus:', treeHadFocus, 'forceTreeFocusOnNextRender:', forceTreeFocusOnNextRender, 'selectedPath:', selectedPath);
     
-    if (container === elements.fileTree) {
-        forceTreeFocusOnNextRender = false;
-    }
-
     container.innerHTML = '';
     if (files.length === 0) {
         container.innerHTML = '<div class="tree-empty">フォルダは空です</div>';
@@ -608,6 +611,7 @@ export async function renderFileTree(files, container, openFolders = null) {
                             
                             console.log('Sidebar: Ctrl+V (move) loading directory with folders:', Array.from(openFolders));
                             await loadDirectory(null, elements.fileTree, openFolders);
+                            forceTreeFocusOnNextRender = false;
                             updateStatus('移動が完了しました');
                         } catch (err) {
                             console.error('Failed to move file/dir:', err);
@@ -641,6 +645,7 @@ export async function renderFileTree(files, container, openFolders = null) {
                             
                             console.log('Sidebar: Ctrl+V (copy) loading directory with folders:', Array.from(openFolders));
                             await loadDirectory(null, elements.fileTree, openFolders);
+                            forceTreeFocusOnNextRender = false;
                             updateStatus('貼り付けが完了しました');
                         } catch (err) {
                             console.error('Failed to copy file/dir:', err);
@@ -1449,6 +1454,7 @@ export async function deleteItemPermanentlyInTree(targetPath, targetElement) {
     }
 }
 
+export let isReloadingTree = false;
 export let forceTreeFocusOnNextRender = false;
 
 // クリップボード用の状態管理 (コピー / 切り取り)
