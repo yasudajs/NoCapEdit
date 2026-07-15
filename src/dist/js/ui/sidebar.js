@@ -1016,6 +1016,24 @@ export async function createNewItemInTree(isDir) {
             }
 
             if (!isDir) {
+                let targetEl = null;
+                if (newPath) {
+                    const normNewPath = normalizePathForComparison(newPath);
+                    const items = elements.fileTree.querySelectorAll('.tree-item');
+                    for (const item of items) {
+                        if (normalizePathForComparison(item.dataset.filePath) === normNewPath) {
+                            targetEl = item;
+                            break;
+                        }
+                    }
+                }
+                if (targetEl) {
+                    clearSelection();
+                    selectedElement = targetEl;
+                    selectedPath = newPath;
+                    targetEl.classList.add('selected-inactive');
+                }
+
                 await openExistingFile(newPath);
                 if (elements.editor) {
                     elements.editor.focus();
@@ -1088,8 +1106,12 @@ export async function createNewItemInTree(isDir) {
 
     input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
+            e.preventDefault();
+            e.stopPropagation();
             commitCreate();
         } else if (e.key === 'Escape') {
+            e.preventDefault();
+            e.stopPropagation();
             cancelCreate();
         }
     });
@@ -1228,8 +1250,12 @@ export async function startRenameInTree() {
 
     input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
+            e.preventDefault();
+            e.stopPropagation();
             commitRename();
         } else if (e.key === 'Escape') {
+            e.preventDefault();
+            e.stopPropagation();
             cancelRename();
         }
     });
