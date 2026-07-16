@@ -99,6 +99,7 @@ body {
 
 .top-bar-right {
     flex: 1;
+    min-width: 0;
 }
 
 /* メインコンテンツ（トップバーの下） */
@@ -213,6 +214,7 @@ body {
     align-items: flex-end;
     height: 100%;
     overflow: hidden;
+    min-width: 0;
 }
 
 .tabs-container {
@@ -223,6 +225,7 @@ body {
     height: 100%;
     overflow-x: auto;
     overflow-y: hidden;
+    min-width: 0;
 }
 
 .tabs-container::-webkit-scrollbar {

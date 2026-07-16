@@ -273,8 +273,27 @@ export function renderTabs() {
 
         tabEl.appendChild(nameEl);
         tabEl.appendChild(closeEl);
-        tabEl.addEventListener('click', () => switchTab(tab.id));
-
         elements.tabsContainer.appendChild(tabEl);
     });
+
+    // アクティブなタブを可視領域へ自動スクロールする
+    const activeTab = elements.tabsContainer.querySelector('.tab.active');
+    if (activeTab) {
+        requestAnimationFrame(() => {
+            const container = elements.tabsContainer;
+            const activeRect = activeTab.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+
+            const relativeLeft = activeRect.left - containerRect.left;
+            const relativeRight = activeRect.right - containerRect.left;
+
+            if (relativeLeft < 0) {
+                // タブが左に隠れている場合
+                container.scrollBy({ left: relativeLeft, behavior: 'smooth' });
+            } else if (relativeRight > containerRect.width) {
+                // タブが右に隠れている場合
+                container.scrollBy({ left: relativeRight - containerRect.width, behavior: 'smooth' });
+            }
+        });
+    }
 }
