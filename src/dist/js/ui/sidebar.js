@@ -1732,11 +1732,6 @@ export async function focusSidebarTree() {
 }
 
 export async function createItemGlobally(isDir) {
-    const activeEl = document.activeElement;
-    // フォーカスがツリー上のアイテムにない、またはサイドバーが非表示の場合はルート直下に作成する
-    const isTreeFocused = activeEl && activeEl.classList.contains('tree-item');
-    const shouldCreateAtRoot = !appState.sidebarVisible || !isTreeFocused;
-
     // 1. ツリーが閉じていれば開く
     if (!appState.sidebarVisible) {
         appState.sidebarVisible = true;
@@ -1752,8 +1747,8 @@ export async function createItemGlobally(isDir) {
         saveSettingsDelay();
     }
 
-    // 2. 現在選択されているアイテムがあればそれを対象にする。無ければルート直下（contextMenuTargetをクリア）
-    if (!shouldCreateAtRoot && selectedElement && selectedPath) {
+    // 2. 現在選択されているアイテムがあればそれを対象にする。無ければルート直下
+    if (selectedElement && selectedPath) {
         contextMenuTarget = {
             filePath: selectedPath,
             isDir: selectedElement.dataset.isDir === "true",
