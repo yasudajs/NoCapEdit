@@ -1,6 +1,6 @@
 import { appState, elements, initElements } from './state.js';
 import { invoke, appWindow, listen, ensureTauriApi } from './core/tauri.js';
-import { createNewTab, updateStatus, updateTabStatus, renderTabs } from './ui/tabs.js';
+import { createNewTab, updateStatus, updateTabStatus, renderTabs, switchTabByOffset } from './ui/tabs.js';
 import { openExistingFile, triggerManualSave, persistAllTabsBeforeExit } from './core/fileSystem.js';
 import { updateEditorMetrics, onEditorInput, zoomIn, zoomOut, applyFontSize, applyLineHeight, increaseLineHeight, decreaseLineHeight } from './ui/editor.js';
 import { toggleSettingsDialog, closeSettingsDialog, openSettingsDialog, applyThemeUI, onThemeChange, onFontFamilyChange, loadSystemFonts, checkNewVersion } from './ui/settings.js';
@@ -171,10 +171,17 @@ function setupUIEventListeners() {
         }
     }, { passive: false });
 
-    window.addEventListener('keydown', (e) => {
+    window.addEventListener('keydown', async (e) => {
         // F5 キーによるリロードを禁止
         if (e.key === 'F5' || e.code === 'F5') {
             e.preventDefault();
+            return;
+        }
+
+        // Ctrl + Tab / Ctrl + Shift + Tab でタブ切り替え
+        if (e.key === 'Tab' && e.ctrlKey) {
+            e.preventDefault();
+            await switchTabByOffset(e.shiftKey ? -1 : 1);
             return;
         }
 
