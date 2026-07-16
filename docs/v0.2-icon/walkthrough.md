@@ -32,6 +32,13 @@ AIで生成した「NoCapEditの円形要素をキャンバスいっぱいに最
 * **リリースビルド検証 (`cargo tauri build`)**:
   * Windowsインストーラー（MSI / NSIS）のビルドがエラーなく成功し、`target/release/bundle/nsis/NoCapEdit_0.2.16_x64-setup.exe` が正常に出力されることを確認しました。
 
+### 抽出したバイナリアイコンの確認
+ビルドされた `target/release/NoCapEdit.exe` から、プログラムで内部に埋め込まれているアイコンリソースを直接抽出しました。抽出された画像は以下の通りです：
+
+![バイナリから抽出したアプリアイコン](file:///C:/Users/yjsmo/.gemini/antigravity/brain/e4ff228d-7b82-4a5e-8597-57a258579e0f/extracted_icon.png)
+
+上記画像で「2」が表示されている場合、**バイナリ自体には正しく新アプリアイコンが埋め込まれています**。
+
 ---
 
 ## 変更コミットおよびプッシュ
