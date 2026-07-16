@@ -1,13 +1,12 @@
-# タスクリスト：v0.2系 バージョン識別用アイコン適用およびポータブル版リネーム
+# タスクリスト：正しいアイコンデザインの再適用
 
-- [x] ポータブル版ビルド手順のリネーム対応
-  - [x] [DEVELOPMENT.md](file:///c:/work/NoCapEdit/docs/DEVELOPMENT.md) のポータブル版ビルドコマンド記述の変更
-  - [x] [spec.md](file:///c:/work/NoCapEdit/docs/spec.md) にポータブル版のファイル名についての説明を追記
-  - [x] [implementation_plan.md](file:///c:/work/NoCapEdit/docs/v0.2-icon/implementation_plan.md) の内容を新方針（ポータブル版リネームのみ）へ更新
-- [x] ポータブル版ビルドの再実行と検証
-  - [x] リネームを含めたポータブル版ビルドコマンドをローカルでテスト実行
-  - [x] 作成された ZIP 内のファイル名が `NoCapEdit_v02.exe` になっていることを確認
-- [x] ドキュメントの最終化とプッシュ
-  - [x] `history.md` にポータブル版リネームに関する履歴を追記
-  - [x] `walkthrough.md` に検証結果を反映
-  - [x] コミットとプッシュ
+- [x] 正しいアイコン画像（Eマークと同デザインの「2」）の適用
+  - [x] 合意した画像 `icon_v2_e_styled_1784243026143.jpg` を PNG に変換し、`icons/icon.png` に配置
+  - [x] `cargo tauri icon` を実行してアプリアイコン群を再生成
+- [x] 再ビルドと検証
+  - [x] `cargo clean` の実行
+  - [x] `cargo build --release` による再コンパイル
+  - [x] ポータブル版の作成（`NoCapEdit_v02.exe` のリネームとZIP化）
+  - [x] 作成されたバイナリからアイコンを抽出し、デザインが合意通りの白抜き「2」になっているか確認
+- [/] コミットとプッシュ
+  - [/] 変更内容をコミットし、リモートリポジトリへプッシュ
