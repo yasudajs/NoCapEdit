@@ -779,6 +779,11 @@ body {
     color: var(--text-secondary);
 }
 
+body.light-theme .tree-item.selected {
+    background-color: #CCE8FF !important;
+    color: var(--text-primary) !important;
+}
+
 body.light-theme .tree-item.selected-inactive {
     background-color: #d0d0d0 !important;
     color: var(--text-primary) !important;
