@@ -1,8 +1,8 @@
 import { appState, elements, savedEditorCursor, setSavedEditorCursor, DEFAULT_MONOSPACE_FONTS } from '../state.js';
 import { invoke, openDialog, ensureTauriApi, appWindow } from '../core/tauri.js';
-import { updateStatus, renderTabs, createNewTab, shouldDeleteEmptyFile } from './tabs.js';
+import { updateStatus, renderTabs, createNewTab } from './tabs.js';
 import { updateEditorMetrics } from './editor.js';
-import { autoSave } from '../core/fileSystem.js';
+import { autoSave, shouldDeleteEmptyFile } from '../core/fileSystem.js';
 import { compareVersions } from '../utils/helpers.js';
 
 let settingsSaveTimer = null;

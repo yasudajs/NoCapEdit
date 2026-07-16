@@ -12,17 +12,6 @@ export function getCurrentTab() {
     return appState.tabs.find((t) => t.id === appState.currentTab) || null;
 }
 
-export function shouldDeleteEmptyFile(tab) {
-    if (!tab.filePath) {
-        return false;
-    }
-    const trimmed = tab.content.trim();
-    if (trimmed !== '') {
-        return false;
-    }
-    return isAutoCreatedFileName(tab.fileName);
-}
-
 export function formatTabDisplayName(fileName) {
     if (/^(\[)?未保存\d+(\])?$/.test(fileName)) {
         return fileName;

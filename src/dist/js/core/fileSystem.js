@@ -215,41 +215,6 @@ export async function persistAllTabsBeforeExit() {
     return true;
 }
 
-export function registerCloseHandler() {
-    if (!appWindow || typeof appWindow.onCloseRequested !== 'function') {
-        return;
-    }
-
-    appWindow.onCloseRequested(async (event) => {
-        if (appState.forceClosing) {
-            return;
-        }
-
-        event.preventDefault();
-
-        if (appState.closeGuard) {
-            return;
-        }
-        appState.closeGuard = true;
-
-        try {
-            const ok = await persistAllTabsBeforeExit();
-            if (!ok) {
-                appState.closeGuard = false;
-                return;
-            }
-
-            appState.forceClosing = true;
-            await invoke('exit_app');
-        } catch (error) {
-            console.error('Failed while processing app close:', error);
-            updateStatus('終了処理失敗', 'error');
-            appState.closeGuard = false;
-            appState.forceClosing = false;
-        }
-    });
-}
-
 export async function autoSave() {
     if (!appState.currentTab) return;
 

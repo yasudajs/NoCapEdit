@@ -1,9 +1,44 @@
 import { appState, elements, initElements } from './state.js';
 import { invoke, appWindow, listen, ensureTauriApi } from './core/tauri.js';
 import { createNewTab, updateStatus, renderTabs, switchTabByOffset } from './ui/tabs.js';
-import { openExistingFile, triggerManualSave, registerCloseHandler } from './core/fileSystem.js';
+import { openExistingFile, triggerManualSave, persistAllTabsBeforeExit } from './core/fileSystem.js';
 import { updateEditorMetrics, onEditorInput, zoomIn, zoomOut, applyFontSize, applyLineHeight, increaseLineHeight, decreaseLineHeight, handleTabKey } from './ui/editor.js';
 import { toggleSettingsDialog, closeSettingsDialog, openSettingsDialog, applyThemeUI, onThemeChange, onFontFamilyChange, loadSystemFonts, checkNewVersion, applyFontFamily } from './ui/settings.js';
+
+function registerCloseHandler() {
+    if (!appWindow || typeof appWindow.onCloseRequested !== 'function') {
+        return;
+    }
+
+    appWindow.onCloseRequested(async (event) => {
+        if (appState.forceClosing) {
+            return;
+        }
+
+        event.preventDefault();
+
+        if (appState.closeGuard) {
+            return;
+        }
+        appState.closeGuard = true;
+
+        try {
+            const ok = await persistAllTabsBeforeExit();
+            if (!ok) {
+                appState.closeGuard = false;
+                return;
+            }
+
+            appState.forceClosing = true;
+            await invoke('exit_app');
+        } catch (error) {
+            console.error('Failed while processing app close:', error);
+            updateStatus('終了処理失敗', 'error');
+            appState.closeGuard = false;
+            appState.forceClosing = false;
+        }
+    });
+}
 
 async function init() {
     console.log('NoCapEdit initializing...');
