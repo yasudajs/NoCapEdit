@@ -5,6 +5,12 @@ NoCapEdit のバージョンアップおよび仕様変更の履歴です。
 
 ## 改定履歴一覧
 
+### Ver 0.2.15 | 2026-07-17 | Antigravity
+- エディタ上で Ctrl + Tab または Ctrl + Shift + Tab キーによるタブ切り替え時に、エディタに Tab 文字（インデント）が入力されてしまう不具合を修正：
+  - [js/main.js](file:///c:/work/NoCapEdit/src/dist/js/main.js) 内のエディタ用 keydown リスナーにおいて、Ctrl キーまたは Alt キーが同時に押されている場合はインデント処理をバイパスするガード条件を追加。
+
+---
+
 ### Ver 0.2.14 | 2026-07-16 | yasudajs
 - タブオーバーフロー時の自動スクロール機能およびキーボードナビゲーション（Phase 5.4）を実装：
   - タブバー領域がオーバーフローした際、アクティブなタブが隠れないように `requestAnimationFrame` と `getBoundingClientRect` を用いて、タブコンテナ（`.tabs-container`）のスクロール位置を自動的にスクロール（`scrollBy`）させる処理を実装。

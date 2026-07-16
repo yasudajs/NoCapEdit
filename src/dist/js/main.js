@@ -66,6 +66,11 @@ function setupUIEventListeners() {
 
     elements.editor.addEventListener('keydown', (e) => {
         if (e.key === 'Tab') {
+            // CtrlキーやAltキーが同時に押されている場合は、タブ移動などのショートカットとして処理するため、ここでは無視する
+            if (e.ctrlKey || e.altKey) {
+                return;
+            }
+
             e.preventDefault();
 
             const start = elements.editor.selectionStart;
