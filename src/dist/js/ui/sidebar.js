@@ -334,6 +334,7 @@ export function initSidebar() {
                 console.error('Failed to move file/dir to root:', err);
                 updateStatus(`移動に失敗しました: ${err}`, 'error', true);
             }
+            }
         });
     }
 }
