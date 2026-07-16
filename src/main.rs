@@ -946,7 +946,7 @@ fn main() {
             .min_inner_size(WINDOW_MIN_WIDTH, WINDOW_MIN_HEIGHT)
             .resizable(true)
             .fullscreen(false)
-            .visible(false)
+            .visible(true)
             .disable_file_drop_handler()
             .build()?;
             
