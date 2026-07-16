@@ -273,6 +273,7 @@ export function renderTabs() {
 
         tabEl.appendChild(nameEl);
         tabEl.appendChild(closeEl);
+        tabEl.addEventListener('click', () => switchTab(tab.id));
         elements.tabsContainer.appendChild(tabEl);
     });
 
@@ -296,4 +297,20 @@ export function renderTabs() {
             }
         });
     }
+}
+
+// タブをオフセット指定で切り替え（キーボードナビゲーション用）
+export async function switchTabByOffset(offset) {
+    if (appState.tabs.length <= 1) return;
+    const currentIdx = appState.tabs.findIndex(t => t.id === appState.currentTab);
+    if (currentIdx === -1) return;
+
+    let nextIdx = currentIdx + offset;
+    if (nextIdx >= appState.tabs.length) {
+        nextIdx = 0; // 右端なら先頭にループ
+    } else if (nextIdx < 0) {
+        nextIdx = appState.tabs.length - 1; // 左端なら末尾にループ
+    }
+
+    await switchTab(appState.tabs[nextIdx].id);
 }
