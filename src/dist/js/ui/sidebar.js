@@ -421,6 +421,8 @@ export async function renderFileTree(files, container, openFolders = null) {
     }
 
     // 3. 差分更新と並び替え (Insert / Update / Reorder)
+    let currentDOMChild = container.firstElementChild;
+
     for (const file of files) {
         const fileNormPath = normalizePathForComparison(file.file_path);
         const existingPair = existingPairs.find(p => p.path === fileNormPath);
@@ -449,10 +451,26 @@ export async function renderFileTree(files, container, openFolders = null) {
             itemDiv = createTreeItemElement(file, childrenContainer);
         }
 
-        // 正しい位置（ループ順）に appendChild で整列
-        container.appendChild(itemDiv);
-        if (file.is_dir && childrenContainer) {
-            container.appendChild(childrenContainer);
+        // 並び順の同期 (Reorder) の最適化
+        // もし itemDiv が現在の DOM の位置 (currentDOMChild) と一致しているなら、移動の必要はない。
+        if (currentDOMChild === itemDiv) {
+            currentDOMChild = itemDiv.nextElementSibling;
+            if (file.is_dir && childrenContainer && currentDOMChild === childrenContainer) {
+                currentDOMChild = childrenContainer.nextElementSibling;
+            }
+        } else {
+            // 順序が異なる場合のみ、正しい位置に挿入・移動する
+            if (currentDOMChild) {
+                container.insertBefore(itemDiv, currentDOMChild);
+                if (file.is_dir && childrenContainer) {
+                    container.insertBefore(childrenContainer, currentDOMChild);
+                }
+            } else {
+                container.appendChild(itemDiv);
+                if (file.is_dir && childrenContainer) {
+                    container.appendChild(childrenContainer);
+                }
+            }
         }
 
         // 以前の選択状態を復元（再描画時に選択が解除されるのを防ぐ）
