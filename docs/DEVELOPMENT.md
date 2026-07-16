@@ -28,9 +28,12 @@ cargo tauri build
 
 ```powershell
 # ポータブル版のビルドとZIPアーカイブの作成
+# (Windowsアイコンキャッシュの競合回避のため、実行ファイル名を「NoCapEdit_v02.exe」にリネームしてZIP化します)
 cargo build --release
 New-Item -ItemType Directory -Force -Path "target/release/bundle"
-Compress-Archive -Path "target/release/NoCapEdit.exe" -DestinationPath "target/release/bundle/NoCapEdit_v0.2.16_x64_portable.zip" -Force
+Copy-Item "target/release/NoCapEdit.exe" "target/release/NoCapEdit_v02.exe"
+Compress-Archive -Path "target/release/NoCapEdit_v02.exe" -DestinationPath "target/release/bundle/NoCapEdit_v0.2.16_x64_portable.zip" -Force
+Remove-Item "target/release/NoCapEdit_v02.exe"
 ```
 
 ## 📄 仕様詳細

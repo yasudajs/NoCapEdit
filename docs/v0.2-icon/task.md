@@ -1,16 +1,13 @@
-# タスクリスト：v0.2系 バージョン識別用アイコン適用およびバージョン更新
+# タスクリスト：v0.2系 バージョン識別用アイコン適用およびポータブル版リネーム
 
-- [x] バージョン管理ファイルの更新
-  - [x] [Cargo.toml](file:///c:/work/NoCapEdit/Cargo.toml)
-  - [x] [tauri.conf.json](file:///c:/work/NoCapEdit/tauri.conf.json)
-  - [x] [installer.nsi](file:///c:/work/NoCapEdit/nsis/installer.nsi)
-  - [x] [DEVELOPMENT.md](file:///c:/work/NoCapEdit/docs/DEVELOPMENT.md)
-- [x] アイコンソース画像の配置
-  - [x] 生成された JPG デザイン案を PNG に変換し、`icons/icon.png` として配置する
-- [x] Tauriアプリアイコンの再生成
-  - [x] `cargo tauri icon` を実行してアイコン群を自動更新する
-- [x] 動作検証
-  - [x] 開発ビルド `cargo tauri dev` での動作・外観確認
-  - [x] リリースビルド `cargo tauri build` での動作・外観確認
-  - [x] `history.md` への変更履歴追記
-  - [x] 変更内容のコミットとプッシュ
+- [x] ポータブル版ビルド手順のリネーム対応
+  - [x] [DEVELOPMENT.md](file:///c:/work/NoCapEdit/docs/DEVELOPMENT.md) のポータブル版ビルドコマンド記述の変更
+  - [x] [spec.md](file:///c:/work/NoCapEdit/docs/spec.md) にポータブル版のファイル名についての説明を追記
+  - [x] [implementation_plan.md](file:///c:/work/NoCapEdit/docs/v0.2-icon/implementation_plan.md) の内容を新方針（ポータブル版リネームのみ）へ更新
+- [x] ポータブル版ビルドの再実行と検証
+  - [x] リネームを含めたポータブル版ビルドコマンドをローカルでテスト実行
+  - [x] 作成された ZIP 内のファイル名が `NoCapEdit_v02.exe` になっていることを確認
+- [/] ドキュメントの最終化とプッシュ
+  - [x] `history.md` にポータブル版リネームに関する履歴を追記
+  - [x] `walkthrough.md` に検証結果を反映
+  - [/] コミットとプッシュ
