@@ -3,7 +3,7 @@ import { invoke, appWindow, listen, ensureTauriApi } from './core/tauri.js';
 import { createNewTab, updateStatus, renderTabs, switchTabByOffset } from './ui/tabs.js';
 import { openExistingFile, triggerManualSave, registerCloseHandler } from './core/fileSystem.js';
 import { updateEditorMetrics, onEditorInput, zoomIn, zoomOut, applyFontSize, applyLineHeight, increaseLineHeight, decreaseLineHeight, handleTabKey } from './ui/editor.js';
-import { toggleSettingsDialog, closeSettingsDialog, openSettingsDialog, applyThemeUI, onThemeChange, onFontFamilyChange, loadSystemFonts, checkNewVersion } from './ui/settings.js';
+import { toggleSettingsDialog, closeSettingsDialog, openSettingsDialog, applyThemeUI, onThemeChange, onFontFamilyChange, loadSystemFonts, checkNewVersion, applyFontFamily } from './ui/settings.js';
 
 async function init() {
     console.log('NoCapEdit initializing...');
@@ -99,7 +99,7 @@ async function init() {
         }
     } catch (error) {
         console.error('Failed to initialize:', error);
-        updateStatus('初期化エラー', 'error');
+        updateStatus(`初期化エラー: ${error.message || error}`, 'error');
     } finally {
         // 初期化エラーなどの例外が発生した場合でも、確実にウィンドウを表示してユーザーに状態が見えるようにする（フェイルセーフ）
         if (appWindow && typeof appWindow.show === 'function') {
