@@ -8,7 +8,7 @@ v0.1系とv0.2系のローカル並行利用時の識別性を向上させ、か
 
 v0.2系アイコンのデザイン案は以下の通りです。
 
-![v0.2用アイコンデザイン案 (テキストなし・右下青色「2」& 最大化)](file:///C:/Users/yjsmo/.gemini/antigravity/brain/e4ff228d-7b82-4a5e-8597-57a258579e0f/icon_v2_final_1784242967925.jpg)
+![v0.2用アイコンデザイン案 (テキストなし・右下青色「2」& 最大化)](file:///C:/Users/yjsmo/.gemini/antigravity/brain/e4ff228d-7b82-4a5e-8597-57a258579e0f/icon_v2_e_styled_1784243026143.jpg)
 
 ## 変更対象ファイル
 
