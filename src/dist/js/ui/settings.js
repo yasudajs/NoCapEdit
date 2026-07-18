@@ -8,6 +8,22 @@ import { compareVersions } from '../utils/helpers.js';
 
 let settingsSaveTimer = null;
 
+const settingsExtraProviders = [];
+
+/**
+ * 外部モジュールからの設定追加用プロバイダーを登録
+ * @param {Function} provider () => object 形式の関数
+ */
+export function registerSettingsExtraProvider(provider) {
+    if (typeof provider === 'function') {
+        settingsExtraProviders.push(provider);
+    }
+}
+
+/**
+ * 設定保存の遅延実行（デバウンス）
+ * エディタ設定変更時やサイドバーUI変更時などに呼び出される
+ */
 export function saveSettingsDelay() {
     clearTimeout(settingsSaveTimer);
     settingsSaveTimer = setTimeout(async () => {
@@ -88,19 +104,30 @@ export async function saveApplicationSettings() {
         return;
     }
     try {
-        await invoke('save_settings', {
-            settings: {
-                home_folder: appState.homeFolder,
-                theme: appState.theme,
-                font_size: appState.fontSize,
-                font_family: appState.fontFamily,
-                line_height: appState.lineHeight,
-                tab_behavior: appState.tabBehavior,
-                save_mode: appState.saveMode,
-                char_count_mode: appState.charCountMode,
-                sidebar_visible: appState.sidebarVisible,
-                sidebar_width: appState.sidebarWidth
+        const settingsPayload = {
+            home_folder: appState.homeFolder,
+            theme: appState.theme,
+            font_size: appState.fontSize,
+            font_family: appState.fontFamily,
+            line_height: appState.lineHeight,
+            tab_behavior: appState.tabBehavior,
+            save_mode: appState.saveMode,
+            char_count_mode: appState.charCountMode
+        };
+
+        for (const provider of settingsExtraProviders) {
+            try {
+                const extra = provider();
+                if (extra && typeof extra === 'object') {
+                    Object.assign(settingsPayload, extra);
+                }
+            } catch (err) {
+                console.error('Failed to get extra settings from provider:', err);
             }
+        }
+
+        await invoke('save_settings', {
+            settings: settingsPayload
         });
     } catch (error) {
         console.error('Failed to save settings:', error);

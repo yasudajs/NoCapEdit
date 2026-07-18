@@ -5,6 +5,7 @@
 import { initSidebar, focusSidebarTree, createItemGlobally, loadDirectory } from './sidebar.js';
 import { appState, elements } from '../state.js';
 import { registerShortcut } from '../shortcuts.js';
+import { registerSettingsExtraProvider } from './settings.js';
 import { listen } from '../core/tauri.js';
 import { normalizePathForComparison, getParentPath } from '../utils/helpers.js';
 
@@ -86,6 +87,12 @@ export function initSidebarIntegration() {
         if (elements.iconBar) elements.iconBar.style.width = '48px';
     }
     document.documentElement.style.setProperty('--sidebar-width', `${appState.sidebarWidth}px`);
+
+    // サイドバー設定プロバイダーの登録
+    registerSettingsExtraProvider(() => ({
+        sidebar_visible: appState.sidebarVisible,
+        sidebar_width: appState.sidebarWidth
+    }));
 
     // サイドバー用ショートカットの登録
     registerShortcut(['Ctrl+E'], () => {
