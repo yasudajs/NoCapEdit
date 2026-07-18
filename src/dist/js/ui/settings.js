@@ -2,7 +2,7 @@ import { appState, elements, savedEditorCursor, setSavedEditorCursor, DEFAULT_MO
 import { invoke, appWindow, ensureTauriApi, openDialog } from '../core/tauri.js';
 import { updateStatus, renderTabs, createNewTab } from './tabs.js';
 import { autoSave } from '../core/fileSystem.js';
-import { updateEditorMetrics, applyFontSize, applyLineHeight } from './editor.js';
+import { updateEditorMetrics } from './editor.js';
 import { shouldDeleteEmptyFile } from '../core/fileSystem.js';
 import { compareVersions } from '../utils/helpers.js';
 
