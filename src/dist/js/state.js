@@ -47,10 +47,6 @@ export function incrementUnsavedTabCounter() {
     return unsavedTabCounter;
 }
 
-export function setAppState(key, value) {
-    appState[key] = value;
-}
-
 // DOM要素キャッシュ
 export const elements = {
     app: document.getElementById('app'),
@@ -68,7 +64,6 @@ export const elements = {
     settingsDialog: document.getElementById('settingsDialog'),
     homeFolderInput: document.getElementById('homeFolderInput'),
     browseFolderBtn: document.getElementById('browseFolderBtn'),
-    confirmSettingsBtn: document.getElementById('confirmSettingsBtn'),
     errorDialog: document.getElementById('errorDialog'),
     errorMessage: document.getElementById('errorMessage'),
     retryBtn: document.getElementById('retryBtn'),

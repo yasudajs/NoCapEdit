@@ -5,6 +5,16 @@ NoCapEdit のバージョンアップおよび仕様変更の履歴です。
 
 ## 改定履歴一覧
 
+### Ver 0.2.25 | 2026-07-18 | yasudajs
+- [リファクタリング フェーズ9] 統合テストとコードクリーンアップ：
+  - 各モジュール間の不要な import 文・未使用定義の調査を実施。
+  - `main.js` から未使用の `updateTabStatus` インポートを削除。
+  - `settings.js` から未使用の `applyFontSize`, `applyLineHeight` インポートを削除。
+  - `state.js` から未使用エクスポート関数 `setAppState` および存在しない DOM キャッシュ `confirmSettingsBtn` を削除。
+  - `main.js` からのサイドバー完全分離（`initSidebarIntegration` 1呼び出し化）の整合性を最終確認。
+
+---
+
 ### Ver 0.2.24 | 2026-07-18 | yasudajs
 - [リファクタリング フェーズ7] state.js のサイドバー関連整理：
   - `state.js` 内の `elements` オブジェクトからサイドバー固有の 10 個の DOM 要素キャッシュ定義を削除。
