@@ -4,9 +4,8 @@ import { createNewTab, updateStatus, updateTabStatus, renderTabs, switchTabByOff
 import { openExistingFile, triggerManualSave, persistAllTabsBeforeExit } from './core/fileSystem.js';
 import { updateEditorMetrics, onEditorInput, zoomIn, zoomOut, applyFontSize, applyLineHeight, increaseLineHeight, decreaseLineHeight } from './ui/editor.js';
 import { toggleSettingsDialog, closeSettingsDialog, openSettingsDialog, applyThemeUI, onThemeChange, onFontFamilyChange, loadSystemFonts, checkNewVersion } from './ui/settings.js';
-import { loadDirectory } from './ui/sidebar.js';
 import { initSidebarIntegration } from './ui/sidebar-integration.js';
-import { normalizePathForComparison, getParentPath } from './utils/helpers.js';
+import { normalizePathForComparison } from './utils/helpers.js';
 import { registerShortcut } from './shortcuts.js';
 
 function setupUIEventListeners() {
@@ -227,9 +226,6 @@ function setupUIEventListeners() {
         });
     }
 
-    let fileChangeDebounceTimer = null;
-    let pendingChangedDirs = new Set();
-
     if (listen) {
         listen('file-system-changed', async (event) => {
             const { event_type, detail, paths } = event.payload;
@@ -282,59 +278,6 @@ function setupUIEventListeners() {
                     }
                 }
             }
-
-            for (const path of paths) {
-                const normalizedPath = normalizePathForComparison(path);
-                
-                const isExistingFolder = Array.from(document.querySelectorAll('.tree-item[data-is-dir="true"]')).some(el => {
-                    return normalizePathForComparison(el.dataset.filePath) === normalizedPath;
-                });
-
-                const isHomeFolder = normalizePathForComparison(appState.homeFolder) === normalizedPath;
-                
-                if ((isExistingFolder || isHomeFolder) && event_type === 'modify') {
-                    continue;
-                }
-
-                if (isHomeFolder && (event_type === 'rename' || event_type === 'remove')) {
-                    continue;
-                }
-
-                const parent = getParentPath(path.replace(/\\/g, '/'));
-                if (parent) {
-                    pendingChangedDirs.add(parent);
-                } else if (appState.homeFolder) {
-                    pendingChangedDirs.add(appState.homeFolder.replace(/\\/g, '/').replace(/\/$/, ''));
-                }
-            }
-
-            clearTimeout(fileChangeDebounceTimer);
-            fileChangeDebounceTimer = setTimeout(async () => {
-                const dirsToReload = Array.from(pendingChangedDirs);
-                pendingChangedDirs.clear();
-
-                for (const dir of dirsToReload) {
-                    const normalizedDir = normalizePathForComparison(dir);
-                    const normalizedHome = normalizePathForComparison(appState.homeFolder);
-
-                    if (normalizedDir === normalizedHome || normalizedDir === '') {
-                        await loadDirectory(null, elements.fileTree);
-                    } else {
-                        const folderItem = Array.from(document.querySelectorAll('.tree-item[data-is-dir="true"]')).find(el => {
-                            return normalizePathForComparison(el.dataset.filePath) === normalizedDir;
-                        });
-
-                        if (folderItem) {
-                            const childrenContainer = folderItem.nextElementSibling;
-                            if (childrenContainer && childrenContainer.classList.contains('tree-children')) {
-                                if (!childrenContainer.classList.contains('hidden')) {
-                                    await loadDirectory(folderItem.dataset.filePath, childrenContainer);
-                                }
-                            }
-                        }
-                    }
-                }
-            }, 250);
         });
     }
 

@@ -2,19 +2,78 @@
 // main.js とサイドバーモジュール間の橋渡し役。
 // 後続フェーズで、サイドバー関連の初期化・ショートカット登録・FS監視連携・設定保存を集約する。
 
-import { initSidebar, focusSidebarTree, createItemGlobally } from './sidebar.js';
+import { initSidebar, focusSidebarTree, createItemGlobally, loadDirectory } from './sidebar.js';
 import { appState, elements } from '../state.js';
 import { registerShortcut } from '../shortcuts.js';
+import { listen } from '../core/tauri.js';
+import { normalizePathForComparison, getParentPath } from '../utils/helpers.js';
+
+let fileChangeDebounceTimer = null;
+let pendingChangedDirs = new Set();
+
+function setupSidebarFileSystemListener() {
+    if (!listen) return;
+
+    listen('file-system-changed', async (event) => {
+        const { event_type, paths } = event.payload;
+
+        for (const path of paths) {
+            const normalizedPath = normalizePathForComparison(path);
+            
+            const isExistingFolder = Array.from(document.querySelectorAll('.tree-item[data-is-dir="true"]')).some(el => {
+                return normalizePathForComparison(el.dataset.filePath) === normalizedPath;
+            });
+
+            const isHomeFolder = normalizePathForComparison(appState.homeFolder) === normalizedPath;
+            
+            if ((isExistingFolder || isHomeFolder) && event_type === 'modify') {
+                continue;
+            }
+
+            if (isHomeFolder && (event_type === 'rename' || event_type === 'remove')) {
+                continue;
+            }
+
+            const parent = getParentPath(path.replace(/\\/g, '/'));
+            if (parent) {
+                pendingChangedDirs.add(parent);
+            } else if (appState.homeFolder) {
+                pendingChangedDirs.add(appState.homeFolder.replace(/\\/g, '/').replace(/\/$/, ''));
+            }
+        }
+
+        clearTimeout(fileChangeDebounceTimer);
+        fileChangeDebounceTimer = setTimeout(async () => {
+            const dirsToReload = Array.from(pendingChangedDirs);
+            pendingChangedDirs.clear();
+
+            for (const dir of dirsToReload) {
+                const normalizedDir = normalizePathForComparison(dir);
+                const normalizedHome = normalizePathForComparison(appState.homeFolder);
+
+                if (normalizedDir === normalizedHome || normalizedDir === '') {
+                    await loadDirectory(null, elements.fileTree);
+                } else {
+                    const folderItem = Array.from(document.querySelectorAll('.tree-item[data-is-dir="true"]')).find(el => {
+                        return normalizePathForComparison(el.dataset.filePath) === normalizedDir;
+                    });
+
+                    if (folderItem) {
+                        const childrenContainer = folderItem.nextElementSibling;
+                        if (childrenContainer && childrenContainer.classList.contains('tree-children')) {
+                            if (!childrenContainer.classList.contains('hidden')) {
+                                await loadDirectory(folderItem.dataset.filePath, childrenContainer);
+                            }
+                        }
+                    }
+                }
+            }
+        }, 250);
+    });
+}
 
 /**
  * サイドバー統合の初期化
- * 現時点では initSidebar() を呼ぶだけのラッパー。
- * 後続フェーズで以下の責務を段階的に引き受ける:
- * - フェーズ2: サイドバー初期表示制御（sidebarVisible/sidebarWidth の読込と適用）
- * - フェーズ4: サイドバー用ショートカットの登録（Ctrl+E/N/D）
- * - フェーズ5: ファイルシステム監視のサイドバー部分
- * - フェーズ6: サイドバー設定の保存
- * - フェーズ8: シンプルモードのチェック（有効なら即return）
  */
 export function initSidebarIntegration() {
     if (appState.sidebarVisible) {
@@ -48,6 +107,8 @@ export function initSidebarIntegration() {
         }
         createItemGlobally(true);
     }, { category: 'Sidebar' });
+
+    setupSidebarFileSystemListener();
 
     initSidebar();
 }

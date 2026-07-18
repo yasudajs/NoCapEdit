@@ -1,10 +1,10 @@
 # Phase 5: ファイルシステム監視のサイドバー部分移動 タスクリスト
 
 ## 実装タスク
-- [/] `sidebar-integration.js` に `file-system-changed` イベントリスナーおよびツリー更新デバウンス処理を追加
-- [ ] `main.js` からサイドバーツリー更新処理および `loadDirectory` 依存を削除
-- [ ] 動作確認・ビルド検証
-- [ ] ドキュメント作成 (`walkthrough.md`)
+- [x] `sidebar-integration.js` に `file-system-changed` イベントリスナーおよびツリー更新デバウンス処理を追加
+- [x] `main.js` からサイドバーツリー更新処理および `loadDirectory` 依存を削除
+- [x] 動作確認・ビルド検証
+- [x] ドキュメント作成 (`walkthrough.md`, `history.md`)
 
 ## 手動テスト項目（ユーザー検証用）
 - [ ] **外部ファイル生成テスト**:
