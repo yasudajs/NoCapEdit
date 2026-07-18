@@ -174,11 +174,10 @@ export function initSidebarIntegration() {
 ## 作業手順
 
 1. `v0.2` ブランチから `feature/refactor-phase1-bridge-module` を作成
-2. `spec.md` を最新版に更新
-3. バージョン番号の更新（4ファイル）
-4. `sidebar-integration.js` を新規作成
-5. `main.js` の import と DOMContentLoaded を修正
-6. `cargo run` でビルド＆起動確認
-7. 手動検証チェックリストの実施
-8. `history.md` に変更履歴を追記
-9. コミット＆プッシュ
+2. バージョン番号の更新（4ファイル）
+3. `sidebar-integration.js` を新規作成
+4. `main.js` の import と DOMContentLoaded を修正
+5. `cargo run` でビルド＆起動確認
+6. 手動検証チェックリストの実施
+7. `history.md` に変更履歴を追記
+8. コミット＆プッシュ
