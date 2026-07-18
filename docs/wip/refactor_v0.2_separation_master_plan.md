@@ -183,7 +183,7 @@ window.addEventListener('keydown', (e) => {
 
 ---
 
-### フェーズ 4: サイドバー用ショートカットの移動
+### フェーズ 4: サイドバー用ショートカットの移動【※実装完了】
 
 サイドバー専用のショートカットを `main.js` から `sidebar-integration.js` に移動し、レジストリに登録する。
 
