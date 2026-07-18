@@ -31,8 +31,8 @@ cargo tauri build
 # (Windowsアイコンキャッシュの競合回避のため、実行ファイル名を「NoCapEdit_v02.exe」にリネームしてZIP化します)
 cargo build --release
 New-Item -ItemType Directory -Force -Path "target/release/bundle"
-Copy-Item "target/release/NoCapEdit.exe" "target/release/NoCapEdit_v02.exe"
-Compress-Archive -Path "target/release/NoCapEdit_v02.exe" -DestinationPath "target/release/bundle/NoCapEdit_v0.2.19_x64_portable.zip" -Force
+Rename-Item -Path "target/release/NoCapEdit.exe" -NewName "NoCapEdit_v02.exe"
+Compress-Archive -Path "target/release/NoCapEdit_v02.exe" -DestinationPath "target/release/bundle/NoCapEdit-0.2.21-Portable.zip" -Force
 Remove-Item "target/release/NoCapEdit_v02.exe"
 ```
 

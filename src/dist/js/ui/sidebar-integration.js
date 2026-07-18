@@ -2,8 +2,9 @@
 // main.js とサイドバーモジュール間の橋渡し役。
 // 後続フェーズで、サイドバー関連の初期化・ショートカット登録・FS監視連携・設定保存を集約する。
 
-import { initSidebar } from './sidebar.js';
+import { initSidebar, focusSidebarTree, createItemGlobally } from './sidebar.js';
 import { appState, elements } from '../state.js';
+import { registerShortcut } from '../shortcuts.js';
 
 /**
  * サイドバー統合の初期化
@@ -26,6 +27,27 @@ export function initSidebarIntegration() {
         if (elements.iconBar) elements.iconBar.style.width = '48px';
     }
     document.documentElement.style.setProperty('--sidebar-width', `${appState.sidebarWidth}px`);
+
+    // サイドバー用ショートカットの登録
+    registerShortcut(['Ctrl+E'], () => {
+        focusSidebarTree();
+    }, { category: 'Sidebar' });
+
+    registerShortcut(['Ctrl+N'], () => {
+        const activeEl = document.activeElement;
+        if (activeEl && activeEl.tagName === 'INPUT' && activeEl.classList.contains('tree-input')) {
+            return;
+        }
+        createItemGlobally(false);
+    }, { category: 'Sidebar' });
+
+    registerShortcut(['Ctrl+D'], () => {
+        const activeEl = document.activeElement;
+        if (activeEl && activeEl.tagName === 'INPUT' && activeEl.classList.contains('tree-input')) {
+            return;
+        }
+        createItemGlobally(true);
+    }, { category: 'Sidebar' });
 
     initSidebar();
 }
