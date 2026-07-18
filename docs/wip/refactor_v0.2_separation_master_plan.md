@@ -221,7 +221,7 @@ window.addEventListener('keydown', (e) => {
 
 ---
 
-### フェーズ 6: settings.js のサイドバー関連分離
+### フェーズ 6: settings.js のサイドバー関連分離【※実装完了】
 
 `settings.js` に混入しているサイドバー設定の保存処理を分離する。
 
