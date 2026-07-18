@@ -1,16 +1,16 @@
 # フェーズ1（ブリッジモジュール作成）タスクリスト
 
 ## 実装タスク
-- [ ] `v0.2` ブランチから `feature/refactor-phase1-bridge-module` を作成
-- [ ] バージョン番号の更新（4ファイル: 0.2.17 -> 0.2.18）
-  - [ ] `Cargo.toml`
-  - [ ] `tauri.conf.json`
-  - [ ] `nsis/installer.nsi`
-  - [ ] `docs/DEVELOPMENT.md`
-- [ ] `src/dist/js/ui/sidebar-integration.js` を新規作成
-- [ ] `src/dist/js/main.js` の変更
-  - [ ] import文の修正
-  - [ ] DOMContentLoaded内の `initSidebar` 呼出を `initSidebarIntegration` に変更
+- [x] `v0.2` ブランチから `feature/refactor-phase1-bridge-module` を作成
+- [x] バージョン番号の更新（4ファイル: 0.2.17 -> 0.2.18）
+  - [x] `Cargo.toml`
+  - [x] `tauri.conf.json`
+  - [x] `nsis/installer.nsi`
+  - [x] `docs/DEVELOPMENT.md`
+- [x] `src/dist/js/ui/sidebar-integration.js` を新規作成
+- [x] `src/dist/js/main.js` の変更
+  - [x] import文の修正
+  - [x] DOMContentLoaded内の `initSidebar` 呼出を `initSidebarIntegration` に変更
 
 ## 手動検証チェックリスト（ユーザー依頼）
 - [ ] `cargo run` でアプリが正常に起動すること
