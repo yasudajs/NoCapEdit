@@ -5,6 +5,15 @@ NoCapEdit のバージョンアップおよび仕様変更の履歴です。
 
 ## 改定履歴一覧
 
+### Ver 0.2.23 | 2026-07-18 | yasudajs
+- [リファクタリング フェーズ6] settings.js のサイドバー関連分離：
+  - `settings.js` 内の `saveApplicationSettings()` からハードコードされた `sidebar_visible` および `sidebar_width` の直接保存処理を削除。
+  - 設定モジュールに `registerSettingsExtraProvider` 機構を導入し、外部モジュールから設定を拡張・合成できる拡張プロバイダーパターン（拡張レジストリ）を構築。
+  - `sidebar-integration.js` 初期化時にサイドバー設定プロバイダーを登録し、`settings.js` のサイドバー依存を解消。
+  - `saveSettingsDelay()` をエディタ設定およびサイドバー共通の遅延保存ユーティリティとして整理。
+
+---
+
 ### Ver 0.2.22 | 2026-07-18 | yasudajs
 - [リファクタリング フェーズ5] ファイルシステム監視のサイドバー部分移動：
   - `main.js` の `file-system-changed` イベントリスナーからツリー更新ロジックおよびデバウンス処理を分離し、`sidebar-integration.js` へ移管。
