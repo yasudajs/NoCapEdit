@@ -3,6 +3,7 @@
 // 後続フェーズで、サイドバー関連の初期化・ショートカット登録・FS監視連携・設定保存を集約する。
 
 import { initSidebar } from './sidebar.js';
+import { appState, elements } from '../state.js';
 
 /**
  * サイドバー統合の初期化
@@ -15,5 +16,16 @@ import { initSidebar } from './sidebar.js';
  * - フェーズ8: シンプルモードのチェック（有効なら即return）
  */
 export function initSidebarIntegration() {
+    if (appState.sidebarVisible) {
+        if (elements.sidebar) elements.sidebar.classList.remove('hidden');
+        if (elements.sidebarResizeHandle) elements.sidebarResizeHandle.classList.remove('hidden');
+        if (elements.iconBar) elements.iconBar.style.width = 'var(--sidebar-width)';
+    } else {
+        if (elements.sidebar) elements.sidebar.classList.add('hidden');
+        if (elements.sidebarResizeHandle) elements.sidebarResizeHandle.classList.add('hidden');
+        if (elements.iconBar) elements.iconBar.style.width = '48px';
+    }
+    document.documentElement.style.setProperty('--sidebar-width', `${appState.sidebarWidth}px`);
+
     initSidebar();
 }
