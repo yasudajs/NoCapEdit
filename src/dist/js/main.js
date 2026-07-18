@@ -4,7 +4,7 @@ import { createNewTab, updateStatus, updateTabStatus, renderTabs, switchTabByOff
 import { openExistingFile, triggerManualSave, persistAllTabsBeforeExit } from './core/fileSystem.js';
 import { updateEditorMetrics, onEditorInput, zoomIn, zoomOut, applyFontSize, applyLineHeight, increaseLineHeight, decreaseLineHeight } from './ui/editor.js';
 import { toggleSettingsDialog, closeSettingsDialog, openSettingsDialog, applyThemeUI, onThemeChange, onFontFamilyChange, loadSystemFonts, checkNewVersion } from './ui/settings.js';
-import { loadDirectory, focusSidebarTree, createItemGlobally } from './ui/sidebar.js';
+import { loadDirectory } from './ui/sidebar.js';
 import { initSidebarIntegration } from './ui/sidebar-integration.js';
 import { normalizePathForComparison, getParentPath } from './utils/helpers.js';
 import { registerShortcut } from './shortcuts.js';
@@ -213,26 +213,10 @@ function setupUIEventListeners() {
         triggerManualSave();
     }, { category: 'File' });
 
-    // サイドバー関連 (フェーズ4で sidebar-integration.js に移動予定)
-    registerShortcut(['Ctrl+E'], () => {
-        focusSidebarTree();
-    }, { category: 'Sidebar' });
-
+    // 新規タブ作成 (シンプルモードまたはサイドバー非優先時の動作)
     registerShortcut(['Ctrl+N'], () => {
-        const activeEl = document.activeElement;
-        if (activeEl && activeEl.tagName === 'INPUT' && activeEl.classList.contains('tree-input')) {
-            return;
-        }
-        createItemGlobally(false);
-    }, { category: 'Sidebar' });
-
-    registerShortcut(['Ctrl+D'], () => {
-        const activeEl = document.activeElement;
-        if (activeEl && activeEl.tagName === 'INPUT' && activeEl.classList.contains('tree-input')) {
-            return;
-        }
-        createItemGlobally(true);
-    }, { category: 'Sidebar' });
+        createNewTab();
+    }, { category: 'File' });
 
     if (listen) {
         listen('single-instance-file', async (event) => {

@@ -69,7 +69,9 @@ window.addEventListener('keydown', (e) => {
     const candidates = buildComboCandidates(e);
     
     for (const candidate of candidates) {
-        for (const s of shortcuts) {
+        // priority順、または後から登録されたものを優先するために逆順で探索
+        for (let i = shortcuts.length - 1; i >= 0; i--) {
+            const s = shortcuts[i];
             if (s.combo === candidate && s.enabled !== false) {
                 if (s.preventDefault) {
                     e.preventDefault();
