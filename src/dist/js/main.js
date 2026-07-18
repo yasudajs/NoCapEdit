@@ -7,6 +7,7 @@ import { toggleSettingsDialog, closeSettingsDialog, openSettingsDialog, applyThe
 import { loadDirectory, focusSidebarTree, createItemGlobally } from './ui/sidebar.js';
 import { initSidebarIntegration } from './ui/sidebar-integration.js';
 import { normalizePathForComparison, getParentPath } from './utils/helpers.js';
+import { registerShortcut } from './shortcuts.js';
 
 function setupUIEventListeners() {
     if (appState.initialized) {
@@ -177,76 +178,61 @@ function setupUIEventListeners() {
         }
     }, { passive: false });
 
-    window.addEventListener('keydown', async (e) => {
-        // F5 キーによるリロードを禁止
-        if (e.key === 'F5' || e.code === 'F5') {
-            e.preventDefault();
+    // --- ショートカットの登録 ---
+    // 無効化するショートカット（デフォルト挙動の禁止）
+    registerShortcut(['F5', 'Ctrl+R', 'Ctrl+P'], () => {}, { category: 'System' });
+
+    // タブ切り替え
+    registerShortcut('Ctrl+Tab', async () => {
+        await switchTabByOffset(1);
+    }, { category: 'Tab' });
+    registerShortcut('Ctrl+Shift+Tab', async () => {
+        await switchTabByOffset(-1);
+    }, { category: 'Tab' });
+
+    // 行高さの調整
+    registerShortcut(['Ctrl+Shift+NumpadAdd', 'Ctrl+Shift+Equal', 'Ctrl+Shift+Semicolon', 'Ctrl+Shift++', 'Ctrl+Shift+;'], () => {
+        increaseLineHeight();
+    }, { category: 'Editor' });
+    
+    registerShortcut(['Ctrl+Shift+Minus', 'Ctrl+Shift+NumpadSubtract', 'Ctrl+Shift+-', 'Ctrl+Shift+_'], () => {
+        decreaseLineHeight();
+    }, { category: 'Editor' });
+
+    // ズーム
+    registerShortcut(['Ctrl++', 'Ctrl+=', 'Ctrl+;', 'Ctrl+NumpadAdd', 'Ctrl+Equal', 'Ctrl+Semicolon'], () => {
+        zoomIn();
+    }, { category: 'Editor' });
+    
+    registerShortcut(['Ctrl+-', 'Ctrl+_', 'Ctrl+NumpadSubtract', 'Ctrl+Minus'], () => {
+        zoomOut();
+    }, { category: 'Editor' });
+
+    // 保存
+    registerShortcut(['Ctrl+S'], () => {
+        triggerManualSave();
+    }, { category: 'File' });
+
+    // サイドバー関連 (フェーズ4で sidebar-integration.js に移動予定)
+    registerShortcut(['Ctrl+E'], () => {
+        focusSidebarTree();
+    }, { category: 'Sidebar' });
+
+    registerShortcut(['Ctrl+N'], () => {
+        const activeEl = document.activeElement;
+        if (activeEl && activeEl.tagName === 'INPUT' && activeEl.classList.contains('tree-input')) {
             return;
         }
+        createItemGlobally(false);
+    }, { category: 'Sidebar' });
 
-        // Ctrl + Tab / Ctrl + Shift + Tab でタブ切り替え
-        if (e.key === 'Tab' && e.ctrlKey) {
-            e.preventDefault();
-            await switchTabByOffset(e.shiftKey ? -1 : 1);
+    registerShortcut(['Ctrl+D'], () => {
+        const activeEl = document.activeElement;
+        if (activeEl && activeEl.tagName === 'INPUT' && activeEl.classList.contains('tree-input')) {
             return;
         }
-
-        if (e.ctrlKey) {
-            // Ctrl + R によるリロードを禁止 (Shiftキーが同時に押されている場合も含む)
-            if (e.key === 'r' || e.key === 'R' || e.code === 'KeyR') {
-                e.preventDefault();
-                return;
-            }
-            // Ctrl + P による印刷を禁止
-            if (e.key === 'p' || e.key === 'P' || e.code === 'KeyP') {
-                e.preventDefault();
-                return;
-            }
-            if (e.shiftKey) {
-                if (e.code === 'NumpadAdd' || e.code === 'Equal' || e.code === 'Semicolon' || e.key === '+') {
-                    e.preventDefault();
-                    increaseLineHeight();
-                } else if (e.code === 'Minus' || e.code === 'NumpadSubtract' || e.key === '-' || e.key === '_') {
-                    e.preventDefault();
-                    decreaseLineHeight();
-                }
-                return;
-            }
-
-            if (e.key === '+' || e.key === '=' || e.key === ';' || e.code === 'NumpadAdd' || e.code === 'Equal' || (e.code === 'Semicolon' && e.shiftKey)) {
-                e.preventDefault();
-                zoomIn();
-            }
-            else if (e.key === '-' || e.key === '_' || e.code === 'NumpadSubtract' || e.code === 'Minus') {
-                e.preventDefault();
-                zoomOut();
-            }
-            else if (e.key === 's' || e.key === 'S' || e.code === 'KeyS') {
-                e.preventDefault();
-                triggerManualSave();
-            }
-            else if (e.key === 'e' || e.key === 'E' || e.code === 'KeyE') {
-                e.preventDefault();
-                focusSidebarTree();
-            }
-            else if (e.key === 'n' || e.key === 'N' || e.code === 'KeyN') {
-                const activeEl = document.activeElement;
-                if (activeEl && activeEl.tagName === 'INPUT' && activeEl.classList.contains('tree-input')) {
-                    return;
-                }
-                e.preventDefault();
-                createItemGlobally(false);
-            }
-            else if (e.key === 'd' || e.key === 'D' || e.code === 'KeyD') {
-                const activeEl = document.activeElement;
-                if (activeEl && activeEl.tagName === 'INPUT' && activeEl.classList.contains('tree-input')) {
-                    return;
-                }
-                e.preventDefault();
-                createItemGlobally(true);
-            }
-        }
-    });
+        createItemGlobally(true);
+    }, { category: 'Sidebar' });
 
     if (listen) {
         listen('single-instance-file', async (event) => {
