@@ -4,7 +4,8 @@ import { createNewTab, updateStatus, updateTabStatus, renderTabs, switchTabByOff
 import { openExistingFile, triggerManualSave, persistAllTabsBeforeExit } from './core/fileSystem.js';
 import { updateEditorMetrics, onEditorInput, zoomIn, zoomOut, applyFontSize, applyLineHeight, increaseLineHeight, decreaseLineHeight } from './ui/editor.js';
 import { toggleSettingsDialog, closeSettingsDialog, openSettingsDialog, applyThemeUI, onThemeChange, onFontFamilyChange, loadSystemFonts, checkNewVersion } from './ui/settings.js';
-import { initSidebar, loadDirectory, focusSidebarTree, createItemGlobally } from './ui/sidebar.js';
+import { loadDirectory, focusSidebarTree, createItemGlobally } from './ui/sidebar.js';
+import { initSidebarIntegration } from './ui/sidebar-integration.js';
 import { normalizePathForComparison, getParentPath } from './utils/helpers.js';
 
 function setupUIEventListeners() {
@@ -530,5 +531,5 @@ document.addEventListener('DOMContentLoaded', async () => {
     initElements();
     await init();
     updateEditorMetrics();
-    initSidebar();
+    initSidebarIntegration();
 });
