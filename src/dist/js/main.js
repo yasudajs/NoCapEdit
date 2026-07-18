@@ -436,16 +436,7 @@ async function init() {
         appState.sidebarWidth = settings.sidebar_width || 220;
         appState.appVersion = settings.app_version;
 
-        if (appState.sidebarVisible) {
-            if (elements.sidebar) elements.sidebar.classList.remove('hidden');
-            if (elements.sidebarResizeHandle) elements.sidebarResizeHandle.classList.remove('hidden');
-            if (elements.iconBar) elements.iconBar.style.width = 'var(--sidebar-width)';
-        } else {
-            if (elements.sidebar) elements.sidebar.classList.add('hidden');
-            if (elements.sidebarResizeHandle) elements.sidebarResizeHandle.classList.add('hidden');
-            if (elements.iconBar) elements.iconBar.style.width = '48px';
-        }
-        document.documentElement.style.setProperty('--sidebar-width', `${appState.sidebarWidth}px`);
+
 
         if (elements.tabBehaviorSelectModal) {
             elements.tabBehaviorSelectModal.value = appState.tabBehavior;

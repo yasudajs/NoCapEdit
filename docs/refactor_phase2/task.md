@@ -1,0 +1,10 @@
+- `[x]` 実装計画書の `docs/wip/` から `docs/refactor_phase2/` への移動
+- `[x]` `src/dist/js/ui/sidebar-integration.js` の拡張
+  - `[x]` `appState`, `elements` のインポート追加
+  - `[x]` `sidebarVisible` および `sidebarWidth` の読み込みと初期化処理の追加
+- `[x]` `src/dist/js/main.js` のクリーンアップ
+  - `[x]` `init()` 内のサイドバー初期化ロジック (L439-L448付近) を削除
+- `[/]` 手動検証の実施
+  - `[x]` アプリの起動が正常か確認
+  - `[x]` サイドバーの表示/非表示および幅設定が維持されているか確認
+- `[ ]` 変更のコミット

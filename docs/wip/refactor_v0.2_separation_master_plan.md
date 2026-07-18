@@ -130,7 +130,7 @@ window.addEventListener('keydown', (e) => {
 
 ---
 
-### フェーズ 1: ブリッジモジュールの作成
+### フェーズ 1: ブリッジモジュールの作成【※実装完了】
 
 `main.js` とサイドバーの間の橋渡し役となる `sidebar-integration.js` を新規作成する。
 このフェーズでは既存コードの移動は最小限にし、呼び出し経路を整理するだけ。
@@ -146,7 +146,7 @@ window.addEventListener('keydown', (e) => {
 
 ---
 
-### フェーズ 2: サイドバー初期化ロジックの移動
+### フェーズ 2: サイドバー初期化ロジックの移動【※実装完了】
 
 `main.js` の `init()` 内にあるサイドバーの初期表示制御を `sidebar-integration.js` に移動する。
 
