@@ -2,7 +2,7 @@
 // main.js とサイドバーモジュール間の橋渡し役。
 // 後続フェーズで、サイドバー関連の初期化・ショートカット登録・FS監視連携・設定保存を集約する。
 
-import { initSidebar, focusSidebarTree, createItemGlobally, loadDirectory } from './sidebar.js';
+import { initSidebar, initSidebarElements, focusSidebarTree, createItemGlobally, loadDirectory } from './sidebar.js';
 import { appState, elements } from '../state.js';
 import { registerShortcut } from '../shortcuts.js';
 import { registerSettingsExtraProvider } from './settings.js';
@@ -77,6 +77,7 @@ function setupSidebarFileSystemListener() {
  * サイドバー統合の初期化
  */
 export function initSidebarIntegration() {
+    initSidebarElements();
     if (appState.sidebarVisible) {
         if (elements.sidebar) elements.sidebar.classList.remove('hidden');
         if (elements.sidebarResizeHandle) elements.sidebarResizeHandle.classList.remove('hidden');

@@ -54,11 +54,6 @@ export function setAppState(key, value) {
 // DOM要素キャッシュ
 export const elements = {
     app: document.getElementById('app'),
-    sidebarToggleBtn: document.getElementById('sidebar-toggle-btn'),
-    sidebar: document.getElementById('sidebar'),
-    sidebarResizeHandle: document.getElementById('sidebar-resize-handle'),
-    fileTree: document.getElementById('file-tree'),
-    iconBar: document.getElementById('icon-bar'),
     tabsContainer: document.getElementById('tabsContainer'),
     addTabBtn: document.getElementById('addTabBtn'),
     settingsBtn: document.getElementById('settingsBtn'),
@@ -80,21 +75,11 @@ export const elements = {
     saveAsBtn: document.getElementById('saveAsBtn'),
     cancelExitBtn: document.getElementById('cancelExitBtn'),
     folderHint: document.getElementById('folderHint'),
-    contextMenu: document.getElementById('contextMenu'),
-    menuNewFile: document.getElementById('menuNewFile'),
-    menuNewFolder: document.getElementById('menuNewFolder'),
-    menuRename: document.getElementById('menuRename'),
-    menuDelete: document.getElementById('menuDelete'),
 };
 
-// DOM要素のキャッシュを再取得する関数（もし動的に生成される場合用、現状は起動時の一回でOK）
+// DOM要素のキャッシュを再取得する関数（コア領域用）
 export function initElements() {
     for (const key in elements) {
-        if (key === 'app') elements.app = document.getElementById('app');
-        else if (key === 'sidebarToggleBtn') elements.sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
-        else if (key === 'sidebarResizeHandle') elements.sidebarResizeHandle = document.getElementById('sidebar-resize-handle');
-        else if (key === 'fileTree') elements.fileTree = document.getElementById('file-tree');
-        else if (key === 'iconBar') elements.iconBar = document.getElementById('icon-bar');
-        else elements[key] = document.getElementById(key);
+        elements[key] = document.getElementById(key);
     }
 }

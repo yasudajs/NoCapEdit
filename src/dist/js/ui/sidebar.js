@@ -122,8 +122,23 @@ async function handleGlobalKeyDown(e) {
     }
 }
 
+// サイドバー用DOM要素のキャッシュ取得
+export function initSidebarElements() {
+    elements.sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
+    elements.sidebar = document.getElementById('sidebar');
+    elements.sidebarResizeHandle = document.getElementById('sidebar-resize-handle');
+    elements.fileTree = document.getElementById('file-tree');
+    elements.iconBar = document.getElementById('icon-bar');
+    elements.contextMenu = document.getElementById('contextMenu');
+    elements.menuNewFile = document.getElementById('menuNewFile');
+    elements.menuNewFolder = document.getElementById('menuNewFolder');
+    elements.menuRename = document.getElementById('menuRename');
+    elements.menuDelete = document.getElementById('menuDelete');
+}
+
 // サイドバー関連の初期化
 export function initSidebar() {
+    initSidebarElements();
     console.log('initSidebar called, elements:', {
         btn: !!elements.sidebarToggleBtn,
         sidebar: !!elements.sidebar,

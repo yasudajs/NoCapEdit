@@ -5,6 +5,15 @@ NoCapEdit のバージョンアップおよび仕様変更の履歴です。
 
 ## 改定履歴一覧
 
+### Ver 0.2.24 | 2026-07-18 | yasudajs
+- [リファクタリング フェーズ7] state.js のサイドバー関連整理：
+  - `state.js` 内の `elements` オブジェクトからサイドバー固有の 10 個の DOM 要素キャッシュ定義を削除。
+  - `initElements()` 関数の分岐ロジック（`sidebarToggleBtn`, `sidebarResizeHandle`, `fileTree`, `iconBar` の ID 読み替え処理）を削除し、コア領域の要素取得処理に簡素化。
+  - `sidebar.js` に `initSidebarElements()` 関数を追加し、サイドバー用 DOM 要素の取得・保持処理を移動。
+  - `sidebar-integration.js` の初期化時に `initSidebarElements()` を呼び出して連携し、サイドバーモジュール内へのカプセル化を完了。
+
+---
+
 ### Ver 0.2.23 | 2026-07-18 | yasudajs
 - [リファクタリング フェーズ6] settings.js のサイドバー関連分離：
   - `settings.js` 内の `saveApplicationSettings()` からハードコードされた `sidebar_visible` および `sidebar_width` の直接保存処理を削除。
