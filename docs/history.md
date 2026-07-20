@@ -5,6 +5,13 @@ NoCapEdit のバージョンアップおよび仕様変更の履歴です。
 
 ## 改定履歴一覧
 
+### Ver 0.2.26 | 2026-07-20 | yasudajs
+- [リファクタリング フェーズ6 補足] settings.js への直接依存の排除：
+  - `sidebar.js` から `settings.js`（`saveSettingsDelay`）への直接依存を排除。
+  - 代わりに `sidebar-settings-changed` イベントを発火し、ブリッジモジュールである `sidebar-integration.js` がイベントを受け取って設定保存処理を代行する構造に変更。これにより完全な関心の分離を実現。
+
+---
+
 ### Ver 0.2.25 | 2026-07-18 | yasudajs
 - [リファクタリング フェーズ9] 統合テストとコードクリーンアップ：
   - 各モジュール間の不要な import 文・未使用定義の調査を実施。

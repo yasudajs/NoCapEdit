@@ -3,7 +3,7 @@ import { invoke, appWindow } from '../core/tauri.js';
 import { normalizePathForComparison, getParentPath, getFileNameFromPath } from '../utils/helpers.js';
 import { openExistingFile } from '../core/fileSystem.js';
 import { closeTabByPathWithoutSaving, updateStatus, renderTabs } from './tabs.js';
-import { saveSettingsDelay } from './settings.js';
+
 
 // コンテキストメニュー関連の状態管理
 export let contextMenuTarget = {
@@ -160,7 +160,7 @@ export function initSidebar() {
             elements.iconBar.style.width = '48px';
         }
         console.log('Sidebar is now:', appState.sidebarVisible ? 'visible' : 'hidden');
-        saveSettingsDelay();
+        window.dispatchEvent(new CustomEvent('sidebar-settings-changed'));
     });
 
     // リサイズ機能
@@ -194,7 +194,7 @@ export function initSidebar() {
             isResizing = false;
             elements.sidebarResizeHandle.classList.remove('active');
             document.body.style.cursor = '';
-            saveSettingsDelay();
+            window.dispatchEvent(new CustomEvent('sidebar-settings-changed'));
         }
     });
 
@@ -1708,7 +1708,7 @@ export async function focusSidebarTree() {
         if (elements.iconBar) {
             elements.iconBar.style.width = 'var(--sidebar-width)';
         }
-        saveSettingsDelay();
+        window.dispatchEvent(new CustomEvent('sidebar-settings-changed'));
     }
 
     // 最後に選択されていた項目を復元してフォーカス
@@ -1759,7 +1759,7 @@ export async function createItemGlobally(isDir) {
         if (elements.iconBar) {
             elements.iconBar.style.width = 'var(--sidebar-width)';
         }
-        saveSettingsDelay();
+        window.dispatchEvent(new CustomEvent('sidebar-settings-changed'));
     }
 
     // 2. 現在選択されているアイテムがあればそれを対象にする。無ければルート直下

@@ -5,7 +5,7 @@
 import { initSidebar, initSidebarElements, focusSidebarTree, createItemGlobally, loadDirectory } from './sidebar.js';
 import { appState, elements } from '../state.js';
 import { registerShortcut } from '../shortcuts.js';
-import { registerSettingsExtraProvider } from './settings.js';
+import { registerSettingsExtraProvider, saveSettingsDelay } from './settings.js';
 import { listen } from '../core/tauri.js';
 import { normalizePathForComparison, getParentPath } from '../utils/helpers.js';
 
@@ -94,6 +94,11 @@ export function initSidebarIntegration() {
         sidebar_visible: appState.sidebarVisible,
         sidebar_width: appState.sidebarWidth
     }));
+
+    // サイドバーからの設定保存要求をリッスン
+    window.addEventListener('sidebar-settings-changed', () => {
+        saveSettingsDelay();
+    });
 
     // サイドバー用ショートカットの登録
     registerShortcut(['Ctrl+E'], () => {
