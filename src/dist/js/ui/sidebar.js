@@ -658,15 +658,7 @@ function createTreeItemElement(file, childrenContainer) {
             if (isDir) {
                 itemDiv.click();
             } else {
-                const tab = appState.tabs.find(t => normalizePathForComparison(t.filePath) === normalizePathForComparison(filePath));
-                const isCurrentlyActive = tab && tab.id === appState.currentTab;
-                if (!isCurrentlyActive) {
-                    openFileFromTree(file);
-                }
-                // エディタへフォーカス
-                if (elements.editor) {
-                    elements.editor.focus();
-                }
+                openFileAndFocusEditor(filePath, file);
             }
         }
         // 3. エディタへフォーカスを戻す (Esc)
@@ -1012,6 +1004,21 @@ function createTreeItemElement(file, childrenContainer) {
 
 export function openFileFromTree(file) {
     openExistingFile(file.file_path);
+}
+
+export function openFileAndFocusEditor(filePath, fileObj = null) {
+    const tab = appState.tabs.find(t => normalizePathForComparison(t.filePath) === normalizePathForComparison(filePath));
+    const isCurrentlyActive = tab && tab.id === appState.currentTab;
+    if (!isCurrentlyActive) {
+        if (fileObj) {
+            openFileFromTree(fileObj);
+        } else {
+            openExistingFile(filePath);
+        }
+    }
+    if (elements.editor) {
+        elements.editor.focus();
+    }
 }
 
 export function showContextMenu(e, path, isDir, name, element) {
@@ -1696,6 +1703,27 @@ function isItemVisible(el) {
 }
 
 export async function focusSidebarTree() {
+    const activeEl = document.activeElement;
+    const isTreeFocused = elements.fileTree && elements.fileTree.contains(activeEl);
+
+    if (isTreeFocused && selectedElement) {
+        const filePath = selectedElement.dataset.filePath;
+        const isDir = selectedElement.dataset.isDir === "true";
+
+        if (!isDir && filePath) {
+            openFileAndFocusEditor(filePath);
+        }
+
+        appState.sidebarVisible = false;
+        if (elements.sidebar) elements.sidebar.classList.add('hidden');
+        if (elements.sidebarResizeHandle) elements.sidebarResizeHandle.classList.add('hidden');
+        if (elements.iconBar) elements.iconBar.style.width = '48px';
+        window.dispatchEvent(new CustomEvent('sidebar-settings-changed'));
+
+        if (elements.editor) elements.editor.focus();
+        return;
+    }
+
     // もしツリーが非表示なら開く
     if (!appState.sidebarVisible) {
         appState.sidebarVisible = true;
