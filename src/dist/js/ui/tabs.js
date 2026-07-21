@@ -71,7 +71,7 @@ export function updateTabStatus(tab, state = null, statusType = 'normal') {
     if (!tab.filePath) {
         // ファイル未作成（初期状態）
         if (appState.saveMode === 'manual') {
-            updateStatus(window.t('status_ready_manual'), statusType, true);
+            updateStatus(window.t('status_ready_manual'), statusType);
         } else {
             updateStatus(window.t('status_ready_auto'), statusType);
         }
