@@ -23,8 +23,9 @@
 
 #### [MODIFY] [sidebar.js](file:///c:/work/NoCapEdit/src/dist/js/ui/sidebar.js)
 - `focusSidebarTree()` のロジックを修正：
-  - `appState.activeTabId` および `appState.tabs`（または `tabs.js` / `state.js`）からアクティブタブの `filePath` を取得。
-  - 親フォルダを非表示から表示状態にするヘルパー関数 `revealItemInTree(targetEl)` を作成。
+  - `appState.activeTabId` および `appState.tabs` からアクティブタブの `filePath` を取得。
+  - 親フォルダを非表示から表示状態にするヘルパー関数 `ensureItemVisibleAndExpanded(targetEl)` を作成。
+  - **遅延ロード（Lazy Load）対応**: 外部（Windowsエクスプローラ等）から開かれたファイルのように、対象項目の `.tree-item` がまだ DOM にロードされていない場合に備え、ルートから対象ファイルまでの親フォルダ階層を順次自動で展開・ロード（`loadDirectory`）しながら DOM 上に要素を生成して探し出す関数 `expandParentFoldersToItem(targetPath)` を実装。
   - アクティブタブのファイルが存在する場合は親フォルダを自動展開してフォーカス。存在しない場合はツリー先頭へフォーカス。
 
 ## 手動検証計画
