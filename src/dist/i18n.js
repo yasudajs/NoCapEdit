@@ -5,6 +5,8 @@ const DICT = {
     ja: {
         // 例: エラーメッセージなど、新しく追加する文字列をここに追記していく
         // status_api_error: "Tauri API 初期化失敗",
+        status_ready_auto: "保存準備完了",
+        status_ready_manual: "[手動保存モード] ※Ctrl+Sで保存できます",
         folder_delete_error_not_empty_title: "フォルダ削除エラー",
         folder_delete_error_not_empty_msg: "このフォルダは空ではないため削除できません。\nエクスプローラでフォルダを開いて中身を確認しますか？",
     }

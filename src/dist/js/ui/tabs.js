@@ -71,9 +71,9 @@ export function updateTabStatus(tab, state = null, statusType = 'normal') {
     if (!tab.filePath) {
         // ファイル未作成（初期状態）
         if (appState.saveMode === 'manual') {
-            updateStatus('※Ctrl+Sで保存できます', statusType);
+            updateStatus(window.t('status_ready_manual'), statusType);
         } else {
-            updateStatus('保存準備完了', statusType);
+            updateStatus(window.t('status_ready_auto'), statusType);
         }
     } else {
         // ファイル作成済み
