@@ -395,7 +395,7 @@ async function init() {
         if (isFirstLaunch || isHomeFolderMissing) {
             openSettingsDialog(isHomeFolderMissing);
         } else {
-            updateStatus(appState.saveMode === 'manual' ? window.t('status_ready_manual') : window.t('status_ready_auto'));
+            updateStatus(appState.saveMode === 'manual' ? window.t('status_ready_manual') : window.t('status_ready_auto'), 'normal', true);
             setupUIEventListeners();
 
             const launchFile = await invoke('get_launch_file');
