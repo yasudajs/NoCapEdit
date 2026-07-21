@@ -16,7 +16,7 @@ export function formatTabDisplayName(fileName) {
         return fileName;
     }
     if (isAutoCreatedFileName(fileName)) {
-        const match = fileName.match(/^(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})(?:_(\d{2}))?\.nctx$/);
+        const match = fileName.match(/^(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})(?:_([1-9]))?\.nctx$/);
         if (match) {
             const [_, year, month, day, hour, min, sec, index] = match;
             let formatted = `${year}/${month}/${day} ${hour}:${min}:${sec}`;
