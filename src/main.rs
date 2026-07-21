@@ -706,7 +706,8 @@ fn move_file_or_dir(source_path: String, target_parent_path: String) -> Result<S
             .ok_or_else(|| "ファイル名が不正です".to_string())?;
         let ext = path_for_name.extension().map(|e| e.to_string_lossy().to_string());
 
-        let re = regex::Regex::new(r"_(\d{2})$").unwrap();
+        static RE: std::sync::OnceLock<regex::Regex> = std::sync::OnceLock::new();
+        let re = RE.get_or_init(|| regex::Regex::new(r"_(\d{2})$").unwrap());
         let base_stem = re.replace(&stem, "").into_owned();
 
         let mut count = 0;
@@ -756,7 +757,8 @@ fn copy_file_or_dir(source_path: String, target_parent_path: String) -> Result<S
 
     // 同名ファイル存在時は連番処理で衝突回避
     if dest_path.exists() {
-        let re = regex::Regex::new(r"_(\d{2})$").unwrap();
+        static RE: std::sync::OnceLock<regex::Regex> = std::sync::OnceLock::new();
+        let re = RE.get_or_init(|| regex::Regex::new(r"_(\d{2})$").unwrap());
         let base_stem = re.replace(&stem, "").into_owned();
 
         let mut count = 0;
