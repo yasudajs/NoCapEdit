@@ -228,7 +228,7 @@ fn next_available_file_path(home_folder: &PathBuf, timestamp: &str) -> Result<(S
         let file_name = if index == 0 {
             format!("{}{}", base, FILE_EXTENSION)
         } else {
-            format!("{}_{:02}{}", base, index, FILE_EXTENSION)
+            format!("{}_{}{}", base, index, FILE_EXTENSION)
         };
 
         let file_path = home_folder.join(&file_name);
@@ -237,7 +237,7 @@ fn next_available_file_path(home_folder: &PathBuf, timestamp: &str) -> Result<(S
         }
 
         index += 1;
-        if index > 99 {
+        if index > 9 {
             return Err("同名ファイル回避の上限に達しました".to_string());
         }
     }
