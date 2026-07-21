@@ -8,7 +8,8 @@
 ## 2. 仕様に準拠した表示内容（i18n.js への追加）
 `src/dist/i18n.js` の `DICT.ja` に以下のキーと値を新設します。
 - `status_ready_auto`: `"保存準備完了"`
-- `status_ready_manual`: `"[手動保存モード] ※Ctrl+Sで保存できます"`
+- `status_ready_manual`: `"※Ctrl+Sで保存できます"`
+（※手動保存モード時の `[手動保存モード] ` プレフィックスは `updateStatus` 関数の共通ロジックによって自動付与されるため、多言語定数側には含めずDRY原則を保ちます）
 
 ## 3. 対象ファイルと修正内容
 
