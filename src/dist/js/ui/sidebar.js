@@ -1702,6 +1702,35 @@ function isItemVisible(el) {
     return true;
 }
 
+async function ensureItemVisibleAndExpanded(targetEl) {
+    if (!targetEl || !elements.fileTree) return;
+
+    const hiddenContainers = [];
+    let parent = targetEl.parentElement;
+    while (parent && parent !== elements.fileTree) {
+        if (parent.classList.contains('tree-children') && parent.classList.contains('hidden')) {
+            hiddenContainers.unshift(parent);
+        }
+        parent = parent.parentElement;
+    }
+
+    for (const container of hiddenContainers) {
+        container.classList.remove('hidden');
+        const folderItemDiv = container.previousElementSibling;
+        if (folderItemDiv && folderItemDiv.classList.contains('tree-item')) {
+            const iconSpan = folderItemDiv.querySelector('.tree-icon');
+            if (iconSpan) {
+                iconSpan.textContent = '📂';
+            }
+            const folderPath = folderItemDiv.dataset.filePath;
+            if (container.children.length === 0 && folderPath) {
+                container.innerHTML = '<div class="tree-loading">読み込み中...</div>';
+                await loadDirectory(folderPath, container);
+            }
+        }
+    }
+}
+
 export async function focusSidebarTree() {
     const activeEl = document.activeElement;
     const isTreeFocused = elements.fileTree && elements.fileTree.contains(activeEl);
@@ -1739,12 +1768,29 @@ export async function focusSidebarTree() {
         window.dispatchEvent(new CustomEvent('sidebar-settings-changed'));
     }
 
-    // 最後に選択されていた項目を復元してフォーカス
-    let targetEl = selectedElement;
-    
-    // selectedElement が DOM 上に存在しない、または null であるが、selectedPath がある場合、
-    // DOM の中から該当のパスを持つ .tree-item を検索する
-    if ((!targetEl || !elements.fileTree.contains(targetEl)) && selectedPath) {
+    // 1. 現在アクティブなタブの実ファイルパスを取得してツリー項目を優先探索
+    let targetEl = null;
+    const activeTab = appState.tabs.find(t => t.id === appState.currentTab);
+    const activeFilePath = activeTab ? activeTab.filePath : null;
+
+    if (activeFilePath && elements.fileTree) {
+        const normActivePath = normalizePathForComparison(activeFilePath);
+        const items = elements.fileTree.querySelectorAll('.tree-item');
+        for (const item of items) {
+            if (normalizePathForComparison(item.dataset.filePath) === normActivePath) {
+                targetEl = item;
+                selectedElement = item;
+                break;
+            }
+        }
+    }
+
+    // 2. 過去に選択されていた項目を復元するフォールバック
+    if (!targetEl && selectedElement && elements.fileTree.contains(selectedElement)) {
+        targetEl = selectedElement;
+    }
+
+    if (!targetEl && selectedPath && elements.fileTree) {
         const normTarget = normalizePathForComparison(selectedPath);
         const items = elements.fileTree.querySelectorAll('.tree-item');
         for (const item of items) {
@@ -1757,6 +1803,7 @@ export async function focusSidebarTree() {
     }
 
     if (targetEl && elements.fileTree.contains(targetEl)) {
+        await ensureItemVisibleAndExpanded(targetEl);
         selectItem(targetEl, targetEl.dataset.filePath);
         makeSelectionActive();
         targetEl.focus();
@@ -1764,7 +1811,7 @@ export async function focusSidebarTree() {
         return;
     }
 
-    // 開いている実ファイルがない、または選択されていない場合は先頭のアイテムを選択
+    // 3. 開いている実ファイルがない、または該当要素が見つからない場合は先頭のアイテムを選択
     const firstItem = elements.fileTree.querySelector('.tree-item');
     if (firstItem) {
         selectItem(firstItem, firstItem.dataset.filePath);
