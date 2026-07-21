@@ -706,17 +706,18 @@ fn move_file_or_dir(source_path: String, target_parent_path: String) -> Result<S
             .ok_or_else(|| "ファイル名が不正です".to_string())?;
         let ext = path_for_name.extension().map(|e| e.to_string_lossy().to_string());
 
-        static RE: std::sync::OnceLock<regex::Regex> = std::sync::OnceLock::new();
-        let re = RE.get_or_init(|| regex::Regex::new(r"_(\d{2})$").unwrap());
-        let base_stem = re.replace(&stem, "").into_owned();
+        let base_stem = stem;
 
         let mut count = 0;
         while dest_path.exists() {
             count += 1;
+            if count > 9 {
+                return Err("同名ファイル回避の上限に達しました".to_string());
+            }
             let target_name = if let Some(ref ext_str) = ext {
-                format!("{}_{:02}.{}", base_stem, count, ext_str)
+                format!("{}_{}.{}", base_stem, count, ext_str)
             } else {
-                format!("{}_{:02}", base_stem, count)
+                format!("{}_{}", base_stem, count)
             };
             dest_path = canon_target_parent.join(&target_name);
         }
@@ -757,17 +758,18 @@ fn copy_file_or_dir(source_path: String, target_parent_path: String) -> Result<S
 
     // 同名ファイル存在時は連番処理で衝突回避
     if dest_path.exists() {
-        static RE: std::sync::OnceLock<regex::Regex> = std::sync::OnceLock::new();
-        let re = RE.get_or_init(|| regex::Regex::new(r"_(\d{2})$").unwrap());
-        let base_stem = re.replace(&stem, "").into_owned();
+        let base_stem = stem;
 
         let mut count = 0;
         while dest_path.exists() {
             count += 1;
+            if count > 9 {
+                return Err("同名ファイル回避の上限に達しました".to_string());
+            }
             let target_name = if let Some(ref ext_str) = ext {
-                format!("{}_{:02}.{}", base_stem, count, ext_str)
+                format!("{}_{}.{}", base_stem, count, ext_str)
             } else {
-                format!("{}_{:02}", base_stem, count)
+                format!("{}_{}", base_stem, count)
             };
             dest_path = canon_target_parent.join(&target_name);
         }
