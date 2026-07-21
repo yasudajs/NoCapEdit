@@ -1,6 +1,6 @@
 import { appState, elements } from '../state.js';
 import { invoke, saveDialog, ensureTauriApi } from './tauri.js';
-import { getFileNameFromPath, isAutoCreatedFileName, normalizePathForComparison } from '../utils/helpers.js';
+import { getFileNameFromPath, isAutoCreatedFileName, normalizePathForComparison, generateTimestamp } from '../utils/helpers.js';
 import { updateStatus, updateTabStatus, renderTabs, switchTab, createNewTab } from '../ui/tabs.js';
 import { syncCurrentEditorToState } from '../ui/editor.js';
 import { FILE_EXT_NCTX, FILE_EXT_NCMD } from '../state.js';
@@ -103,14 +103,7 @@ export async function saveTabIfDirty(tab) {
         try {
             if (!tab.filePath) {
                 // 初回保存：ファイル生成＋内容書き込みを同時実行
-                const now = new Date();
-                const yyyy = now.getFullYear();
-                const mm = String(now.getMonth() + 1).padStart(2, '0');
-                const dd = String(now.getDate()).padStart(2, '0');
-                const hh = String(now.getHours()).padStart(2, '0');
-                const min = String(now.getMinutes()).padStart(2, '0');
-                const ss = String(now.getSeconds()).padStart(2, '0');
-                const saveTimestamp = `${yyyy}${mm}${dd}_${hh}${min}${ss}`;
+                const saveTimestamp = generateTimestamp();
 
                 const file = await invoke('create_and_save_file', {
                     homeFolder: appState.homeFolder,
@@ -272,14 +265,7 @@ export async function triggerManualSave() {
 
         let saved = false;
         if (appState.saveMode === 'manual') {
-            const now = new Date();
-            const yyyy = now.getFullYear();
-            const mm = String(now.getMonth() + 1).padStart(2, '0');
-            const dd = String(now.getDate()).padStart(2, '0');
-            const hh = String(now.getHours()).padStart(2, '0');
-            const min = String(now.getMinutes()).padStart(2, '0');
-            const ss = String(now.getSeconds()).padStart(2, '0');
-            const saveTimestamp = `${yyyy}${mm}${dd}_${hh}${min}${ss}`;
+            const saveTimestamp = generateTimestamp();
             const fileName = `${saveTimestamp}.nctx`;
             const filePath = appState.homeFolder.replace(/[\\\/]$/, '') + '\\' + fileName;
             
