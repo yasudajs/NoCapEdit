@@ -5,7 +5,7 @@ export const MAX_LINE_HEIGHT = 3.0;
 export const MIN_LINE_HEIGHT = 1.0;
 export const LINE_HEIGHT_STEP = 0.1;
 export const DEFAULT_MONOSPACE_FONTS = "'Fira Code', 'Monaco', 'Menlo', monospace";
-export const AUTO_FILE_REGEX = /^\d{8}_\d{6}(_\d{2})?\.nctx$/;
+export const AUTO_FILE_REGEX = /^\d{8}_\d{6}(_[1-9])?\.nctx$/;
 export const FILE_EXT_NCTX = 'nctx';
 export const FILE_EXT_NCMD = 'ncmd';
 

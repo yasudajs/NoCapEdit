@@ -263,25 +263,8 @@ export async function triggerManualSave() {
     try {
         updateTabStatus(tab, '保存中...', 'saving');
 
-        let saved = false;
-        if (appState.saveMode === 'manual') {
-            const saveTimestamp = generateTimestamp();
-            const fileName = `${saveTimestamp}.nctx`;
-            const filePath = appState.homeFolder.replace(/[\\\/]$/, '') + '\\' + fileName;
-            
-            await invoke('save_text_file', {
-                filePath: filePath,
-                content: tab.content
-            });
-            tab.filePath = filePath;
-            tab.fileName = fileName;
-            tab.createdTimestamp = saveTimestamp;
-            tab.isDirty = false;
-            saved = true;
-        } else {
-            tab.isDirty = true;
-            saved = await saveTabIfDirty(tab);
-        }
+        tab.isDirty = true;
+        const saved = await saveTabIfDirty(tab);
 
         renderTabs();
 
