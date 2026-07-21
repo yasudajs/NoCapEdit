@@ -1731,6 +1731,58 @@ async function ensureItemVisibleAndExpanded(targetEl) {
     }
 }
 
+async function expandParentFoldersToItem(targetPath) {
+    if (!targetPath || !elements.fileTree) return null;
+
+    const parentPaths = [];
+    let current = getParentPath(targetPath);
+    while (current) {
+        parentPaths.unshift(current);
+        current = getParentPath(current);
+    }
+
+    for (const parentPath of parentPaths) {
+        const normParent = normalizePathForComparison(parentPath);
+        const items = elements.fileTree.querySelectorAll('.tree-item');
+        let folderItemDiv = null;
+        for (const item of items) {
+            if (normalizePathForComparison(item.dataset.filePath) === normParent) {
+                folderItemDiv = item;
+                break;
+            }
+        }
+
+        if (folderItemDiv && folderItemDiv.dataset.isDir === "true") {
+            const childrenContainer = folderItemDiv.nextElementSibling;
+            if (childrenContainer && childrenContainer.classList.contains('tree-children')) {
+                const isHidden = childrenContainer.classList.contains('hidden');
+                const isEmpty = childrenContainer.children.length === 0;
+
+                if (isHidden || isEmpty) {
+                    childrenContainer.classList.remove('hidden');
+                    const iconSpan = folderItemDiv.querySelector('.tree-icon');
+                    if (iconSpan) {
+                        iconSpan.textContent = '📂';
+                    }
+                    if (isEmpty) {
+                        childrenContainer.innerHTML = '<div class="tree-loading">読み込み中...</div>';
+                        await loadDirectory(folderItemDiv.dataset.filePath, childrenContainer);
+                    }
+                }
+            }
+        }
+    }
+
+    const normTarget = normalizePathForComparison(targetPath);
+    const allItems = elements.fileTree.querySelectorAll('.tree-item');
+    for (const item of allItems) {
+        if (normalizePathForComparison(item.dataset.filePath) === normTarget) {
+            return item;
+        }
+    }
+    return null;
+}
+
 export async function focusSidebarTree() {
     const activeEl = document.activeElement;
     const isTreeFocused = elements.fileTree && elements.fileTree.contains(activeEl);
@@ -1768,20 +1820,15 @@ export async function focusSidebarTree() {
         window.dispatchEvent(new CustomEvent('sidebar-settings-changed'));
     }
 
-    // 1. 現在アクティブなタブの実ファイルパスを取得してツリー項目を優先探索
+    // 1. 現在アクティブなタブの実ファイルパスを取得し、親フォルダ群を順次ロード・展開して探す
     let targetEl = null;
     const activeTab = appState.tabs.find(t => t.id === appState.currentTab);
     const activeFilePath = activeTab ? activeTab.filePath : null;
 
     if (activeFilePath && elements.fileTree) {
-        const normActivePath = normalizePathForComparison(activeFilePath);
-        const items = elements.fileTree.querySelectorAll('.tree-item');
-        for (const item of items) {
-            if (normalizePathForComparison(item.dataset.filePath) === normActivePath) {
-                targetEl = item;
-                selectedElement = item;
-                break;
-            }
+        targetEl = await expandParentFoldersToItem(activeFilePath);
+        if (targetEl) {
+            selectedElement = targetEl;
         }
     }
 
@@ -1791,14 +1838,9 @@ export async function focusSidebarTree() {
     }
 
     if (!targetEl && selectedPath && elements.fileTree) {
-        const normTarget = normalizePathForComparison(selectedPath);
-        const items = elements.fileTree.querySelectorAll('.tree-item');
-        for (const item of items) {
-            if (normalizePathForComparison(item.dataset.filePath) === normTarget) {
-                targetEl = item;
-                selectedElement = item;
-                break;
-            }
+        targetEl = await expandParentFoldersToItem(selectedPath);
+        if (targetEl) {
+            selectedElement = targetEl;
         }
     }
 
