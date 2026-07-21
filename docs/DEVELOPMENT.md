@@ -32,7 +32,7 @@ cargo tauri build
 cargo build --release
 New-Item -ItemType Directory -Force -Path "target/release/bundle"
 Rename-Item -Path "target/release/NoCapEdit.exe" -NewName "NoCapEdit_v02.exe"
-Compress-Archive -Path "target/release/NoCapEdit_v02.exe" -DestinationPath "target/release/NoCapEdit-0.2.33-Portable.zip" -Force
+Compress-Archive -Path "target/release/NoCapEdit_v02.exe" -DestinationPath "target/release/NoCapEdit-0.2.34-Portable.zip" -Force
 Remove-Item "target/release/NoCapEdit_v02.exe"
 ```
 
