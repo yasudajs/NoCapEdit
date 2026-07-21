@@ -191,7 +191,7 @@ export async function saveSettings() {
             renderTabs();
         }
         
-        updateStatus('準備完了');
+        updateStatus(appState.saveMode === 'manual' ? window.t('status_ready_manual') : window.t('status_ready_auto'));
         
         // This circular dependency is tricky. We'll import dynamically or just rely on main.js to setup listeners.
         // main.js will setup listeners initially. We don't need to setup listeners here again if they are attached to DOM.
@@ -273,7 +273,7 @@ export async function loadSystemFonts() {
 
         elements.fontFamilySelectModal.value = appState.fontFamily;
         appState.fontsLoaded = true;
-        updateStatus('準備完了');
+        updateStatus(appState.saveMode === 'manual' ? window.t('status_ready_manual') : window.t('status_ready_auto'));
     } catch (error) {
         console.error('Failed to load system fonts:', error);
         updateStatus('フォント読み込み失敗', 'error');
