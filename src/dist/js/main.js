@@ -179,7 +179,7 @@ function setupUIEventListeners() {
 
     // --- ショートカットの登録 ---
     // 無効化するショートカット（デフォルト挙動の禁止）
-    registerShortcut(['F5', 'Ctrl+R', 'Ctrl+P'], () => {}, { category: 'System' });
+    registerShortcut(['F5', 'Ctrl+R', 'Ctrl+Shift+R', 'Ctrl+F5', 'Ctrl+Shift+F5', 'Ctrl+P'], () => {}, { category: 'System' });
 
     // タブ切り替え
     registerShortcut('Ctrl+Tab', async () => {
