@@ -333,6 +333,9 @@ async function init() {
         const isDebug = await invoke('is_debug');
         if (!isDebug) {
             document.addEventListener('contextmenu', (e) => {
+                if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') {
+                    return;
+                }
                 e.preventDefault();
             });
         }
