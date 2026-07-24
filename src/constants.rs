@@ -29,3 +29,17 @@ pub const ALLOWED_TREE_EXTENSIONS: &[&str] = &["txt", "md", "nctx", "json", "csv
 
 // 同名ファイル・フォルダの連番回避上限数
 pub const MAX_FILE_NUMBERING_INDEX: u32 = 9;
+
+// 空ディレクトリ判定でスキップするOS自動生成メタデータファイル名リスト
+pub const IGNORED_METADATA_FILES: &[&str] = &[
+    ".DS_Store",
+    "Thumbs.db",
+    "desktop.ini",
+    ".Trashes",
+];
+
+// 空ディレクトリ判定でスキップするOS自動生成メタデータファイルのプレフィックス
+pub const IGNORED_METADATA_PREFIXES: &[&str] = &[
+    "._",
+];
+
