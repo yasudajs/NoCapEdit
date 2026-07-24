@@ -15,6 +15,8 @@ use std::net::{TcpListener, TcpStream};
 use std::thread;
 
 mod constants;
+mod error_messages;
+mod security;
 
 struct WatcherState {
     watcher: Option<RecommendedWatcher>,
@@ -395,11 +397,7 @@ fn read_directory(path: Option<String>) -> Result<Vec<TreeFileInfo>, String> {
     }
 
     // セキュリティチェック: target_path が home_folder の配下にあること
-    let target_canon = target_path.canonicalize().map_err(|e| e.to_string())?;
-    let home_canon = home_folder.canonicalize().map_err(|e| e.to_string())?;
-    if !target_canon.starts_with(&home_canon) {
-        return Err("アクセスが許可されていないディレクトリです".to_string());
-    }
+    let target_canon = security::verify_safe_path(&target_path, &home_folder)?;
 
     let mut result = Vec::new();
     let entries = fs::read_dir(target_canon).map_err(|e| e.to_string())?;
@@ -464,11 +462,7 @@ fn create_file_or_dir(parent_path: String, name: String, is_dir: bool) -> Result
     };
 
     // セキュリティチェック
-    let canon_parent = parent.canonicalize().map_err(|e| e.to_string())?;
-    let canon_home = home_folder.canonicalize().map_err(|e| e.to_string())?;
-    if !canon_parent.starts_with(&canon_home) {
-        return Err("アクセスが許可されていないパスです".to_string());
-    }
+    let canon_parent = security::verify_safe_path(&parent, &home_folder)?;
 
     let mut target_path = canon_parent.join(&name);
 
@@ -511,22 +505,13 @@ fn rename_file_or_dir(old_path: String, new_name: String) -> Result<String, Stri
     let old = PathBuf::from(old_path);
 
     // セキュリティチェック
-    let canon_old = old.canonicalize().map_err(|e| e.to_string())?;
-    let canon_home = home_folder.canonicalize().map_err(|e| e.to_string())?;
-    if !canon_old.starts_with(&canon_home) {
-        return Err("アクセスが許可されていないパスです".to_string());
-    }
+    let canon_old = security::verify_safe_path(&old, &home_folder)?;
 
-    let parent = canon_old.parent().ok_or_else(|| "親ディレクトリが見つかりません".to_string())?;
-    let new_path = parent.join(&new_name);
-
-    // セキュリティチェック（新しいパスも home_folder 配下にあること）
-    if !new_path.starts_with(&canon_home) {
-        return Err("アクセスが許可されていないパスです".to_string());
-    }
+    let parent = canon_old.parent().ok_or_else(|| error_messages::ERR_PARENT_DIR_NOT_FOUND.to_string())?;
+    let new_path = security::verify_safe_parent_path(&parent.join(&new_name), &home_folder)?;
 
     if new_path.exists() {
-        return Err("同名のファイルまたはフォルダが既に存在します".to_string());
+        return Err(error_messages::ERR_SAME_NAME_EXISTS.to_string());
     }
 
     fs::rename(&canon_old, &new_path).map_err(|e| e.to_string())?;
@@ -565,11 +550,7 @@ fn trash_file_or_dir(file_path: String) -> Result<(), String> {
     let path = PathBuf::from(file_path);
 
     // セキュリティチェック
-    let canon_path = path.canonicalize().map_err(|e| e.to_string())?;
-    let canon_home = home_folder.canonicalize().map_err(|e| e.to_string())?;
-    if !canon_path.starts_with(&canon_home) {
-        return Err("アクセスが許可されていないパスです".to_string());
-    }
+    let canon_path = security::verify_safe_path(&path, &home_folder)?;
 
     if canon_path.is_dir() {
         let is_empty = is_dir_empty_custom(&canon_path).map_err(|e| e.to_string())?;
@@ -589,11 +570,7 @@ fn delete_file_or_dir_permanently(file_path: String) -> Result<(), String> {
     let path = PathBuf::from(file_path);
 
     // セキュリティチェック
-    let canon_path = path.canonicalize().map_err(|e| e.to_string())?;
-    let canon_home = home_folder.canonicalize().map_err(|e| e.to_string())?;
-    if !canon_path.starts_with(&canon_home) {
-        return Err("アクセスが許可されていないパスです".to_string());
-    }
+    let canon_path = security::verify_safe_path(&path, &home_folder)?;
 
     if canon_path.is_dir() {
         let is_empty = is_dir_empty_custom(&canon_path).map_err(|e| e.to_string())?;
@@ -607,7 +584,7 @@ fn delete_file_or_dir_permanently(file_path: String) -> Result<(), String> {
     } else if canon_path.is_dir() {
         fs::remove_dir_all(canon_path).map_err(|e| e.to_string())?;
     } else {
-        return Err("指定されたパスはファイルでもディレクトリでもありません".to_string());
+        return Err(error_messages::ERR_NOT_FILE_OR_DIR.to_string());
     }
     Ok(())
 }
@@ -619,16 +596,12 @@ fn open_folder_in_explorer(file_path: String) -> Result<(), String> {
     let path = PathBuf::from(file_path);
 
     // セキュリティチェック
-    let canon_path = path.canonicalize().map_err(|e| e.to_string())?;
-    let canon_home = home_folder.canonicalize().map_err(|e| e.to_string())?;
-    if !canon_path.starts_with(&canon_home) {
-        return Err("アクセスが許可されていないパスです".to_string());
-    }
+    let canon_path = security::verify_safe_path(&path, &home_folder)?;
 
     let target_dir = if canon_path.is_dir() {
         canon_path
     } else {
-        canon_path.parent().ok_or("親ディレクトリが見つかりません".to_string())?.to_path_buf()
+        canon_path.parent().ok_or(error_messages::ERR_PARENT_DIR_NOT_FOUND.to_string())?.to_path_buf()
     };
 
     #[cfg(target_os = "windows")]
@@ -664,20 +637,15 @@ fn move_file_or_dir(source_path: String, target_parent_path: String) -> Result<S
     let target_parent = PathBuf::from(target_parent_path);
 
     // セキュリティチェック
-    let canon_src = src.canonicalize().map_err(|e| e.to_string())?;
-    let canon_target_parent = target_parent.canonicalize().map_err(|e| e.to_string())?;
-    let canon_home = home_folder.canonicalize().map_err(|e| e.to_string())?;
+    let canon_src = security::verify_safe_path(&src, &home_folder)?;
+    let canon_target_parent = security::verify_safe_path(&target_parent, &home_folder)?;
 
-    if !canon_src.starts_with(&canon_home) || !canon_target_parent.starts_with(&canon_home) {
-        return Err("アクセスが許可されていないパスです".to_string());
-    }
-
-    let file_name = canon_src.file_name().ok_or_else(|| "ファイル名が不正です".to_string())?;
+    let file_name = canon_src.file_name().ok_or_else(|| error_messages::ERR_INVALID_FILE_NAME.to_string())?;
     let mut dest_path = canon_target_parent.join(file_name);
 
     // 循環移動の防止
     if canon_target_parent.starts_with(&canon_src) {
-        return Err("自分自身またはサブフォルダへは移動できません".to_string());
+        return Err(error_messages::ERR_CIRCULAR_MOVE.to_string());
     }
 
     // 同名ファイル存在時は連番処理で衝突回避
@@ -685,7 +653,7 @@ fn move_file_or_dir(source_path: String, target_parent_path: String) -> Result<S
         let path_for_name = std::path::Path::new(file_name);
         let stem = path_for_name.file_stem()
             .map(|s| s.to_string_lossy().to_string())
-            .ok_or_else(|| "ファイル名が不正です".to_string())?;
+            .ok_or_else(|| error_messages::ERR_INVALID_FILE_NAME.to_string())?;
         let ext = path_for_name.extension().map(|e| e.to_string_lossy().to_string());
 
         let base_stem = stem;
@@ -694,7 +662,7 @@ fn move_file_or_dir(source_path: String, target_parent_path: String) -> Result<S
         while dest_path.exists() {
             count += 1;
             if count > constants::MAX_FILE_NUMBERING_INDEX {
-                return Err("同名ファイル回避の上限に達しました".to_string());
+                return Err(error_messages::ERR_NUMBERING_LIMIT_REACHED.to_string());
             }
             let target_name = if let Some(ref ext_str) = ext {
                 format!("{}_{}.{}", base_stem, count, ext_str)
@@ -718,21 +686,16 @@ fn copy_file_or_dir(source_path: String, target_parent_path: String) -> Result<S
     let target_parent = std::path::PathBuf::from(target_parent_path);
 
     // セキュリティチェック
-    let canon_src = src.canonicalize().map_err(|e| e.to_string())?;
-    let canon_target_parent = target_parent.canonicalize().map_err(|e| e.to_string())?;
-    let canon_home = home_folder.canonicalize().map_err(|e| e.to_string())?;
+    let canon_src = security::verify_safe_path(&src, &home_folder)?;
+    let canon_target_parent = security::verify_safe_path(&target_parent, &home_folder)?;
 
-    if !canon_src.starts_with(&canon_home) || !canon_target_parent.starts_with(&canon_home) {
-        return Err("アクセスが許可されていないパスです".to_string());
-    }
-
-    let file_name = canon_src.file_name().ok_or_else(|| "ファイル名が不正です".to_string())?;
+    let file_name = canon_src.file_name().ok_or_else(|| error_messages::ERR_INVALID_FILE_NAME.to_string())?;
 
     // コピー元の名前からステムと拡張子を取得
     let path_for_name = std::path::Path::new(file_name);
     let stem = path_for_name.file_stem()
         .map(|s| s.to_string_lossy().to_string())
-        .ok_or_else(|| "ファイル名が不正です".to_string())?;
+        .ok_or_else(|| error_messages::ERR_INVALID_FILE_NAME.to_string())?;
     
     let ext = path_for_name.extension().map(|e| e.to_string_lossy().to_string());
 
@@ -746,7 +709,7 @@ fn copy_file_or_dir(source_path: String, target_parent_path: String) -> Result<S
         while dest_path.exists() {
             count += 1;
             if count > constants::MAX_FILE_NUMBERING_INDEX {
-                return Err("同名ファイル回避の上限に達しました".to_string());
+                return Err(error_messages::ERR_NUMBERING_LIMIT_REACHED.to_string());
             }
             let target_name = if let Some(ref ext_str) = ext {
                 format!("{}_{}.{}", base_stem, count, ext_str)
@@ -758,9 +721,7 @@ fn copy_file_or_dir(source_path: String, target_parent_path: String) -> Result<S
     }
 
     // セキュリティチェック（新しいパスも home_folder 配下にあること）
-    if !dest_path.starts_with(&canon_home) {
-        return Err("アクセスが許可されていないパスです".to_string());
-    }
+    let dest_path = security::verify_safe_parent_path(&dest_path, &home_folder)?;
 
     // コピー（複製）の実行
     if canon_src.is_file() {
@@ -768,11 +729,11 @@ fn copy_file_or_dir(source_path: String, target_parent_path: String) -> Result<S
     } else if canon_src.is_dir() {
         // 循環コピーの防止
         if dest_path.starts_with(&canon_src) {
-            return Err("自分自身またはサブフォルダへはコピーできません".to_string());
+            return Err(error_messages::ERR_CIRCULAR_COPY.to_string());
         }
         copy_dir_all(&canon_src, &dest_path).map_err(|e| e.to_string())?;
     } else {
-        return Err("指定されたパスはファイルでもディレクトリでもありません".to_string());
+        return Err(error_messages::ERR_NOT_FILE_OR_DIR.to_string());
     }
 
     Ok(dest_path.to_string_lossy().to_string())
