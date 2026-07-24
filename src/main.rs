@@ -14,6 +14,8 @@ use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
 use std::thread;
 
+mod constants;
+
 struct WatcherState {
     watcher: Option<RecommendedWatcher>,
     current_path: Option<PathBuf>,
@@ -21,31 +23,9 @@ struct WatcherState {
 
 struct WatcherManager(Mutex<WatcherState>);
 
-const SINGLE_INSTANCE_PORT: u16 = 49423;
-const SINGLE_INSTANCE_HOST: &str = "127.0.0.1";
-
-// ウィンドウ設定
-const WINDOW_WIDTH: f64 = 900.0;
-const WINDOW_HEIGHT: f64 = 600.0;
-const WINDOW_MIN_WIDTH: f64 = 400.0;
-const WINDOW_MIN_HEIGHT: f64 = 300.0;
-
-// デフォルト設定
-const DEFAULT_THEME: &str = "dark";
-const DEFAULT_FONT_SIZE: u32 = 13;
-const DEFAULT_FONT_FAMILY: &str = "default";
-const DEFAULT_LINE_HEIGHT: f32 = 1.5;
-const DEFAULT_TAB_BEHAVIOR: &str = "tab";
-const DEFAULT_SAVE_MODE: &str = "auto";
-
-// パス・ファイル関連設定
-const APP_DIR_NAME: &str = "NoCapEdit";
-const HOME_DIR_NAME: &str = "nce";
-const FILE_EXTENSION: &str = ".nctx";
-
 
 fn send_to_existing_instance(path: &str) -> bool {
-    if let Ok(mut stream) = TcpStream::connect(format!("{}:{}", SINGLE_INSTANCE_HOST, SINGLE_INSTANCE_PORT)) {
+    if let Ok(mut stream) = TcpStream::connect(format!("{}:{}", constants::SINGLE_INSTANCE_HOST, constants::SINGLE_INSTANCE_PORT)) {
         let _ = stream.write_all(path.as_bytes());
         true
     } else {
@@ -55,7 +35,7 @@ fn send_to_existing_instance(path: &str) -> bool {
 
 fn start_instance_listener(app_handle: tauri::AppHandle) {
     thread::spawn(move || {
-        if let Ok(listener) = TcpListener::bind(format!("{}:{}", SINGLE_INSTANCE_HOST, SINGLE_INSTANCE_PORT)) {
+        if let Ok(listener) = TcpListener::bind(format!("{}:{}", constants::SINGLE_INSTANCE_HOST, constants::SINGLE_INSTANCE_PORT)) {
             for stream in listener.incoming() {
                 if let Ok(mut stream) = stream {
                     let mut buffer = [0; 1024];
@@ -103,39 +83,39 @@ struct AppSettings {
 }
 
 fn default_sidebar_visible() -> bool {
-    false
+    constants::DEFAULT_SIDEBAR_VISIBLE
 }
 
 fn default_sidebar_width() -> u32 {
-    220
+    constants::DEFAULT_SIDEBAR_WIDTH
 }
 
 fn default_theme() -> String {
-    DEFAULT_THEME.to_string()
+    constants::DEFAULT_THEME.to_string()
 }
 
 fn default_font_size() -> u32 {
-    DEFAULT_FONT_SIZE
+    constants::DEFAULT_FONT_SIZE
 }
 
 fn default_font_family() -> String {
-    DEFAULT_FONT_FAMILY.to_string()
+    constants::DEFAULT_FONT_FAMILY.to_string()
 }
 
 fn default_line_height() -> f32 {
-    DEFAULT_LINE_HEIGHT
+    constants::DEFAULT_LINE_HEIGHT
 }
 
 fn default_tab_behavior() -> String {
-    DEFAULT_TAB_BEHAVIOR.to_string()
+    constants::DEFAULT_TAB_BEHAVIOR.to_string()
 }
 
 fn default_save_mode() -> String {
-    DEFAULT_SAVE_MODE.to_string()
+    constants::DEFAULT_SAVE_MODE.to_string()
 }
 
 fn default_char_count_mode() -> String {
-    "with_newline".to_string()
+    constants::DEFAULT_CHAR_COUNT_MODE.to_string()
 }
 
 #[derive(Debug, Serialize)]
@@ -169,7 +149,7 @@ struct TreeFileInfo {
 impl AppSettings {
     fn config_path() -> PathBuf {
         let app_data = dirs::config_dir().unwrap_or_else(|| PathBuf::from("."));
-        app_data.join(APP_DIR_NAME).join("config.json")
+        app_data.join(constants::APP_DIR_NAME).join("config.json")
     }
 
     fn load() -> Self {
@@ -201,7 +181,7 @@ impl Default for AppSettings {
         let documents = dirs::document_dir()
             .unwrap_or_else(|| PathBuf::from(env!("USERPROFILE")));
         Self {
-            home_folder: documents.join(HOME_DIR_NAME),
+            home_folder: documents.join(constants::HOME_DIR_NAME),
             theme: default_theme(),
             font_size: default_font_size(),
             font_family: default_font_family(),
@@ -226,9 +206,9 @@ fn next_available_file_path(home_folder: &PathBuf, timestamp: &str) -> Result<(S
 
     loop {
         let file_name = if index == 0 {
-            format!("{}{}", base, FILE_EXTENSION)
+            format!("{}{}", base, constants::FILE_EXTENSION)
         } else {
-            format!("{}_{}{}", base, index, FILE_EXTENSION)
+            format!("{}_{}{}", base, index, constants::FILE_EXTENSION)
         };
 
         let file_path = home_folder.join(&file_name);
@@ -237,7 +217,7 @@ fn next_available_file_path(home_folder: &PathBuf, timestamp: &str) -> Result<(S
         }
 
         index += 1;
-        if index > 9 {
+        if index > constants::MAX_FILE_NUMBERING_INDEX {
             return Err("同名ファイル回避の上限に達しました".to_string());
         }
     }
@@ -438,7 +418,7 @@ fn read_directory(path: Option<String>) -> Result<Vec<TreeFileInfo>, String> {
             // 許可された拡張子のみ
             if let Some(ext) = path.extension() {
                 let ext_str = ext.to_string_lossy().to_lowercase();
-                if !["txt", "md", "nctx", "json", "csv"].contains(&ext_str.as_str()) {
+                if !constants::ALLOWED_TREE_EXTENSIONS.contains(&ext_str.as_str()) {
                     continue;
                 }
             } else {
@@ -711,7 +691,7 @@ fn move_file_or_dir(source_path: String, target_parent_path: String) -> Result<S
         let mut count = 0;
         while dest_path.exists() {
             count += 1;
-            if count > 9 {
+            if count > constants::MAX_FILE_NUMBERING_INDEX {
                 return Err("同名ファイル回避の上限に達しました".to_string());
             }
             let target_name = if let Some(ref ext_str) = ext {
@@ -763,7 +743,7 @@ fn copy_file_or_dir(source_path: String, target_parent_path: String) -> Result<S
         let mut count = 0;
         while dest_path.exists() {
             count += 1;
-            if count > 9 {
+            if count > constants::MAX_FILE_NUMBERING_INDEX {
                 return Err("同名ファイル回避の上限に達しました".to_string());
             }
             let target_name = if let Some(ref ext_str) = ext {
@@ -906,7 +886,7 @@ fn main() {
     };
 
     // ポートバインドを試みて重複起動を判定
-    let is_primary = match TcpListener::bind(format!("{}:{}", SINGLE_INSTANCE_HOST, SINGLE_INSTANCE_PORT)) {
+    let is_primary = match TcpListener::bind(format!("{}:{}", constants::SINGLE_INSTANCE_HOST, constants::SINGLE_INSTANCE_PORT)) {
         Ok(_) => true,
         Err(_) => false,
     };
@@ -945,9 +925,9 @@ fn main() {
                 "main",
                 tauri::WindowUrl::App("index.html".into())
             )
-            .title(format!("{} [ Ver {} ]", APP_DIR_NAME, env!("CARGO_PKG_VERSION")))
-            .inner_size(WINDOW_WIDTH, WINDOW_HEIGHT)
-            .min_inner_size(WINDOW_MIN_WIDTH, WINDOW_MIN_HEIGHT)
+            .title(format!("{} [ Ver {} ]", constants::APP_DIR_NAME, env!("CARGO_PKG_VERSION")))
+            .inner_size(constants::WINDOW_WIDTH, constants::WINDOW_HEIGHT)
+            .min_inner_size(constants::WINDOW_MIN_WIDTH, constants::WINDOW_MIN_HEIGHT)
             .resizable(true)
             .fullscreen(false)
             .visible(false)

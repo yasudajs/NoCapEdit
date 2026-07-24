@@ -7,11 +7,11 @@
 - [x] `docs/spec.md` の更新
 
 ## 実装
-- [ ] `src/constants.rs` の新規作成および定数の集約
-- [ ] `src/main.rs` の更新 (`mod constants;` 追加、定数参照への書き換え)
+- [x] `src/constants.rs` の新規作成および定数の集約
+- [x] `src/main.rs` の更新 (`mod constants;` 追加、定数参照への書き換え)
 
 ## 検証
-- [ ] コンパイルチェック (`cargo check`)
+- [x] コンパイルチェック (`cargo check` & `cargo build`)
 - [ ] アプリ起動・設定反映の動作確認
 - [ ] ファイルツリー表示・連番保存の手動テスト
 
