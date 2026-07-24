@@ -5,6 +5,15 @@ NoCapEdit のバージョンアップおよび仕様変更の履歴です。
 
 ## 改定履歴一覧
 
+### Ver 0.2.39 | 2026-07-25 | Antigravity
+- [セキュリティ・リファクタリング] セキュリティチェック（パストラバーサル防止）の共通化（`refactor_master_plan.md` 2-3 準拠）：
+  - バックエンドのエラーメッセージ定数を管理する `src/error_messages.rs` を新規作成し、エラー文字列の一元化を推進。
+  - バックエンドのセキュリティ検証ロジックを管理する `src/security.rs` を新規作成し、既存パス検証用 `verify_safe_path` と親パス検証用 `verify_safe_parent_path` を分離・共通化。
+  - パストラバーサル検証用のユニットテストを `src/security.rs` 内に追加・自動テストを拡充。
+  - `src/main.rs` 内の対象8コマンド（`read_directory`, `create_file_or_dir`, `rename_file_or_dir`, `trash_file_or_dir`, `delete_file_or_dir_permanently`, `open_folder_in_explorer`, `move_file_or_dir`, `copy_file_or_dir`）内の重複するパストラバーサル検証を共通関数呼び出しへ置き換え、DRY原則を徹底。
+
+---
+
 ### Ver 0.2.38 | 2026-07-25 | Antigravity
 - [クロスプラットフォーム対応・リファクタリング] パス区切り文字ハードコードの修正と一元化（`refactor_master_plan.md` 2-2 準拠）：
   - `src/dist/js/utils/helpers.js` にクロスプラットフォーム対応の安全なパス結合ヘルパー関数 `joinPath(...parts)` を追加。
