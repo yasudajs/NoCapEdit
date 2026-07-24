@@ -5,7 +5,7 @@ import { openExistingFile, triggerManualSave, persistAllTabsBeforeExit } from '.
 import { updateEditorMetrics, onEditorInput, zoomIn, zoomOut, applyFontSize, applyLineHeight, increaseLineHeight, decreaseLineHeight } from './ui/editor.js';
 import { toggleSettingsDialog, closeSettingsDialog, openSettingsDialog, applyThemeUI, onThemeChange, onFontFamilyChange, loadSystemFonts, checkNewVersion } from './ui/settings.js';
 import { initSidebarIntegration } from './ui/sidebar-integration.js';
-import { normalizePathForComparison } from './utils/helpers.js';
+import { normalizePathForComparison, getFileNameFromPath } from './utils/helpers.js';
 import { registerShortcut } from './shortcuts.js';
 
 function setupUIEventListeners() {
@@ -242,7 +242,7 @@ function setupUIEventListeners() {
                     const tab = appState.tabs.find(t => t.filePath && normalizePathForComparison(t.filePath) === oldNorm);
                     if (tab) {
                         tab.filePath = newPath;
-                        const newName = newPath.replace(/\\/g, '/').split('/').pop();
+                        const newName = getFileNameFromPath(newPath);
                         tab.fileName = newName;
                         
                         renderTabs();

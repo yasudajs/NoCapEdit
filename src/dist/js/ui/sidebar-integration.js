@@ -35,11 +35,11 @@ function setupSidebarFileSystemListener() {
                 continue;
             }
 
-            const parent = getParentPath(path.replace(/\\/g, '/'));
+            const parent = getParentPath(path);
             if (parent) {
                 pendingChangedDirs.add(parent);
             } else if (appState.homeFolder) {
-                pendingChangedDirs.add(appState.homeFolder.replace(/\\/g, '/').replace(/\/$/, ''));
+                pendingChangedDirs.add(appState.homeFolder);
             }
         }
 

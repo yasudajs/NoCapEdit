@@ -5,6 +5,14 @@ NoCapEdit のバージョンアップおよび仕様変更の履歴です。
 
 ## 改定履歴一覧
 
+### Ver 0.2.38 | 2026-07-25 | Antigravity
+- [クロスプラットフォーム対応・リファクタリング] パス区切り文字ハードコードの修正と一元化（`refactor_master_plan.md` 2-2 準拠）：
+  - `src/dist/js/utils/helpers.js` にクロスプラットフォーム対応の安全なパス結合ヘルパー関数 `joinPath(...parts)` を追加。
+  - `sidebar.js`, `sidebar-integration.js`, `main.js` 内に散在していた直打ちのパス結合（`+ '/' +` 等）や手動パス置換（`.replace(/\\/g, '/')`）を共通ヘルパー関数 (`joinPath`, `getParentPath`, `getFileNameFromPath`, `normalizePathForComparison`) に一元化。
+  - Windows / macOS / Linux すべてのOS環境で一貫した動作と高い保守性を確保。
+
+---
+
 ### Ver 0.2.37 | 2026-07-25 | Antigravity
 - [保守性と安全性の向上] 空ディレクトリ判定のドットファイル除外ロジック修正（`refactor_master_plan.md` 2-1 準拠）：
   - `src/main.rs` の `is_dir_empty_custom` 関数において、先頭が `.` で始まる全てのファイルを「空」と判定していた旧ロジックを変更。
