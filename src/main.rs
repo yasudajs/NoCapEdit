@@ -540,13 +540,15 @@ fn is_dir_empty_custom(path: &std::path::Path) -> Result<bool, std::io::Error> {
         let file_name = entry.file_name();
         let file_name_str = file_name.to_string_lossy();
 
-        // 除外対象：
-        // 1. ファイル名先頭がドット（.）で始まるもの（例: .DS_Store, .gitignore）
-        if file_name_str.starts_with('.') {
-            continue;
-        }
-        // 2. Thumbs.db （大文字小文字を区別しない）
-        if file_name_str.eq_ignore_ascii_case("Thumbs.db") {
+        // OS自動生成の不要メタデータ・キャッシュファイルのスキップ判定
+        let is_ignored = constants::IGNORED_METADATA_FILES
+            .iter()
+            .any(|name| file_name_str.eq_ignore_ascii_case(name))
+            || constants::IGNORED_METADATA_PREFIXES
+                .iter()
+                .any(|prefix| file_name_str.starts_with(prefix));
+
+        if is_ignored {
             continue;
         }
 
@@ -999,27 +1001,45 @@ mod tests {
         // 1. 最初は空
         assert!(is_dir_empty_custom(&path).unwrap());
 
-        // 2. ドットファイルを作成
-        let dot_file = path.join(".DS_Store");
-        File::create(&dot_file).unwrap();
+        // 2. .DS_Store を作成
+        let ds_store = path.join(".DS_Store");
+        File::create(&ds_store).unwrap();
         assert!(is_dir_empty_custom(&path).unwrap());
 
-        // 3. ドットで始まる別のファイルを作成
-        let dot_test = path.join(".test");
-        File::create(&dot_test).unwrap();
-        assert!(is_dir_empty_custom(&path).unwrap());
-
-        // 4. Thumbs.db を作成
-        let thumbs = path.join("Thumbs.db");
+        // 3. Thumbs.db (大文字小文字違い) を作成
+        let thumbs = path.join("thumbs.db");
         File::create(&thumbs).unwrap();
         assert!(is_dir_empty_custom(&path).unwrap());
 
-        // 5. Thumbs.db の大文字小文字違いを作成
-        let thumbs_lower = path.join("thumbs.db");
-        File::create(&thumbs_lower).unwrap();
+        // 4. desktop.ini を作成
+        let desktop_ini = path.join("desktop.ini");
+        File::create(&desktop_ini).unwrap();
         assert!(is_dir_empty_custom(&path).unwrap());
 
-        // 6. 通常のファイルを作成
+        // 5. アップルダブルファイル (._*) を作成
+        let apple_double = path.join("._file_meta");
+        File::create(&apple_double).unwrap();
+        assert!(is_dir_empty_custom(&path).unwrap());
+
+        // 6. 重要なドットファイル (.env) を作成 -> 空ではない判定になるべき
+        let env_file = path.join(".env");
+        File::create(&env_file).unwrap();
+        assert!(!is_dir_empty_custom(&path).unwrap());
+
+        // .env を削除
+        fs::remove_file(&env_file).unwrap();
+        assert!(is_dir_empty_custom(&path).unwrap());
+
+        // 7. .gitignore を作成 -> 空ではない判定になるべき
+        let gitignore = path.join(".gitignore");
+        File::create(&gitignore).unwrap();
+        assert!(!is_dir_empty_custom(&path).unwrap());
+
+        // .gitignore を削除
+        fs::remove_file(&gitignore).unwrap();
+        assert!(is_dir_empty_custom(&path).unwrap());
+
+        // 8. 通常のファイルを作成
         let normal_file = path.join("hello.txt");
         File::create(&normal_file).unwrap();
         assert!(!is_dir_empty_custom(&path).unwrap());
@@ -1028,7 +1048,7 @@ mod tests {
         fs::remove_file(&normal_file).unwrap();
         assert!(is_dir_empty_custom(&path).unwrap());
 
-        // 7. サブフォルダを作成 (中身は空)
+        // 9. サブフォルダを作成 (中身は空)
         let sub_dir = path.join("subfolder");
         fs::create_dir(&sub_dir).unwrap();
         assert!(!is_dir_empty_custom(&path).unwrap());
