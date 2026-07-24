@@ -15,6 +15,11 @@
 - `contextmenu` イベントリスナー内のロジックを更新：
   - 右クリックされたターゲット要素 (`e.target`) のタグ名が `TEXTAREA` または `INPUT` の場合は `e.preventDefault()` の呼び出しをスキップし、標準コンテキストメニューを許可する。
 
+### ドキュメント・開発環境 (Documentation)
+
+#### [MODIFY] [DEVELOPMENT.md](file:///c:/work/NoCapEdit/docs/DEVELOPMENT.md)
+- ポータブル版ZIPのビルドコマンドの出力先を `target/release/` 直下からインストーラー成果物と同じ `target/release/bundle/` 配下（`target/release/bundle/NoCapEdit-X.Y.Z-Portable.zip`）へ変更。
+
 ---
 
 ## 検証計画
