@@ -7,11 +7,11 @@
 - [x] `docs/spec.md` の更新
 
 ## 実装
-- [ ] `src/dist/js/main.js` の `contextmenu` リスナー修正 (`textarea` / `input` の例外許可)
+- [x] `src/dist/js/main.js` の `contextmenu` リスナー修正 (`textarea` / `input` の例外許可)
 - [x] `docs/DEVELOPMENT.md` のポータブルZIP作成スクリプト出力先を `target/release/bundle/` 配下に修正
 
 ## 検証
-- [ ] コンパイルチェック (`cargo check` & `cargo build --release`)
+- [x] コンパイルチェック (`cargo check` & `cargo build --release`)
 - [ ] ポータブル版（リリースビルド）でのエディタ上右クリック表示確認
 - [ ] ポータブル版での他エリア右クリック非表示確認
 
