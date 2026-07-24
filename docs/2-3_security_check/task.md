@@ -7,20 +7,31 @@
 - [x] ドキュメントの初版コミット＆プッシュ
 
 ## 実装フェーズ
-- [ ] `src/error_messages.rs` の作成（エラー文字列定数の定義）
-- [ ] `src/security.rs` の作成（`verify_safe_path`, `verify_safe_parent_path` の実装およびユニットテスト追加）
-- [ ] `src/main.rs` の更新
-  - [ ] `mod error_messages; mod security;` の追加
-  - [ ] `read_directory` のセキュリティチェック置き換え
-  - [ ] `create_file_or_dir` のセキュリティチェック置き換え
-  - [ ] `rename_file_or_dir` のセキュリティチェック置き換え
-  - [ ] `trash_file_or_dir` のセキュリティチェック置き換え
-  - [ ] `delete_file_or_dir_permanently` のセキュリティチェック置き換え
-  - [ ] `open_folder_in_explorer` のセキュリティチェック置き換え
-  - [ ] `move_file_or_dir` のセキュリティチェック置き換え
-  - [ ] `copy_file_or_dir` のセキュリティチェック置き換え
+- [x] `src/error_messages.rs` の作成（エラー文字列定数の定義）
+- [x] `src/security.rs` の作成（`verify_safe_path`, `verify_safe_parent_path` の実装およびユニットテスト追加）
+- [x] `src/main.rs` の更新
+  - [x] `mod error_messages; mod security;` の追加
+  - [x] `read_directory` のセキュリティチェック置き換え
+  - [x] `create_file_or_dir` のセキュリティチェック置き換え
+  - [x] `rename_file_or_dir` のセキュリティチェック置き換え
+  - [x] `trash_file_or_dir` のセキュリティチェック置き換え
+  - [x] `delete_file_or_dir_permanently` のセキュリティチェック置き換え
+  - [x] `open_folder_in_explorer` のセキュリティチェック置き換え
+  - [x] `move_file_or_dir` のセキュリティチェック置き換え
+  - [x] `copy_file_or_dir` のセキュリティチェック置き換え
 
 ## 検証フェーズ
-- [ ] バックエンドユニットテストの実行 (`cargo test`)
-- [ ] ビルド確認 (`cargo check` / `cargo build`)
+- [x] バックエンドユニットテストの実行 (`cargo test`)
+- [x] ビルド確認 (`cargo check` / `cargo build`)
 - [ ] ユーザー手動検証依頼（ツリーでの作成、リネーム、移動、コピー、削除の動作確認）
+
+---
+
+### 手動テスト項目（ユーザー検証用）
+以下のアクションをアプリ画面上で実施し、問題なく動作することをご確認ください：
+
+- [ ] **1. ディレクトリツリーの読み込み**: アプリ起動時およびフォルダ開閉時に、サイドバーのファイルツリーが正常に表示されること。
+- [ ] **2. ファイル/フォルダの新規作成**: ツリー上でファイルおよびフォルダの新規作成が正常に行えること。
+- [ ] **3. ファイル/フォルダのリネーム**: ツリー上のファイル・フォルダの名前変更が正常に行えること。
+- [ ] **4. ファイル/フォルダの移動・コピー**: ツリー内でのドラッグ＆ドロップまたはコンテキストメニューからの移動・コピーが正常に行えること。
+- [ ] **5. ファイル/フォルダの削除**: ゴミ箱への移動 (`trash_file_or_dir`) および完全削除 (`delete_file_or_dir_permanently`) が正常に行えること。
