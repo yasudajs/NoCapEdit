@@ -1,6 +1,6 @@
 import { appState, elements } from '../state.js';
 import { invoke, appWindow } from '../core/tauri.js';
-import { normalizePathForComparison, getParentPath, getFileNameFromPath } from '../utils/helpers.js';
+import { normalizePathForComparison, getParentPath, getFileNameFromPath, joinPath } from '../utils/helpers.js';
 import { openExistingFile } from '../core/fileSystem.js';
 import { closeTabByPathWithoutSaving, updateStatus, renderTabs } from './tabs.js';
 
@@ -39,7 +39,7 @@ function preserveTabOnMove(srcPath, destParentPath) {
     if (!fileName) return;
 
     // 移動後の新しいパスを作成
-    const newPath = destParentPath.replace(/\\/g, '/').replace(/\/$/, '') + '/' + fileName;
+    const newPath = joinPath(destParentPath, fileName);
 
     // アプリ状態から該当するタブを探す
     const tab = appState.tabs.find(t => normalizePathForComparison(t.filePath) === normalizedSrc);
@@ -323,8 +323,8 @@ export function initSidebar() {
                     return; 
                 }
 
-                const normalizedSrc = srcPath.replace(/\\/g, '/');
-                const normalizedDest = destParentPath.replace(/\\/g, '/');
+                const normalizedSrc = normalizePathForComparison(srcPath);
+                const normalizedDest = normalizePathForComparison(destParentPath);
                 if (normalizedDest === normalizedSrc || normalizedDest.startsWith(normalizedSrc + '/')) {
                     updateStatus('自分自身またはサブフォルダへは移動できません', 'error', true);
                     return;
@@ -335,7 +335,7 @@ export function initSidebar() {
 
                 try {
                 const fileName = getFileNameFromPath(srcPath);
-                const newPath = destParentPath.replace(/\\/g, '/').replace(/\/$/, '') + '/' + fileName;
+                const newPath = joinPath(destParentPath, fileName);
 
                 await invoke('move_file_or_dir', { sourcePath: srcPath, targetParentPath: destParentPath });
                 
@@ -730,8 +730,8 @@ function createTreeItemElement(file, childrenContainer) {
                     destParentPath = appState.homeFolder;
                 }
 
-                const normalizedSrc = normalizePathForComparison(clipboardState.path).replace(/\\/g, '/');
-                const normalizedDest = normalizePathForComparison(destParentPath).replace(/\\/g, '/');
+                const normalizedSrc = normalizePathForComparison(clipboardState.path);
+                const normalizedDest = normalizePathForComparison(destParentPath);
 
                 if (clipboardState.mode === 'cut') {
                     // 循環移動チェック
@@ -919,8 +919,8 @@ function createTreeItemElement(file, childrenContainer) {
             return; 
         }
 
-        const normalizedSrc = srcPath.replace(/\\/g, '/');
-        const normalizedDest = destParentPath.replace(/\\/g, '/');
+        const normalizedSrc = normalizePathForComparison(srcPath);
+        const normalizedDest = normalizePathForComparison(destParentPath);
         if (normalizedDest === normalizedSrc || normalizedDest.startsWith(normalizedSrc + '/')) {
             updateStatus('自分自身またはサブフォルダへは移動できません', 'error', true);
             return;
@@ -931,7 +931,7 @@ function createTreeItemElement(file, childrenContainer) {
 
         try {
             const fileName = getFileNameFromPath(srcPath);
-            const newPath = destParentPath.replace(/\\/g, '/').replace(/\/$/, '') + '/' + fileName;
+            const newPath = joinPath(destParentPath, fileName);
 
             await invoke('move_file_or_dir', { sourcePath: srcPath, targetParentPath: destParentPath });
             

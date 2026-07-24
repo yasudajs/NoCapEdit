@@ -7,10 +7,10 @@
 - [x] 実装計画書 (`implementation_plan.md`) および タスクリスト (`task.md`) の作成
 
 ## 実装
-- [ ] `src/dist/js/utils/helpers.js` に `joinPath(...parts)` を実装
-- [ ] `src/dist/js/ui/sidebar.js` のパス結合箇所を `joinPath` へ置き換え
-- [ ] `src/dist/js/ui/sidebar-integration.js` のパス結合箇所を共通化
-- [ ] `src/dist/js/main.js` のパス文字列操作箇所を共通化
+- [x] `src/dist/js/utils/helpers.js` に `joinPath(...parts)` を実装
+- [x] `src/dist/js/ui/sidebar.js` のパス結合箇所を `joinPath` へ置き換え
+- [x] `src/dist/js/ui/sidebar-integration.js` のパス結合箇所を共通化
+- [x] `src/dist/js/main.js` のパス文字列操作箇所を共通化
 
 ## 手動テスト項目 (ユーザー検証依頼用)
 - [ ] サイドバーで新しいファイルを作成できること

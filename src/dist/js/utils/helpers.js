@@ -7,6 +7,20 @@ export function generateTabId() {
     return 'tab-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
 }
 
+export function joinPath(...parts) {
+    const validParts = parts.filter(p => typeof p === 'string' && p.length > 0);
+    if (validParts.length === 0) return '';
+
+    return validParts.map((part, index) => {
+        let normalized = part.replace(/\\/g, '/');
+        if (index > 0) {
+            normalized = normalized.replace(/^\/+/, '');
+        }
+        normalized = normalized.replace(/\/+$/, '');
+        return normalized;
+    }).filter(p => p.length > 0).join('/');
+}
+
 export function normalizePathForComparison(p) {
     if (!p) return '';
     let normalized = p.replace(/\\/g, '/');
@@ -31,9 +45,10 @@ export function isAutoCreatedFileName(fileName) {
 
 export function getParentPath(path) {
     if (!path) return "";
-    const lastSlash = Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\'));
+    const normalized = path.replace(/\\/g, '/').replace(/\/+$/, '');
+    const lastSlash = normalized.lastIndexOf('/');
     if (lastSlash === -1) return "";
-    return path.substring(0, lastSlash);
+    return normalized.substring(0, lastSlash);
 }
 
 export function compareVersions(v1, v2) {
