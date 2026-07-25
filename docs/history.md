@@ -5,6 +5,15 @@ NoCapEdit のバージョンアップおよび仕様変更の履歴です。
 
 ## 改定履歴一覧
 
+### Ver 0.2.40 | 2026-07-25 | Antigravity
+- [リファクタリング] JSイベントリスナーの肥大化解消（Tabキー処理の抽出）（`refactor_master_plan.md` 2-4 準拠）：
+  - `src/dist/js/main.js` の `setupUIEventListeners` に直接記述されていた約85行のTabキー（インデント/アンインデント）イベント処理を抽出。
+  - `src/dist/js/ui/editor.js` に `handleEditorTabKey(e)` を新規定義・exportし、モジュール内非公開ヘルパー `getIndentString()` とともにカプセル化。
+  - `main.js` のイベント登録部を `elements.editor.addEventListener('keydown', handleEditorTabKey);` へ1行でシンプルに書き換え、コードの可読性・保守性を向上。
+  - 既存のインデント/アンインデント（単一行・複数行）、設定連動、`input` イベント発火動作は100%同等を維持。
+
+---
+
 ### Ver 0.2.39 | 2026-07-25 | Antigravity
 - [セキュリティ・リファクタリング] セキュリティチェック（パストラバーサル防止）の共通化（`refactor_master_plan.md` 2-3 準拠）：
   - バックエンドのエラーメッセージ定数を管理する `src/error_messages.rs` を新規作成し、エラー文字列の一元化を推進。
