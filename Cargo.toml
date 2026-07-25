@@ -15,6 +15,7 @@ dirs = "5.0"
 fontdb = "0.16"
 trash = "3.0"
 notify = "6.1.1"
+tauri-plugin-single-instance = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 
 [target.'cfg(windows)'.dependencies]
 windows-sys = { version = "0.52", features = ["Win32_Graphics_Dwm", "Win32_Foundation"] }
