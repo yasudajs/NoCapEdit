@@ -5,6 +5,7 @@
 ## 変更内容
 
 ### 1. フロントエンド (`src/dist/js/main.js`)
+- **【根本原因の修正】**: `setupUIEventListeners` における `saveModeSelectModal` の `change` イベントリスナーで呼び出している `saveSettings` がモジュールインポートされておらず、イベント発火時に `ReferenceError` になって処理が中断していた不具合を修正（import リストへの追加）。
 - `init()` 関数内での `setupUIEventListeners()` の呼び出し位置を条件分岐（`isFirstLaunch` / `isHomeFolderMissing`）の前に変更し、初回起動時や設定ダイアログ表示時でも確実にイベントリスナーが一括登録されるように維持しました。
 - `saveModeSelectModal` の `change` イベントリスナーで `appState.saveMode` への事前代入を行わず、`saveSettings()` 内で変更前モード (`previousSaveMode`) の差分判定が正しく機能するように修正しました。
 
