@@ -8,11 +8,7 @@ use std::fs;
 use std::path::PathBuf;
 use std::sync::Mutex;
 use notify::{RecommendedWatcher, Watcher, RecursiveMode, Event};
-
 use tauri::Manager;
-use std::io::{Read, Write};
-use std::net::{TcpListener, TcpStream};
-use std::thread;
 
 mod constants;
 mod error_messages;
@@ -25,40 +21,24 @@ struct WatcherState {
 
 struct WatcherManager(Mutex<WatcherState>);
 
+fn parse_file_arg_from_argv(argv: &[String], cwd: &str) -> Option<String> {
+    if argv.len() > 1 {
+        for arg in argv.iter().skip(1) {
+            if !arg.starts_with('-') {
+                let path_buf = std::path::Path::new(arg);
+                let abs_path = if path_buf.is_absolute() {
+                    path_buf.to_path_buf()
+                } else {
+                    std::path::Path::new(cwd).join(path_buf)
+                };
 
-fn send_to_existing_instance(path: &str) -> bool {
-    if let Ok(mut stream) = TcpStream::connect(format!("{}:{}", constants::SINGLE_INSTANCE_HOST, constants::SINGLE_INSTANCE_PORT)) {
-        let _ = stream.write_all(path.as_bytes());
-        true
-    } else {
-        false
-    }
-}
-
-fn start_instance_listener(app_handle: tauri::AppHandle) {
-    thread::spawn(move || {
-        if let Ok(listener) = TcpListener::bind(format!("{}:{}", constants::SINGLE_INSTANCE_HOST, constants::SINGLE_INSTANCE_PORT)) {
-            for stream in listener.incoming() {
-                if let Ok(mut stream) = stream {
-                    let mut buffer = [0; 1024];
-                    if let Ok(size) = stream.read(&mut buffer) {
-                        if size > 0 {
-                            if let Ok(path) = std::str::from_utf8(&buffer[..size]) {
-                                let path_str = path.to_string();
-                                if let Some(window) = app_handle.get_window("main") {
-                                    let _ = window.unminimize();
-                                    let _ = window.set_focus();
-                                    if !path_str.is_empty() {
-                                        let _ = window.emit("single-instance-file", path_str);
-                                    }
-                                }
-                            }
-                        }
-                    }
+                if abs_path.is_file() {
+                    return Some(abs_path.to_string_lossy().to_string());
                 }
             }
         }
-    });
+    }
+    None
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -827,43 +807,17 @@ fn is_debug() -> bool {
 }
 
 fn main() {
-    let args: Vec<String> = std::env::args().collect();
-    let file_arg = if args.len() > 1 {
-        let path = &args[1];
-        let path_buf = std::path::Path::new(path);
-        let abs_path = if path_buf.is_absolute() {
-            path_buf.to_path_buf()
-        } else if let Ok(cwd) = std::env::current_dir() {
-            cwd.join(path_buf)
-        } else {
-            path_buf.to_path_buf()
-        };
-        
-        if abs_path.is_file() {
-            Some(abs_path.to_string_lossy().to_string())
-        } else {
-            None
-        }
-    } else {
-        None
-    };
-
-    // ポートバインドを試みて重複起動を判定
-    let is_primary = match TcpListener::bind(format!("{}:{}", constants::SINGLE_INSTANCE_HOST, constants::SINGLE_INSTANCE_PORT)) {
-        Ok(_) => true,
-        Err(_) => false,
-    };
-
-    if !is_primary {
-        if let Some(path) = file_arg {
-            send_to_existing_instance(&path);
-        } else {
-            send_to_existing_instance("");
-        }
-        std::process::exit(0);
-    }
-
     tauri::Builder::default()
+        .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
+            let file_arg = parse_file_arg_from_argv(&argv, &cwd);
+            if let Some(window) = app.get_window("main") {
+                let _ = window.unminimize();
+                let _ = window.set_focus();
+                if let Some(path) = file_arg {
+                    let _ = window.emit("single-instance-file", path);
+                }
+            }
+        }))
         .setup(|app| {
             let settings = AppSettings::load();
             let home_folder = settings.home_folder.clone();
@@ -875,7 +829,6 @@ fn main() {
             })));
 
             let app_handle = app.handle();
-            start_instance_listener(app_handle.clone());
 
             // 起動時に監視を開始
             let app_handle_clone = app_handle.clone();

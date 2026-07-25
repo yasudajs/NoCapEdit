@@ -1,7 +1,3 @@
-// 一重起動（プロセス間通信）設定
-pub const SINGLE_INSTANCE_PORT: u16 = 49423;
-pub const SINGLE_INSTANCE_HOST: &str = "127.0.0.1";
-
 // ウィンドウ設定
 pub const WINDOW_WIDTH: f64 = 900.0;
 pub const WINDOW_HEIGHT: f64 = 600.0;
