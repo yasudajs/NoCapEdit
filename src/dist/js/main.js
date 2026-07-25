@@ -109,6 +109,9 @@ async function init() {
             elements.fontFamilySelectModal.appendChild(option);
         }
 
+        // UIイベントリスナーを一括登録
+        setupUIEventListeners();
+
         // 初回起動チェック
         const isFirstLaunch = !!settings.is_first_launch;
         const isHomeFolderMissing = settings.home_folder_exists === false;
@@ -117,7 +120,6 @@ async function init() {
             openSettingsDialog(isHomeFolderMissing);
         } else {
             updateStatus('準備完了');
-            setupUIEventListeners();
 
             // 起動時引数のチェック
             const launchFile = await invoke('get_launch_file');
@@ -194,6 +196,7 @@ function setupUIEventListeners() {
     }
     if (elements.saveModeSelectModal) {
         elements.saveModeSelectModal.addEventListener('change', async (e) => {
+            appState.saveMode = e.target.value;
             await saveSettings();
         });
     }
