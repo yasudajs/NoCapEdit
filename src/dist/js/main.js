@@ -196,7 +196,6 @@ function setupUIEventListeners() {
     }
     if (elements.saveModeSelectModal) {
         elements.saveModeSelectModal.addEventListener('change', async (e) => {
-            appState.saveMode = e.target.value;
             await saveSettings();
         });
     }
