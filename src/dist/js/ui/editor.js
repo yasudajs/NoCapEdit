@@ -129,3 +129,103 @@ export function decreaseLineHeight() {
         applyLineHeight();
     }
 }
+
+function getIndentString() {
+    switch (appState.tabBehavior) {
+        case 'space2': return '  ';
+        case 'space4': return '    ';
+        case 'tab':
+        default:
+            return '\t';
+    }
+}
+
+export function handleEditorTabKey(e) {
+    if (e.key !== 'Tab') {
+        return;
+    }
+
+    // CtrlキーやAltキーが同時に押されている場合は、タブ移動などのショートカットとして処理するため、ここでは無視する
+    if (e.ctrlKey || e.altKey) {
+        return;
+    }
+
+    e.preventDefault();
+
+    if (!elements.editor) return;
+
+    const start = elements.editor.selectionStart;
+    const end = elements.editor.selectionEnd;
+    const value = elements.editor.value;
+    const indentStr = getIndentString();
+
+    const isMultiLine = value.substring(start, end).includes('\n') ||
+        (start !== end && value.substring(0, start).lastIndexOf('\n') === start - 1);
+
+    if (!e.shiftKey) {
+        if (!isMultiLine) {
+            elements.editor.value = value.substring(0, start) + indentStr + value.substring(end);
+            elements.editor.selectionStart = elements.editor.selectionEnd = start + indentStr.length;
+        } else {
+            const startLinePos = value.substring(0, start).lastIndexOf('\n') + 1;
+            const endLinePos = value.indexOf('\n', end);
+            const actualEndLinePos = endLinePos === -1 ? value.length : endLinePos;
+
+            const targetText = value.substring(startLinePos, actualEndLinePos);
+            const lines = targetText.split('\n');
+
+            const newLines = lines.map(line => indentStr + line);
+            const newText = newLines.join('\n');
+
+            elements.editor.value = value.substring(0, startLinePos) + newText + value.substring(actualEndLinePos);
+
+            const insertedCount = lines.length * indentStr.length;
+            elements.editor.selectionStart = start + indentStr.length;
+            elements.editor.selectionEnd = end + insertedCount;
+        }
+    } else {
+        const startLinePos = value.substring(0, start).lastIndexOf('\n') + 1;
+        const endLinePos = value.indexOf('\n', end);
+        const actualEndLinePos = endLinePos === -1 ? value.length : endLinePos;
+
+        const targetText = value.substring(startLinePos, actualEndLinePos);
+        const lines = targetText.split('\n');
+
+        let firstLineRemovedCount = 0;
+        let totalRemovedCount = 0;
+
+        const newLines = lines.map((line, idx) => {
+            let removed = 0;
+            let newLine = line;
+
+            if (line.startsWith(indentStr)) {
+                newLine = line.substring(indentStr.length);
+                removed = indentStr.length;
+            } else if (line.startsWith('\t')) {
+                newLine = line.substring(1);
+                removed = 1;
+            } else if (line.startsWith(' ')) {
+                const spaceMatch = line.match(/^ +/);
+                if (spaceMatch) {
+                    const count = Math.min(spaceMatch[0].length, indentStr.length);
+                    newLine = line.substring(count);
+                    removed = count;
+                }
+            }
+
+            if (idx === 0) {
+                firstLineRemovedCount = removed;
+            }
+            totalRemovedCount += removed;
+            return newLine;
+        });
+
+        const newText = newLines.join('\n');
+        elements.editor.value = value.substring(0, startLinePos) + newText + value.substring(actualEndLinePos);
+
+        elements.editor.selectionStart = Math.max(startLinePos, start - firstLineRemovedCount);
+        elements.editor.selectionEnd = Math.max(startLinePos, end - totalRemovedCount);
+    }
+
+    elements.editor.dispatchEvent(new Event('input'));
+}

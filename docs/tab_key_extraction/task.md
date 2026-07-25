@@ -5,10 +5,10 @@
   - [x] `tauri.conf.json` の `"version"` 更新 <!-- id: 2 -->
   - [x] `nsis/installer.nsi` の `VERSION` / `VERSIONWITHBUILD` 更新 <!-- id: 3 -->
   - [x] `docs/DEVELOPMENT.md` のバージョン文字列更新 <!-- id: 4 -->
-- [ ] Tabキー処理の抽出と実装 <!-- id: 5 -->
-  - [ ] `src/dist/js/ui/editor.js` に `getIndentString()` および `handleEditorTabKey(e)` を追加 <!-- id: 6 -->
-  - [ ] `src/dist/js/main.js` から `handleEditorTabKey` を import して登録部分を1行に単純化 <!-- id: 7 -->
-- [ ] ビルド確認および動作検証 <!-- id: 8 -->
+- [x] Tabキー処理の抽出と実装 <!-- id: 5 -->
+  - [x] `src/dist/js/ui/editor.js` に `getIndentString()` および `handleEditorTabKey(e)` を追加 <!-- id: 6 -->
+  - [x] `src/dist/js/main.js` から `handleEditorTabKey` を import して登録部分を1行に単純化 <!-- id: 7 -->
+- [x] ビルド確認および動作検証 <!-- id: 8 -->
 - [ ] ユーザー手動テストの依頼 <!-- id: 9 -->
   - [ ] 単一行インデント（Tab）動作確認
   - [ ] 単一行アンインデント（Shift+Tab）動作確認
