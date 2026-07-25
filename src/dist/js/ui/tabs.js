@@ -32,10 +32,14 @@ export function formatTabDisplayName(fileName) {
     }
 
     const lastDotIdx = fileName.lastIndexOf('.');
-    if (lastDotIdx <= 0) {
-        return fileName;
+    let displayName = fileName;
+    if (lastDotIdx > 0) {
+        displayName = fileName.substring(0, lastDotIdx);
     }
-    return fileName.substring(0, lastDotIdx);
+    if (appState.saveMode === 'manual') {
+        displayName = `[${displayName}]`;
+    }
+    return displayName;
 }
 
 // ステータス更新
