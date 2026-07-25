@@ -1,6 +1,6 @@
 import { appState, elements, savedEditorCursor, setSavedEditorCursor, DEFAULT_MONOSPACE_FONTS } from '../state.js';
 import { invoke, openDialog, ensureTauriApi, appWindow } from '../core/tauri.js';
-import { updateStatus, renderTabs, createNewTab } from './tabs.js';
+import { updateStatus, renderTabs, createNewTab, getCurrentTab, updateTabStatus } from './tabs.js';
 import { updateEditorMetrics } from './editor.js';
 import { autoSave, shouldDeleteEmptyFile } from '../core/fileSystem.js';
 import { compareVersions } from '../utils/helpers.js';
@@ -128,6 +128,13 @@ export async function saveSettings() {
 
         await saveApplicationSettings();
 
+        if (previousSaveMode !== saveMode) {
+            if (appState.autosaveTimer) {
+                clearTimeout(appState.autosaveTimer);
+                appState.autosaveTimer = null;
+            }
+        }
+
         if (previousSaveMode === 'manual' && saveMode === 'auto') {
             for (const tab of appState.tabs) {
                 if (!tab.filePath) {
@@ -165,10 +172,16 @@ export async function saveSettings() {
             renderTabs();
         }
         
-        updateStatus('準備完了');
         updateEditorMetrics();
         if (appState.tabs.length === 0) {
             await createNewTab();
+        } else {
+            const currentTab = getCurrentTab();
+            if (currentTab) {
+                updateTabStatus(currentTab);
+            } else {
+                updateStatus('準備完了');
+            }
         }
     } catch (error) {
         console.error('Failed to save settings:', error);

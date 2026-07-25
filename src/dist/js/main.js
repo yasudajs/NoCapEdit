@@ -3,7 +3,7 @@ import { invoke, appWindow, listen, ensureTauriApi } from './core/tauri.js';
 import { createNewTab, updateStatus, renderTabs, switchTabByOffset } from './ui/tabs.js';
 import { openExistingFile, triggerManualSave, persistAllTabsBeforeExit } from './core/fileSystem.js';
 import { updateEditorMetrics, onEditorInput, zoomIn, zoomOut, applyFontSize, applyLineHeight, increaseLineHeight, decreaseLineHeight, handleTabKey } from './ui/editor.js';
-import { toggleSettingsDialog, closeSettingsDialog, openSettingsDialog, applyThemeUI, onThemeChange, onFontFamilyChange, loadSystemFonts, checkNewVersion, applyFontFamily } from './ui/settings.js';
+import { toggleSettingsDialog, closeSettingsDialog, openSettingsDialog, applyThemeUI, onThemeChange, onFontFamilyChange, loadSystemFonts, checkNewVersion, applyFontFamily, saveSettings } from './ui/settings.js';
 
 function registerCloseHandler() {
     if (!appWindow || typeof appWindow.onCloseRequested !== 'function') {
@@ -109,6 +109,9 @@ async function init() {
             elements.fontFamilySelectModal.appendChild(option);
         }
 
+        // UIイベントリスナーを一括登録
+        setupUIEventListeners();
+
         // 初回起動チェック
         const isFirstLaunch = !!settings.is_first_launch;
         const isHomeFolderMissing = settings.home_folder_exists === false;
@@ -117,7 +120,6 @@ async function init() {
             openSettingsDialog(isHomeFolderMissing);
         } else {
             updateStatus('準備完了');
-            setupUIEventListeners();
 
             // 起動時引数のチェック
             const launchFile = await invoke('get_launch_file');
