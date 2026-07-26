@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "NoCapEdit",
-    "version": "0.2.42"
+    "version": "0.2.43"
   },
   "tauri": {
     "bundle": {
