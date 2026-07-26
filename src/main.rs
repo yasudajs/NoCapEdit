@@ -62,6 +62,12 @@ struct AppSettings {
     sidebar_visible: bool,
     #[serde(default = "default_sidebar_width")]
     sidebar_width: u32,
+    #[serde(default = "default_simple_mode")]
+    simple_mode: bool,
+}
+
+fn default_simple_mode() -> bool {
+    false
 }
 
 fn default_sidebar_visible() -> bool {
@@ -110,6 +116,7 @@ struct SettingsResponse {
     tab_behavior: String,
     save_mode: String,
     char_count_mode: String,
+    simple_mode: bool,
     is_first_launch: bool,
     home_folder_exists: bool,
     app_version: String,
@@ -173,6 +180,7 @@ impl Default for AppSettings {
             char_count_mode: default_char_count_mode(),
             sidebar_visible: default_sidebar_visible(),
             sidebar_width: default_sidebar_width(),
+            simple_mode: default_simple_mode(),
         }
     }
 }
@@ -217,6 +225,7 @@ fn get_settings() -> SettingsResponse {
         tab_behavior: settings.tab_behavior,
         save_mode: settings.save_mode,
         char_count_mode: settings.char_count_mode,
+        simple_mode: settings.simple_mode,
         is_first_launch: !AppSettings::exists(),
         home_folder_exists: settings.home_folder.exists(),
         app_version: env!("CARGO_PKG_VERSION").to_string(),

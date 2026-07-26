@@ -4,7 +4,7 @@
 
 import { initSidebar, initSidebarElements, focusSidebarTree, createItemGlobally, loadDirectory } from './sidebar.js';
 import { appState, elements } from '../state.js';
-import { registerShortcut } from '../shortcuts.js';
+import { registerShortcut, setCategoryEnabled } from '../shortcuts.js';
 import { registerSettingsExtraProvider, saveSettingsDelay } from './settings.js';
 import { listen } from '../core/tauri.js';
 import { normalizePathForComparison, getParentPath } from '../utils/helpers.js';
@@ -78,6 +78,14 @@ function setupSidebarFileSystemListener() {
  */
 export function initSidebarIntegration() {
     initSidebarElements();
+
+    if (appState.simpleMode === true) {
+        if (elements.sidebar) elements.sidebar.classList.add('hidden');
+        if (elements.sidebarResizeHandle) elements.sidebarResizeHandle.classList.add('hidden');
+        if (elements.iconBar) elements.iconBar.classList.add('hidden');
+        setCategoryEnabled('Sidebar', false);
+        return; // Skip initialization of sidebar in simple mode
+    }
     if (appState.sidebarVisible) {
         if (elements.sidebar) elements.sidebar.classList.remove('hidden');
         if (elements.sidebarResizeHandle) elements.sidebarResizeHandle.classList.remove('hidden');
