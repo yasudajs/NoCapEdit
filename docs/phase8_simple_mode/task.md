@@ -1,0 +1,8 @@
+- `[ ]` `src/main.rs`: `AppSettings` に `simple_mode` を追加
+- `[ ]` `src/dist/js/state.js`: `appState` に `simpleMode` を追加
+- `[ ]` `src/dist/index.html`: 設定画面にフルモード/シンプルモード切り替えのセレクトボックスを追加
+- `[ ]` `src/dist/js/settings.js`: `simpleMode` の読み込みと設定変更時のリロード処理を追加
+- `[ ]` `src/dist/js/shortcuts.js`: カテゴリ無効化のための `setCategoryEnabled` 関数を追加
+- `[ ]` `src/dist/js/ui/sidebar-integration.js`: `initSidebarIntegration` にシンプルモード時の非表示・ショートカット無効化・初期化スキップ処理を追加
+- `[ ]` `src/dist/js/main.js`: `Ctrl+T` による新規タブ作成のショートカットを追加
+- `[ ]` 手動検証の実施
