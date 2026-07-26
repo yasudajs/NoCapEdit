@@ -54,6 +54,12 @@ function setupUIEventListeners() {
             await saveSettings();
         });
     }
+    if (elements.simpleModeSelectModal) {
+        elements.simpleModeSelectModal.addEventListener('change', async (e) => {
+            const { saveSettings } = await import('./ui/settings.js');
+            await saveSettings();
+        });
+    }
 
     elements.editor.addEventListener('keydown', handleEditorTabKey);
 
@@ -118,8 +124,8 @@ function setupUIEventListeners() {
         triggerManualSave();
     }, { category: 'File' });
 
-    // 新規タブ作成 (シンプルモードまたはサイドバー非優先時の動作)
-    registerShortcut(['Ctrl+N'], () => {
+    // 新規タブ作成
+    registerShortcut(['Ctrl+T'], () => {
         createNewTab();
     }, { category: 'File' });
 
@@ -256,6 +262,7 @@ async function init() {
         appState.charCountMode = settings.char_count_mode || 'with_newline';
         appState.sidebarVisible = settings.sidebar_visible || false;
         appState.sidebarWidth = settings.sidebar_width || 220;
+        appState.simpleMode = settings.simple_mode || false;
         appState.appVersion = settings.app_version;
 
 
@@ -268,6 +275,9 @@ async function init() {
         }
         if (elements.charCountModeSelectModal) {
             elements.charCountModeSelectModal.value = appState.charCountMode;
+        }
+        if (elements.simpleModeSelectModal) {
+            elements.simpleModeSelectModal.value = String(appState.simpleMode);
         }
 
         if (settings.app_version) {

@@ -29,6 +29,19 @@ export function registerShortcut(combo, handler, options = {}) {
 }
 
 /**
+ * 指定したカテゴリのショートカットの有効/無効を一括で切り替える
+ * @param {string} category - カテゴリ名
+ * @param {boolean} enabled - 有効にするか無効にするか
+ */
+export function setCategoryEnabled(category, enabled) {
+    shortcuts.forEach(s => {
+        if (s.category === category) {
+            s.enabled = enabled;
+        }
+    });
+}
+
+/**
  * KeyboardEvent からショートカット文字列の候補を組み立てる
  * @param {KeyboardEvent} e 
  * @returns {string[]} (例: ['Ctrl+S', 'Ctrl+KeyS'])

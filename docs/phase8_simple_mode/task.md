@@ -1,8 +1,13 @@
-- `[ ]` `src/main.rs`: `AppSettings` に `simple_mode` を追加
-- `[ ]` `src/dist/js/state.js`: `appState` に `simpleMode` を追加
-- `[ ]` `src/dist/index.html`: 設定画面にフルモード/シンプルモード切り替えのセレクトボックスを追加
-- `[ ]` `src/dist/js/settings.js`: `simpleMode` の読み込みと設定変更時のリロード処理を追加
-- `[ ]` `src/dist/js/shortcuts.js`: カテゴリ無効化のための `setCategoryEnabled` 関数を追加
-- `[ ]` `src/dist/js/ui/sidebar-integration.js`: `initSidebarIntegration` にシンプルモード時の非表示・ショートカット無効化・初期化スキップ処理を追加
-- `[ ]` `src/dist/js/main.js`: `Ctrl+T` による新規タブ作成のショートカットを追加
-- `[ ]` 手動検証の実施
+- `[x]` `src/main.rs`: `AppSettings` に `simple_mode` を追加
+- `[x]` `src/dist/js/state.js`: `appState` に `simpleMode` を追加
+- `[x]` `src/dist/index.html`: 設定画面にフルモード/シンプルモード切り替えのセレクトボックスを追加
+- `[x]` `src/dist/js/settings.js`: `simpleMode` の読み込みと設定変更時のリロード処理を追加
+- `[x]` `src/dist/js/shortcuts.js`: カテゴリ無効化のための `setCategoryEnabled` 関数を追加
+- `[x]` `src/dist/js/ui/sidebar-integration.js`: `initSidebarIntegration` にシンプルモード時の非表示・ショートカット無効化・初期化スキップ処理を追加
+- `[x]` `src/dist/js/main.js`: `Ctrl+T` による新規タブ作成のショートカットを追加
+- `[x]` 手動検証の実施
+  - `[x]` `Ctrl+T` で新規タブが開くことを確認する
+  - `[x]` 設定ダイアログから「動作モード」をシンプルモードに変更した際、開いているタブが保存（または破棄）され、アプリがリロードされることを確認する
+  - `[x]` リロード後、サイドバーおよびアイコンバーが完全に非表示になり、エディタのみの画面（v0.1相当）になることを確認する
+  - `[x]` シンプルモード中に `Ctrl+E`、`Ctrl+N`、`Ctrl+D` などのサイドバー操作ショートカットが発火しないことを確認する
+  - `[x]` 設定を「フルモード」に戻し、リロード後にサイドバーが正常に表示され、各種ショートカットが再び機能することを確認する

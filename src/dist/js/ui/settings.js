@@ -3,7 +3,7 @@ import { invoke, appWindow, ensureTauriApi, openDialog } from '../core/tauri.js'
 import { updateStatus, renderTabs, createNewTab } from './tabs.js';
 import { autoSave } from '../core/fileSystem.js';
 import { updateEditorMetrics } from './editor.js';
-import { shouldDeleteEmptyFile } from '../core/fileSystem.js';
+import { shouldDeleteEmptyFile, persistAllTabsBeforeExit } from '../core/fileSystem.js';
 import { compareVersions } from '../utils/helpers.js';
 
 let settingsSaveTimer = null;
@@ -112,7 +112,8 @@ export async function saveApplicationSettings() {
             line_height: appState.lineHeight,
             tab_behavior: appState.tabBehavior,
             save_mode: appState.saveMode,
-            char_count_mode: appState.charCountMode
+            char_count_mode: appState.charCountMode,
+            simple_mode: appState.simpleMode
         };
 
         for (const provider of settingsExtraProviders) {
@@ -139,7 +140,9 @@ export async function saveSettings() {
     const tabBehavior = elements.tabBehaviorSelectModal ? elements.tabBehaviorSelectModal.value : appState.tabBehavior;
     const saveMode = elements.saveModeSelectModal ? elements.saveModeSelectModal.value : appState.saveMode;
     const charCountMode = elements.charCountModeSelectModal ? elements.charCountModeSelectModal.value : appState.charCountMode;
+    const simpleMode = elements.simpleModeSelectModal ? elements.simpleModeSelectModal.value === 'true' : appState.simpleMode;
     const previousSaveMode = appState.saveMode;
+    const previousSimpleMode = appState.simpleMode;
 
     if (!homeFolder) {
         alert('ホームフォルダを指定してください');
@@ -151,8 +154,16 @@ export async function saveSettings() {
         appState.tabBehavior = tabBehavior;
         appState.saveMode = saveMode;
         appState.charCountMode = charCountMode;
+        appState.simpleMode = simpleMode;
 
         await saveApplicationSettings();
+
+        // simpleMode changed: reload the app after persisting tabs
+        if (previousSimpleMode !== simpleMode) {
+            await persistAllTabsBeforeExit();
+            window.location.reload();
+            return; // stop further execution as page reloads
+        }
 
         if (previousSaveMode === 'manual' && saveMode === 'auto') {
             for (const tab of appState.tabs) {
