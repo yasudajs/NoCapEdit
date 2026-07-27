@@ -9,7 +9,7 @@ function showSaveErrorDialog(message) {
     return new Promise((resolve) => {
         if (!elements.errorDialog || !elements.errorMessage || !elements.retryBtn || !elements.saveAsBtn || !elements.cancelExitBtn) {
             // fallback for missing elements
-            const choice = confirm(`${message}\n\n[OK]でリトライ、[キャンセル]で中止`);
+            const choice = confirm(t('dialog.retry_or_cancel', { message }));
             return resolve(choice ? 'retry' : 'cancel');
         }
 
@@ -46,7 +46,7 @@ function showSaveErrorDialog(message) {
 
 export async function saveTabAs(tab) {
     if (!saveDialog) {
-        throw new Error('別名保存ダイアログを利用できません');
+        throw new Error(t('status.error_save_dialog_unavailable'));
     }
 
     const targetPath = await saveDialog({
@@ -71,7 +71,7 @@ export async function saveTabAs(tab) {
     tab.fileName = getFileNameFromPath(targetPath);
     tab.isDirty = false;
     renderTabs();
-    updateStatus('別名で保存済み', 'saved');
+    updateStatus(t('status.saved_as'), 'saved');
     return true;
 }
 
@@ -154,7 +154,7 @@ export async function persistTabWithRecovery(tab, contextLabel) {
             await invoke('delete_text_file', { filePath: tab.filePath });
         } catch (error) {
             console.error('Failed to delete empty file:', error);
-            updateStatus('空ファイル削除失敗', 'error');
+            updateStatus(t('status.error_delete_empty_file'), 'error');
             return false;
         }
         return true;
@@ -170,14 +170,14 @@ export async function persistTabWithRecovery(tab, contextLabel) {
 
     while (true) {
         try {
-            updateStatus('保存中...', 'saving');
+            updateStatus(t('status.saving'), 'saving');
             await saveTabIfDirty(tab);
-            updateStatus('保存済み', 'saved');
+            updateStatus(t('status.saved'), 'saved');
             return true;
         } catch (error) {
             console.error(`Save failed (${contextLabel}):`, error);
             const choice = await showSaveErrorDialog(
-                `保存に失敗しました。\n対象: ${tab.fileName}\n理由: ${error}`
+                t('dialog.save_failed_detail', { name: tab.fileName, error })
             );
 
             if (choice === 'retry') {
@@ -196,7 +196,7 @@ export async function persistTabWithRecovery(tab, contextLabel) {
                 continue;
             }
 
-            updateStatus('処理を中止しました', 'error');
+            updateStatus(t('status.aborted'), 'error');
             return false;
         }
     }
@@ -225,22 +225,22 @@ export async function autoSave() {
     const isFirstSave = !tab.filePath;
 
     try {
-        updateTabStatus(tab, '保存中...', 'saving');
+        updateTabStatus(tab, t('status.saving'), 'saving');
 
         const saved = await saveTabIfDirty(tab);
 
         if (saved) {
             if (isFirstSave) {
-                updateStatus(tab.fileName + ' を作成', 'saved');
+                updateStatus(t('status.file_created', { name: tab.fileName }), 'saved');
             } else {
-                updateTabStatus(tab, '保存済み', 'saved');
+                updateTabStatus(tab, t('status.saved'), 'saved');
             }
         } else {
             updateTabStatus(tab);
         }
     } catch (error) {
         console.error('Auto-save failed:', error);
-        updateTabStatus(tab, '保存失敗', 'error');
+        updateTabStatus(tab, t('status.save_failed'), 'error');
     }
 }
 
@@ -261,7 +261,7 @@ export async function triggerManualSave() {
     const isFirstSave = !tab.filePath;
 
     try {
-        updateTabStatus(tab, '保存中...', 'saving');
+        updateTabStatus(tab, t('status.saving'), 'saving');
 
         tab.isDirty = true;
         const saved = await saveTabIfDirty(tab);
@@ -272,18 +272,18 @@ export async function triggerManualSave() {
             if (isFirstSave) {
                 let prefix = '';
                 if (appState.saveMode === 'manual') {
-                    prefix = '[手動保存:Ctrl+S] ';
+                    prefix = t('status.manual_save_prefix');
                 }
-                updateStatus(`${prefix}${tab.fileName} を作成`, 'saved', true);
+                updateStatus(`${prefix}${t('status.file_created', { name: tab.fileName })}`, 'saved', true);
             } else {
-                updateTabStatus(tab, '保存済み', 'saved');
+                updateTabStatus(tab, t('status.saved'), 'saved');
             }
         } else {
             updateTabStatus(tab);
         }
     } catch (error) {
         console.error('Manual save failed:', error);
-        updateTabStatus(tab, '保存失敗', 'error');
+        updateTabStatus(tab, t('status.save_failed'), 'error');
     }
 }
 
@@ -297,7 +297,7 @@ export async function openExistingFile(filePath) {
     }
 
     try {
-        updateStatus('ファイルを読み込み中...', 'saving');
+        updateStatus(t('status.loading_file'), 'saving');
         if (!ensureTauriApi()) return;
         const content = await invoke('read_text_file', { filePath });
         const fileName = getFileNameFromPath(filePath);
@@ -316,10 +316,10 @@ export async function openExistingFile(filePath) {
         appState.tabs.push(tab);
         await switchTab(tab.id);
         renderTabs();
-        updateStatus(tab.fileName + ' を開きました', 'saved');
+        updateStatus(t('status.file_opened', { name: tab.fileName }), 'saved');
     } catch (error) {
         console.error('Failed to open file:', error);
-        updateStatus('ファイル読み込み失敗', 'error');
+        updateStatus(t('status.error_load_file'), 'error');
         await createNewTab();
     }
 }
