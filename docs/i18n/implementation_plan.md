@@ -373,8 +373,8 @@ sidebar.js 内の Tauri `dialog.message()` で使われるタイトル `'エラ�
 - [x] 既存の 4 キーをドット区切りにリネームする（旧キー名はエイリアスとして残存、フェーズ3で削除予定）。
 
 ### フェーズ2: `index.html` の置換（43項目）
-- [ ] リストに基づき `index.html` の要素に `data-i18n` / `data-i18n-title` / `data-i18n-placeholder` 属性を付与する。
-- [ ] `main.js` の初期化処理で `applyTranslations()` を呼び出す。
+- [x] リストに基づき `index.html` の要素に `data-i18n` / `data-i18n-title` / `data-i18n-placeholder` 属性を付与する。
+- [x] `main.js` の初期化処理で `applyTranslations()` を呼び出す。
 
 ### フェーズ3: JS ファイルの逐次置換
 

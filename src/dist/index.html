@@ -13,7 +13,7 @@
         <div class="top-bar">
             <!-- トップバー左（アイコン） -->
             <div id="icon-bar" class="icon-bar top-bar-left">
-                <button id="sidebar-toggle-btn" class="icon-btn" title="エクスプローラ">
+                <button id="sidebar-toggle-btn" class="icon-btn" data-i18n-title="tooltip.explorer">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                         <line x1="9" y1="3" x2="9" y2="21"></line>
@@ -24,11 +24,11 @@
             <div class="tab-bar top-bar-right">
                 <div class="tabs-group">
                     <div class="tabs-container" id="tabsContainer"></div>
-                    <button class="add-tab-btn" id="addTabBtn" title="新規タブを作成">
+                    <button class="add-tab-btn" id="addTabBtn" data-i18n-title="tooltip.new_tab">
                         <span class="plus-icon">+</span>
                     </button>
                 </div>
-                <button class="settings-btn" id="settingsBtn" title="設定">
+                <button class="settings-btn" id="settingsBtn" data-i18n-title="tooltip.settings">
                     <!-- 歯車アイコン -->
                     <svg class="settings-icon gear-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="12" cy="12" r="3"></circle>
@@ -47,7 +47,7 @@
         <div class="main-content">
             <!-- サイドバー -->
             <div id="sidebar" class="sidebar hidden">
-                <div class="sidebar-header">ファイル</div>
+                <div class="sidebar-header" data-i18n="sidebar.header_file"></div>
                 <div id="file-tree" class="file-tree"></div>
             </div>
             <!-- リサイズハンドル -->
@@ -56,12 +56,12 @@
             <div id="app" class="app-container">
                 <!-- エディタエリア -->
                 <div class="editor-container">
-                    <textarea id="editor" class="editor" placeholder="入力準備完了"></textarea>
+                    <textarea id="editor" class="editor" data-i18n-placeholder="editor.placeholder"></textarea>
                 </div>
         
                 <!-- ステータスバー -->
                 <div class="status-bar">
-                    <span class="status-text" id="statusText">準備中...</span>
+                    <span class="status-text" id="statusText" data-i18n="status.initializing"></span>
                     <div class="status-meta">
                 <span class="status-metrics" id="statusMetrics">Ln 1, Col 1 | 0 chars</span>
             </div>
@@ -72,55 +72,55 @@
     <!-- 設定ダイアログ -->
     <div id="settingsDialog" class="dialog-overlay hidden">
         <div class="dialog-box">
-            <h2>NoCapEdit - 設定</h2>
+            <h2 data-i18n="settings.dialog_title"></h2>
             <div class="dialog-content">
                 <div id="updateNoticeContainer" class="update-notice hidden">
-                    <p>アップデート可能です:<br>Ver. <span id="currentVerSpan"></span> → Ver. <span id="latestVerSpan"></span></p>
-                    <a href="#" id="releaseLink">リリースノートを開く</a>
+                    <p><span data-i18n="settings.update_available"></span><br>Ver. <span id="currentVerSpan"></span> → Ver. <span id="latestVerSpan"></span></p>
+                    <a href="#" id="releaseLink" data-i18n="settings.open_release_notes"></a>
                 </div>
 
-                <label for="homeFolderInput">ホームフォルダ:</label>
+                <label for="homeFolderInput" data-i18n="settings.home_folder_label"></label>
                 <small id="folderHint" class="hint"></small>
                 <div class="folder-input-group">
                     <input type="text" id="homeFolderInput" class="folder-input" readonly>
-                    <button id="browseFolderBtn" class="browse-btn">参照...</button>
+                    <button id="browseFolderBtn" class="browse-btn" data-i18n="settings.button_browse"></button>
                 </div>
 
-                <label for="fontFamilySelectModal">フォント:</label>
-                <select id="fontFamilySelectModal" class="font-select" title="フォントを変更">
-                    <option value="default">デフォルト (Monospace)</option>
+                <label for="fontFamilySelectModal" data-i18n="settings.font_label"></label>
+                <select id="fontFamilySelectModal" class="font-select" data-i18n-title="tooltip.change_font">
+                    <option value="default" data-i18n="settings.font_default"></option>
                 </select>
 
-                <label for="tabBehaviorSelectModal">Tabキーの挙動:</label>
-                <select id="tabBehaviorSelectModal" class="tab-select" title="Tabキーの挙動を変更">
-                    <option value="tab">タブ文字 (\t)</option>
-                    <option value="space2">スペース 2文字</option>
-                    <option value="space4">スペース 4文字</option>
+                <label for="tabBehaviorSelectModal" data-i18n="settings.tab_behavior_label"></label>
+                <select id="tabBehaviorSelectModal" class="tab-select" data-i18n-title="tooltip.change_tab_behavior">
+                    <option value="tab" data-i18n="settings.tab_char"></option>
+                    <option value="space2" data-i18n="settings.space2"></option>
+                    <option value="space4" data-i18n="settings.space4"></option>
                 </select>
 
-                <label for="saveModeSelectModal">保存モード:</label>
-                <select id="saveModeSelectModal" class="tab-select" title="保存モードを変更">
-                    <option value="auto">自動保存（推奨）</option>
-                    <option value="manual">手動保存(Ctrl+Sで保存)</option>
+                <label for="saveModeSelectModal" data-i18n="settings.save_mode_label"></label>
+                <select id="saveModeSelectModal" class="tab-select" data-i18n-title="tooltip.change_save_mode">
+                    <option value="auto" data-i18n="settings.save_auto"></option>
+                    <option value="manual" data-i18n="settings.save_manual"></option>
                 </select>
 
-                <label for="charCountModeSelectModal">文字数カウント:</label>
-                <select id="charCountModeSelectModal" class="tab-select" title="文字数カウント方法を変更">
-                    <option value="with_newline">改行を含む（デフォルト）</option>
-                    <option value="no_newline">文字数のみ（改行を除く）</option>
+                <label for="charCountModeSelectModal" data-i18n="settings.char_count_label"></label>
+                <select id="charCountModeSelectModal" class="tab-select" data-i18n-title="tooltip.change_char_count">
+                    <option value="with_newline" data-i18n="settings.char_count_with_newline"></option>
+                    <option value="no_newline" data-i18n="settings.char_count_no_newline"></option>
                 </select>
 
-                <label for="themeSelectModal">テーマ:</label>
-                <select id="themeSelectModal" class="tab-select" title="テーマを変更">
-                    <option value="dark">ダーク</option>
-                    <option value="soft-dark">ソフトダーク</option>
-                    <option value="light">ライト</option>
+                <label for="themeSelectModal" data-i18n="settings.theme_label"></label>
+                <select id="themeSelectModal" class="tab-select" data-i18n-title="tooltip.change_theme">
+                    <option value="dark" data-i18n="settings.theme_dark"></option>
+                    <option value="soft-dark" data-i18n="settings.theme_soft_dark"></option>
+                    <option value="light" data-i18n="settings.theme_light"></option>
                 </select>
 
-                <label for="simpleModeSelectModal">動作モード:</label>
-                <select id="simpleModeSelectModal" class="tab-select" title="動作モードを変更">
-                    <option value="false">フルモード</option>
-                    <option value="true">シンプルモード</option>
+                <label for="simpleModeSelectModal" data-i18n="settings.mode_label"></label>
+                <select id="simpleModeSelectModal" class="tab-select" data-i18n-title="tooltip.change_mode">
+                    <option value="false" data-i18n="settings.mode_full"></option>
+                    <option value="true" data-i18n="settings.mode_simple"></option>
                 </select>
             </div>
         </div>
@@ -129,24 +129,24 @@
     <!-- 保存失敗ダイアログ -->
     <div id="errorDialog" class="dialog-overlay hidden">
         <div class="dialog-box">
-            <h2>エラー</h2>
+            <h2 data-i18n="dialog.error_title"></h2>
             <div class="dialog-content">
                 <p id="errorMessage"></p>
             </div>
             <div class="dialog-actions">
-                <button id="retryBtn" class="btn-secondary">再試行</button>
-                <button id="saveAsBtn" class="btn-secondary">別名で保存</button>
-                <button id="cancelExitBtn" class="btn-primary">キャンセル</button>
+                <button id="retryBtn" class="btn-secondary" data-i18n="dialog.button.retry"></button>
+                <button id="saveAsBtn" class="btn-secondary" data-i18n="dialog.button.save_as"></button>
+                <button id="cancelExitBtn" class="btn-primary" data-i18n="dialog.button.cancel"></button>
             </div>
         </div>
     </div>
 
     <!-- カスタムコンテキストメニュー -->
     <div id="contextMenu" class="context-menu hidden">
-        <div class="context-menu-item" id="menuNewFile">新規ファイル作成</div>
-        <div class="context-menu-item" id="menuNewFolder">新規フォルダ作成</div>
-        <div class="context-menu-item" id="menuRename">名前を変更</div>
-        <div class="context-menu-item" id="menuDelete">削除</div>
+        <div class="context-menu-item" id="menuNewFile" data-i18n="context_menu.new_file"></div>
+        <div class="context-menu-item" id="menuNewFolder" data-i18n="context_menu.new_folder"></div>
+        <div class="context-menu-item" id="menuRename" data-i18n="context_menu.rename"></div>
+        <div class="context-menu-item" id="menuDelete" data-i18n="context_menu.delete"></div>
     </div>
 
     <script src="i18n.js"></script>

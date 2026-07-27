@@ -352,6 +352,7 @@ window.addEventListener('unhandledrejection', (event) => {
 
 document.addEventListener('DOMContentLoaded', async () => {
     initElements();
+    applyTranslations();
     await init();
     updateEditorMetrics();
     initSidebarIntegration();
