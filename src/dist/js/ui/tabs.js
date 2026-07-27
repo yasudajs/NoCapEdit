@@ -12,7 +12,8 @@ export function getCurrentTab() {
 }
 
 export function formatTabDisplayName(fileName) {
-    if (/^(\[)?未保存\d+(\])?$/.test(fileName)) {
+    const unsavedText = t('tab.unsaved');
+    if (new RegExp(`^(\\[)?${unsavedText}\\d+(\\])?$`).test(fileName)) {
         return fileName;
     }
     if (isAutoCreatedFileName(fileName)) {
@@ -46,7 +47,7 @@ export function formatTabDisplayName(fileName) {
 export function updateStatus(message, status = 'normal', bypassPrefix = false) {
     let displayMessage = message;
     if (appState.saveMode === 'manual' && !bypassPrefix) {
-        displayMessage = `[手動保存モード] ${message}`;
+        displayMessage = t('status.manual_mode_prefix', { message });
     }
     if (elements.statusText) {
         elements.statusText.textContent = displayMessage;
@@ -64,11 +65,11 @@ export function updateTabStatus(tab, state = null, statusType = 'normal') {
     let targetState = state;
     if (!targetState) {
         if (tab.isSaving) {
-            targetState = '保存中...';
+            targetState = t('status.saving');
         } else if (tab.isDirty) {
-            targetState = '編集中';
+            targetState = t('status.editing');
         } else {
-            targetState = '保存済み';
+            targetState = t('status.saved');
         }
     }
 
@@ -83,7 +84,7 @@ export function updateTabStatus(tab, state = null, statusType = 'normal') {
         // ファイル作成済み
         let prefix = '';
         if (appState.saveMode === 'manual') {
-            prefix = '[手動保存:Ctrl+S] ';
+            prefix = t('status.manual_save_prefix');
         }
         updateStatus(`${prefix}${tab.fileName} - ${targetState}`, statusType, true);
     }
@@ -92,7 +93,7 @@ export function updateTabStatus(tab, state = null, statusType = 'normal') {
 // 新規タブ作成
 export async function createNewTab() {
     if (!appState.homeFolder) {
-        updateStatus('ホームフォルダ未設定', 'error');
+        updateStatus(t('status.error_no_home_folder'), 'error');
         return;
     }
 
@@ -106,9 +107,9 @@ export async function createNewTab() {
         let filePath = '';
 
         if (appState.saveMode === 'manual') {
-            fileName = `[未保存${currentUnsaved}]`;
+            fileName = `[${t('tab.unsaved_label', { num: currentUnsaved })}]`;
         } else {
-            fileName = `未保存${currentUnsaved}`;
+            fileName = t('tab.unsaved_label', { num: currentUnsaved });
         }
 
         const tab = {
@@ -128,7 +129,7 @@ export async function createNewTab() {
         renderTabs();
     } catch (error) {
         console.error('Failed to create new file:', error);
-        updateStatus('新規ファイル作成失敗', 'error');
+        updateStatus(t('status.error_create_new_file'), 'error');
     }
 }
 
@@ -189,7 +190,7 @@ export async function switchTab(tabId) {
         }
     } catch (error) {
         console.error('Failed to switch tab:', error);
-        updateStatus('タブ切替失敗', 'error');
+        updateStatus(t('status.error_switch_tab'), 'error');
     }
 }
 
