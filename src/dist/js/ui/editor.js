@@ -75,7 +75,7 @@ export function onEditorInput(e) {
     renderTabs();
     updateEditorMetrics();
 
-    updateTabStatus(tab, '編集中');
+    updateTabStatus(tab, t('status.editing'));
 
     // 自動保存タイマーをリセット
     if (appState.saveMode !== 'manual') {
