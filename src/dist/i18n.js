@@ -49,7 +49,6 @@ const DICT = {
         'tab.unsaved': '未保存',
         'tab.unsaved_prefix': '[未保存',
         'tab.unsaved_label': '未保存{num}',
-        'tab.unsaved_title': '[未保存{num}] {name}',
 
         // ── 設定ダイアログ ──
         'settings.dialog_title': 'NoCapEdit - 設定',
@@ -112,9 +111,7 @@ const DICT = {
         'sidebar.error_move_to_self': '自分自身またはサブフォルダへは移動できません',
         'sidebar.moving': '移動中...',
         'sidebar.moved_to_root': 'ルートへ移動しました',
-        'sidebar.moved_to': '{source} を {target} へ移動しました',
         'sidebar.moved': '移動しました',
-        'sidebar.moved_to_folder': '{target} へ移動しました',
         'sidebar.move_completed': '移動が完了しました',
         'sidebar.error_move': '移動に失敗しました: {error}',
 
@@ -124,8 +121,6 @@ const DICT = {
         'sidebar.cut': '{name} を切り取りました',
         'sidebar.no_clipboard': 'コピーまたは切り取りされたファイル/フォルダがありません',
         'sidebar.pasting': '貼り付け中...',
-        'sidebar.pasted_to_root': 'コピーしました',
-        'sidebar.pasted_to': '{target} へコピーしました',
         'sidebar.paste_completed': '貼り付けが完了しました',
         'sidebar.error_copy': 'コピーに失敗しました: {error}',
 
@@ -142,12 +137,6 @@ const DICT = {
         'sidebar.error_delete': '削除に失敗しました: {error}',
         'sidebar.error_folder_not_empty_title': 'フォルダ削除エラー',
         'sidebar.error_folder_not_empty_msg': 'このフォルダは空ではないため削除できません。\nエクスプローラでフォルダを開いて中身を確認しますか？',
-
-        // ── 旧キー名（互換用エイリアス：フェーズ3で呼び出し側を更新後に削除予定） ──
-        'status_ready_auto': '保存準備完了',
-        'status_ready_manual': '※Ctrl+Sで保存できます',
-        'folder_delete_error_not_empty_title': 'フォルダ削除エラー',
-        'folder_delete_error_not_empty_msg': 'このフォルダは空ではないため削除できません。\nエクスプローラでフォルダを開いて中身を確認しますか？',
     },
     en: {
         // 将来の英語対応用（現時点では空）
