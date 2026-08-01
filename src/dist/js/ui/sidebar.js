@@ -326,7 +326,7 @@ export function initSidebar() {
                 const normalizedSrc = normalizePathForComparison(srcPath);
                 const normalizedDest = normalizePathForComparison(destParentPath);
                 if (normalizedDest === normalizedSrc || normalizedDest.startsWith(normalizedSrc + '/')) {
-                    updateStatus('自分自身またはサブフォルダへは移動できません', 'error', true);
+                    updateStatus(t('sidebar.error_move_to_self'), 'error', true);
                     return;
                 }
 
@@ -344,10 +344,10 @@ export function initSidebar() {
 
                 // 再読み込み
                 await loadDirectory(null, elements.fileTree);
-                updateStatus('ルートへ移動しました');
+                updateStatus(t('sidebar.moved_to_root'));
             } catch (err) {
                 console.error('Failed to move file/dir to root:', err);
-                updateStatus(`移動に失敗しました: ${err}`, 'error', true);
+                updateStatus(t('sidebar.error_move', { error: err }), 'error', true);
             }
             }
         });
@@ -371,7 +371,7 @@ export async function loadDirectory(path, parentElement, openFolders = null) {
         await renderFileTree(files, parentElement, openFolders);
     } catch (e) {
         console.error('Failed to load directory:', e);
-        parentElement.innerHTML = `<div class="tree-error">読み込みエラー: ${e}</div>`;
+        parentElement.innerHTML = `<div class="tree-error">${t('sidebar.tree_error', { error: e })}</div>`;
     } finally {
         isReloadingTree = false;
     }
@@ -387,13 +387,13 @@ export async function renderFileTree(files, container, openFolders = null) {
     if (isBrandNew) {
         container.innerHTML = '';
         if (files.length === 0) {
-            container.innerHTML = '<div class="tree-empty">フォルダは空です</div>';
+            container.innerHTML = `<div class="tree-empty">${t('sidebar.folder_empty')}</div>`;
             return;
         }
     }
 
     if (files.length === 0) {
-        container.innerHTML = '<div class="tree-empty">フォルダは空です</div>';
+        container.innerHTML = `<div class="tree-empty">${t('sidebar.folder_empty')}</div>`;
         return;
     }
 
@@ -533,7 +533,7 @@ export async function renderFileTree(files, container, openFolders = null) {
             
             // 再帰的にロード
             if (childrenContainer.children.length === 0 || childrenContainer.querySelector('.tree-loading')) {
-                childrenContainer.innerHTML = '<div class="tree-loading">読み込み中...</div>';
+                childrenContainer.innerHTML = `<div class="tree-loading">${t('sidebar.loading')}</div>`;
                 await loadDirectory(file.file_path, childrenContainer, openFolders);
             } else {
                 // すでに読み込まれている場合も、差分更新をかける
@@ -705,7 +705,7 @@ function createTreeItemElement(file, childrenContainer) {
                 clipboardState.path = filePath;
                 clipboardState.isDir = isDir;
                 clipboardState.mode = 'copy';
-                updateStatus(`"${itemDiv.dataset.fileName}" をコピーしました`);
+                updateStatus(t('sidebar.copied', { name: itemDiv.dataset.fileName }));
             } 
             else if (e.key === 'x' || e.key === 'X' || e.code === 'KeyX') {
                 e.preventDefault();
@@ -715,13 +715,13 @@ function createTreeItemElement(file, childrenContainer) {
                 clipboardState.isDir = isDir;
                 clipboardState.mode = 'cut';
                 itemDiv.classList.add('cut-pending');
-                updateStatus(`"${itemDiv.dataset.fileName}" を切り取りました`);
+                updateStatus(t('sidebar.cut', { name: itemDiv.dataset.fileName }));
             }
             else if (e.key === 'v' || e.key === 'V' || e.code === 'KeyV') {
                 e.preventDefault();
                 e.stopPropagation();
                 if (!clipboardState.path) {
-                    updateStatus('コピーまたは切り取りされたファイル/フォルダがありません', 'error', true);
+                    updateStatus(t('sidebar.no_clipboard'), 'error', true);
                     return;
                 }
                 
@@ -736,12 +736,12 @@ function createTreeItemElement(file, childrenContainer) {
                 if (clipboardState.mode === 'cut') {
                     // 循環移動チェック
                     if (normalizedDest === normalizedSrc || normalizedDest.startsWith(normalizedSrc + '/')) {
-                        updateStatus('自分自身またはサブフォルダへは移動できません', 'error', true);
+                        updateStatus(t('sidebar.error_move_to_self'), 'error', true);
                         return;
                     }
 
                     try {
-                        updateStatus('移動中...');
+                        updateStatus(t('sidebar.moving'));
                         const newPath = await invoke('move_file_or_dir', { sourcePath: clipboardState.path, targetParentPath: destParentPath });
                         
                         selectedPath = newPath;
@@ -760,20 +760,20 @@ function createTreeItemElement(file, childrenContainer) {
                         
                         await loadDirectory(null, elements.fileTree, openFolders);
                         forceTreeFocusOnNextRender = false;
-                        updateStatus('移動が完了しました');
+                        updateStatus(t('sidebar.move_completed'));
                     } catch (err) {
                         console.error('Failed to move file/dir:', err);
-                        updateStatus(`移動に失敗しました: ${err}`, 'error', true);
+                        updateStatus(t('sidebar.error_move', { error: err }), 'error', true);
                     }
                 } else {
                     // 循環コピーチェック
                     if (clipboardState.isDir && (normalizedDest === normalizedSrc || normalizedDest.startsWith(normalizedSrc + '/'))) {
-                        updateStatus('自分自身またはサブフォルダへはコピーできません', 'error', true);
+                        updateStatus(t('sidebar.error_copy_to_self'), 'error', true);
                         return;
                     }
 
                     try {
-                        updateStatus('貼り付け中...');
+                        updateStatus(t('sidebar.pasting'));
                         const newPath = await invoke('copy_file_or_dir', { sourcePath: clipboardState.path, targetParentPath: destParentPath });
                         
                         selectedPath = newPath;
@@ -791,10 +791,10 @@ function createTreeItemElement(file, childrenContainer) {
                         
                         await loadDirectory(null, elements.fileTree, openFolders);
                         forceTreeFocusOnNextRender = false;
-                        updateStatus('貼り付けが完了しました');
+                        updateStatus(t('sidebar.paste_completed'));
                     } catch (err) {
                         console.error('Failed to copy file/dir:', err);
-                        updateStatus(`コピーに失敗しました: ${err}`, 'error', true);
+                        updateStatus(t('sidebar.error_copy', { error: err }), 'error', true);
                     }
                 }
             }
@@ -922,7 +922,7 @@ function createTreeItemElement(file, childrenContainer) {
         const normalizedSrc = normalizePathForComparison(srcPath);
         const normalizedDest = normalizePathForComparison(destParentPath);
         if (normalizedDest === normalizedSrc || normalizedDest.startsWith(normalizedSrc + '/')) {
-            updateStatus('自分自身またはサブフォルダへは移動できません', 'error', true);
+            updateStatus(t('sidebar.error_move_to_self'), 'error', true);
             return;
         }
 
@@ -940,10 +940,10 @@ function createTreeItemElement(file, childrenContainer) {
 
             // 再読み込み
             await loadDirectory(null, elements.fileTree);
-            updateStatus('移動しました');
+            updateStatus(t('sidebar.moved'));
         } catch (err) {
             console.error('Failed to move file/dir:', err);
-            updateStatus(`移動に失敗しました: ${err}`, 'error', true);
+            updateStatus(t('sidebar.error_move', { error: err }), 'error', true);
         }
     });
 
@@ -960,7 +960,7 @@ function createTreeItemElement(file, childrenContainer) {
                     iconSpan.textContent = '📂';
                     
                     if (childrenContainer.children.length === 0) {
-                        childrenContainer.innerHTML = '<div class="tree-loading">読み込み中...</div>';
+                        childrenContainer.innerHTML = `<div class="tree-loading">${t('sidebar.loading')}</div>`;
                         await loadDirectory(file.file_path, childrenContainer);
                     }
                 } else {
@@ -1095,7 +1095,7 @@ export async function createNewItemInTree(isDir) {
                 parentContainer.classList.remove('hidden');
                 if (iconSpan) iconSpan.textContent = '📂';
                 if (parentContainer.children.length === 0) {
-                    parentContainer.innerHTML = '<div class="tree-loading">読み込み中...</div>';
+                    parentContainer.innerHTML = `<div class="tree-loading">${t('sidebar.loading')}</div>`;
                     await loadDirectory(parentPath, parentContainer);
                 }
             }
@@ -1121,7 +1121,7 @@ export async function createNewItemInTree(isDir) {
     const input = document.createElement('input');
     input.type = 'text';
     input.className = 'tree-input';
-    const defaultName = isDir ? '新しいフォルダ' : '名称未設定';
+    const defaultName = isDir ? t('sidebar.default_folder_name') : t('sidebar.default_file_name');
     input.value = defaultName;
 
     tempItem.appendChild(iconSpan);
@@ -1212,9 +1212,9 @@ export async function createNewItemInTree(isDir) {
         } catch (e) {
             console.error('Failed to create item:', e);
             if (window.__TAURI__ && window.__TAURI__.dialog) {
-                await window.__TAURI__.dialog.message(`作成に失敗しました: ${e}`, { title: 'エラー', type: 'error' });
+                await window.__TAURI__.dialog.message(t('sidebar.error_create', { error: e }), { title: t('dialog.error_title'), type: 'error' });
             } else {
-                alert(`作成に失敗しました: ${e}`);
+                alert(t('sidebar.error_create', { error: e }));
             }
             if (parentPath === "") {
                 await loadDirectory(null, elements.fileTree);
@@ -1229,7 +1229,7 @@ export async function createNewItemInTree(isDir) {
         finished = true;
         tempItem.remove();
         if (parentContainer.children.length === 0) {
-            parentContainer.innerHTML = '<div class="tree-empty">フォルダは空です</div>';
+            parentContainer.innerHTML = `<div class="tree-empty">${t('sidebar.folder_empty')}</div>`;
         }
         if (parentPath) {
             const normParent = normalizePathForComparison(parentPath);
@@ -1376,9 +1376,9 @@ export async function startRenameInTree() {
         } catch (e) {
             console.error('Failed to rename item:', e);
             if (window.__TAURI__ && window.__TAURI__.dialog) {
-                await window.__TAURI__.dialog.message(`名前変更に失敗しました: ${e}`, { title: 'エラー', type: 'error' });
+                await window.__TAURI__.dialog.message(t('sidebar.error_rename', { error: e }), { title: t('dialog.error_title'), type: 'error' });
             } else {
-                alert(`名前変更に失敗しました: ${e}`);
+                alert(t('sidebar.error_rename', { error: e }));
             }
             nameSpan.textContent = originalText;
             if (targetElement) {
@@ -1427,11 +1427,11 @@ export async function deleteItemInTree() {
     let confirmed = false;
     if (window.__TAURI__ && window.__TAURI__.dialog) {
         confirmed = await window.__TAURI__.dialog.ask(
-            `「${fileName}」を削除してごみ箱に移動しますか？`,
-            { title: '確認', type: 'warning' }
+            t('sidebar.confirm_trash', { name: fileName }),
+            { title: t('dialog.confirm_title'), type: 'warning' }
         );
     } else {
-        confirmed = confirm(`「${fileName}」を削除してごみ箱に移動しますか？`);
+        confirmed = confirm(t('sidebar.confirm_trash', { name: fileName }));
     }
 
     if (!confirmed) return;
@@ -1518,8 +1518,8 @@ export async function deleteItemInTree() {
         }
     } catch (e) {
         if (e === 'FOLDER_NOT_EMPTY') {
-            const title = window.t ? window.t('folder_delete_error_not_empty_title') : 'フォルダ削除エラー';
-            const msg = window.t ? window.t('folder_delete_error_not_empty_msg') : 'このフォルダは空ではないため削除できません。\nエクスプローラでフォルダを開いて中身を確認しますか？';
+            const title = t('sidebar.error_folder_not_empty_title');
+            const msg = t('sidebar.error_folder_not_empty_msg');
             let openExplorer = false;
             if (window.__TAURI__ && window.__TAURI__.dialog) {
                 openExplorer = await window.__TAURI__.dialog.ask(msg, { title, type: 'warning' });
@@ -1536,9 +1536,9 @@ export async function deleteItemInTree() {
         } else {
             console.error('Failed to delete item:', e);
             if (window.__TAURI__ && window.__TAURI__.dialog) {
-                await window.__TAURI__.dialog.message(`削除に失敗しました: ${e}`, { title: 'エラー', type: 'error' });
+                await window.__TAURI__.dialog.message(t('sidebar.error_delete', { error: e }), { title: t('dialog.error_title'), type: 'error' });
             } else {
-                alert(`削除に失敗しました: ${e}`);
+                alert(t('sidebar.error_delete', { error: e }));
             }
         }
     }
@@ -1551,11 +1551,11 @@ export async function deleteItemPermanentlyInTree(targetPath, targetElement) {
     let confirmed = false;
     if (window.__TAURI__ && window.__TAURI__.dialog) {
         confirmed = await window.__TAURI__.dialog.ask(
-            `「${fileName}」をごみ箱に入れず、完全に削除しますか？\n※この操作は取り消せません。`,
-            { title: '警告', type: 'warning' }
+            t('sidebar.confirm_permanent_delete', { name: fileName }),
+            { title: t('dialog.warning_title'), type: 'warning' }
         );
     } else {
-        confirmed = confirm(`「${fileName}」をごみ箱に入れず、完全に削除しますか？\n※この操作は取り消せません。`);
+        confirmed = confirm(t('sidebar.confirm_permanent_delete', { name: fileName }));
     }
 
     if (!confirmed) return;
@@ -1643,11 +1643,11 @@ export async function deleteItemPermanentlyInTree(targetPath, targetElement) {
             }
         }
 
-        updateStatus('完全に削除しました');
+        updateStatus(t('sidebar.permanently_deleted'));
     } catch (e) {
         if (e === 'FOLDER_NOT_EMPTY') {
-            const title = window.t ? window.t('folder_delete_error_not_empty_title') : 'フォルダ削除エラー';
-            const msg = window.t ? window.t('folder_delete_error_not_empty_msg') : 'このフォルダは空ではないため削除できません。\nエクスプローラでフォルダを開いて中身を確認しますか？';
+            const title = t('sidebar.error_folder_not_empty_title');
+            const msg = t('sidebar.error_folder_not_empty_msg');
             let openExplorer = false;
             if (window.__TAURI__ && window.__TAURI__.dialog) {
                 openExplorer = await window.__TAURI__.dialog.ask(msg, { title, type: 'warning' });
@@ -1663,7 +1663,7 @@ export async function deleteItemPermanentlyInTree(targetPath, targetElement) {
             }
         } else {
             console.error('Failed to permanently delete item:', e);
-            updateStatus(`削除に失敗しました: ${e}`, 'error', true);
+            updateStatus(t('sidebar.error_delete', { error: e }), 'error', true);
         }
     }
 }
@@ -1724,7 +1724,7 @@ async function ensureItemVisibleAndExpanded(targetEl) {
             }
             const folderPath = folderItemDiv.dataset.filePath;
             if (container.children.length === 0 && folderPath) {
-                container.innerHTML = '<div class="tree-loading">読み込み中...</div>';
+                container.innerHTML = `<div class="tree-loading">${t('sidebar.loading')}</div>`;
                 await loadDirectory(folderPath, container);
             }
         }
@@ -1765,7 +1765,7 @@ async function expandParentFoldersToItem(targetPath) {
                         iconSpan.textContent = '📂';
                     }
                     if (isEmpty) {
-                        childrenContainer.innerHTML = '<div class="tree-loading">読み込み中...</div>';
+                        childrenContainer.innerHTML = `<div class="tree-loading">${t('sidebar.loading')}</div>`;
                         await loadDirectory(folderItemDiv.dataset.filePath, childrenContainer);
                     }
                 }
