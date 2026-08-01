@@ -160,7 +160,7 @@ function setupUIEventListeners() {
                         renderTabs();
                         
                         if (appState.currentTab === tab.id) {
-                            updateStatus(`${newName} に名前変更されました`, 'info');
+                            updateStatus(t('status.renamed', { name: newName }), 'info');
                             const cleanName = newName.replace(/\.nctx$/, '');
                             const masterVersion = appState.appVersion || '0.2.4';
                             document.title = `NoCapEdit [ Ver ${masterVersion} ] - ${cleanName}`;
@@ -224,7 +224,7 @@ function registerCloseHandler() {
             await invoke('exit_app');
         } catch (error) {
             console.error('Failed while processing app close:', error);
-            updateStatus('終了処理失敗', 'error');
+            updateStatus(t('status.error_exit'), 'error');
             appState.closeGuard = false;
             appState.forceClosing = false;
         }
@@ -314,7 +314,7 @@ async function init() {
         if (isFirstLaunch || isHomeFolderMissing) {
             openSettingsDialog(isHomeFolderMissing);
         } else {
-            updateStatus(appState.saveMode === 'manual' ? window.t('status_ready_manual') : window.t('status_ready_auto'));
+            updateStatus(appState.saveMode === 'manual' ? t('status.ready_manual') : t('status.ready_auto'));
             setupUIEventListeners();
 
             const launchFile = await invoke('get_launch_file');
@@ -330,7 +330,7 @@ async function init() {
         }
     } catch (error) {
         console.error('Failed to initialize:', error);
-        updateStatus('初期化エラー', 'error');
+        updateStatus(t('status.error_init'), 'error');
     } finally {
         if (appWindow && typeof appWindow.show === 'function') {
             try {
@@ -352,6 +352,7 @@ window.addEventListener('unhandledrejection', (event) => {
 
 document.addEventListener('DOMContentLoaded', async () => {
     initElements();
+    applyTranslations();
     await init();
     updateEditorMetrics();
     initSidebarIntegration();

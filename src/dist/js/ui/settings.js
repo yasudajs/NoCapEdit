@@ -74,8 +74,8 @@ export function openSettingsDialog(isMissingFolder = false) {
         elements.charCountModeSelectModal.value = appState.charCountMode || 'with_newline';
     }
     elements.folderHint.textContent = isMissingFolder
-        ? '保存先フォルダが見つからないため、再設定してください'
-        : 'ここにファイルが保存されます';
+        ? t('settings.hint_folder_missing')
+        : t('settings.hint_folder_default');
     
     elements.settingsDialog.classList.remove('hidden');
     if (elements.settingsBtn && !isMissingFolder) {
@@ -145,7 +145,7 @@ export async function saveSettings() {
     const previousSimpleMode = appState.simpleMode;
 
     if (!homeFolder) {
-        alert('ホームフォルダを指定してください');
+        alert(t('alert.home_folder_required'));
         return;
     }
 
@@ -168,10 +168,11 @@ export async function saveSettings() {
         if (previousSaveMode === 'manual' && saveMode === 'auto') {
             for (const tab of appState.tabs) {
                 if (!tab.filePath) {
-                    if (tab.fileName.startsWith('[未保存') && tab.fileName.endsWith(']')) {
+                    const unsavedPrefix = t('tab.unsaved_prefix');
+                    if (tab.fileName.startsWith(`[${unsavedPrefix}`) && tab.fileName.endsWith(']')) {
                         tab.fileName = tab.fileName.slice(1, -1);
-                    } else if (!tab.fileName.startsWith('未保存')) {
-                        tab.fileName = `未保存${tab.unsavedNumber}`;
+                    } else if (!tab.fileName.startsWith(t('tab.unsaved'))) {
+                        tab.fileName = t('tab.unsaved_label', { num: tab.unsavedNumber });
                     }
                     if (tab.content.trim() !== '') {
                         tab.isDirty = true;
@@ -192,17 +193,17 @@ export async function saveSettings() {
                 }
 
                 if (!tab.filePath) {
-                    if (tab.fileName.startsWith('未保存')) {
+                    if (tab.fileName.startsWith(t('tab.unsaved'))) {
                         tab.fileName = `[${tab.fileName}]`;
-                    } else if (!tab.fileName.startsWith('[未保存')) {
-                        tab.fileName = `[未保存${tab.unsavedNumber}]`;
+                    } else if (!tab.fileName.startsWith(`[${t('tab.unsaved_prefix')}`)) {
+                        tab.fileName = `[${t('tab.unsaved_label', { num: tab.unsavedNumber })}]`;
                     }
                 }
             }
             renderTabs();
         }
         
-        updateStatus(appState.saveMode === 'manual' ? window.t('status_ready_manual') : window.t('status_ready_auto'));
+        updateStatus(appState.saveMode === 'manual' ? t('status.ready_manual') : t('status.ready_auto'));
         
         // This circular dependency is tricky. We'll import dynamically or just rely on main.js to setup listeners.
         // main.js will setup listeners initially. We don't need to setup listeners here again if they are attached to DOM.
@@ -214,7 +215,7 @@ export async function saveSettings() {
         }
     } catch (error) {
         console.error('Failed to save settings:', error);
-        updateStatus('設定保存エラー', 'error');
+        updateStatus(t('status.error_save_settings'), 'error');
     }
 }
 
@@ -250,7 +251,7 @@ export async function loadSystemFonts() {
     try {
         if (!ensureTauriApi()) return;
         appState.fontsLoading = true;
-        updateStatus('システムフォントを読み込み中...');
+        updateStatus(t('status.loading_fonts'));
         const fonts = await invoke('get_system_fonts');
 
         while (elements.fontFamilySelectModal.options.length > 1) {
@@ -258,10 +259,10 @@ export async function loadSystemFonts() {
         }
 
         const monoGroup = document.createElement('optgroup');
-        monoGroup.label = '等幅フォント';
+        monoGroup.label = t('settings.font_group_mono');
 
         const otherGroup = document.createElement('optgroup');
-        otherGroup.label = 'その他のフォント';
+        otherGroup.label = t('settings.font_group_other');
 
         fonts.forEach(font => {
             const option = document.createElement('option');
@@ -284,10 +285,10 @@ export async function loadSystemFonts() {
 
         elements.fontFamilySelectModal.value = appState.fontFamily;
         appState.fontsLoaded = true;
-        updateStatus(appState.saveMode === 'manual' ? window.t('status_ready_manual') : window.t('status_ready_auto'));
+        updateStatus(appState.saveMode === 'manual' ? t('status.ready_manual') : t('status.ready_auto'));
     } catch (error) {
         console.error('Failed to load system fonts:', error);
-        updateStatus('フォント読み込み失敗', 'error');
+        updateStatus(t('status.error_load_fonts'), 'error');
     } finally {
         appState.fontsLoading = false;
     }
