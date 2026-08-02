@@ -111,8 +111,8 @@ src/security.rs  → src-tauri/src/security.rs
 ```
 icons/  → src-tauri/icons/
 nsis/   → src-tauri/nsis/
-wix/    → src-tauri/wix/
 ```
+（`wix/` ディレクトリは MSI ビルドを廃止するため削除）
 
 #### 1-3: フロントエンドファイルの昇格
 ```
@@ -191,7 +191,7 @@ src/dist/js/         → src/js/
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": ["nsis"],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -199,19 +199,37 @@ src/dist/js/         → src/js/
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "windows": {
-      "wix": {
-        "fragmentPaths": ["wix/file-association.wxs"],
-        "componentRefs": ["FileAssociationComponent"]
+    "fileAssociations": [
+      {
+        "ext": ["nctx"],
+        "name": "NoCapEdit Text File",
+        "mimeType": "application/x-nocapedit-text"
       },
+      {
+        "ext": ["ncmd"],
+        "name": "NoCapEdit Markdown File",
+        "mimeType": "application/x-nocapedit-markdown"
+      }
+    ],
+    "windows": {
       "nsis": {
-        "template": "nsis/installer.nsi"
+        "languages": ["Japanese"],
+        "customLanguageFiles": {
+          "Japanese": "nsis/Japanese.nsh"
+        },
+        "installerHooks": "nsis/hooks.nsh"
       }
     }
   },
   "plugins": {}
 }
 ```
+
+> [!NOTE]
+> - `targets` を `["nsis"]` に限定（WiX/MSI ビルドを廃止）
+> - `fileAssociations` で `.nctx`, `.ncmd` の関連付けをクロスプラットフォーム設定
+> - NSIS のカスタムテンプレート（`installer.nsi`）は削除し、デフォルトテンプレート + `installerHooks` で代替
+> - 日本語化は `languages` + `customLanguageFiles` で対応
 
 #### 確認ポイント
 - JSON 構文が正しいこと
@@ -416,21 +434,59 @@ tauri::Builder::default()
 
 ---
 
-### フェーズ 8: NSIS カスタムインストーラーの互換性対応
-**目的**: カスタム NSIS テンプレートが v2 のバンドラーで正常に動作するか検証・修正する
+### フェーズ 8: インストーラーの v2 ネイティブ化
+**目的**: カスタム NSIS テンプレートを廃止し、v2 のデフォルトテンプレート + フック機能に移行する
 
-> [!WARNING]
-> 29KB のカスタム NSIS テンプレート (`nsis/installer.nsi`) は v2 のバンドラーと互換性がない可能性が高い。
-> v2 ではテンプレート内の変数名やヘルパーマクロが変更されている。
+#### 8-1: カスタムテンプレートの削除と WiX の廃止
+- `nsis/installer.nsi`（797行）を**削除** → v2 デフォルトテンプレートを使用
+- `wix/` ディレクトリを**削除**（MSI ビルドを廃止）
 
-#### 対応方針（2案）
-1. **案A**: v2 のデフォルト NSIS テンプレートをベースに、NoCapEdit のカスタム部分（日本語化、ファイル関連付け等）を再適用する
-2. **案B**: v2 の `installerHooks` 機能を使い、カスタムロジックを `.nsh` ファイルに分離する（推奨）
+#### 8-2: `nsis/hooks.nsh` の新規作成（約30行）
+現在の `installer.nsi` に含まれていた NoCapEdit 固有のカスタムコード（ファイル関連付け）をフックマクロとして移植する。
+
+```nsis
+!macro NSIS_HOOK_POSTINSTALL
+  ; .nctx 拡張子の登録
+  WriteRegStr SHCTX "Software\Classes\.nctx" "" "NoCapEdit.nctx"
+  WriteRegStr SHCTX "Software\Classes\NoCapEdit.nctx" "" "NoCapEdit Text File"
+  WriteRegStr SHCTX "Software\Classes\NoCapEdit.nctx\DefaultIcon" "" "$INSTDIR\${MAINBINARYNAME}.exe,0"
+  WriteRegStr SHCTX "Software\Classes\NoCapEdit.nctx\shell\open\command" "" '"$INSTDIR\${MAINBINARYNAME}.exe" "%1"'
+  ; .ncmd 拡張子の登録
+  WriteRegStr SHCTX "Software\Classes\.ncmd" "" "NoCapEdit.ncmd"
+  WriteRegStr SHCTX "Software\Classes\NoCapEdit.ncmd" "" "NoCapEdit Markdown File"
+  WriteRegStr SHCTX "Software\Classes\NoCapEdit.ncmd\DefaultIcon" "" "$INSTDIR\${MAINBINARYNAME}.exe,0"
+  WriteRegStr SHCTX "Software\Classes\NoCapEdit.ncmd\shell\open\command" "" '"$INSTDIR\${MAINBINARYNAME}.exe" "%1"'
+  System::Call 'Shell32::SHChangeNotify(i 0x08000000, i 0, i 0, i 0)'
+!macroend
+
+!macro NSIS_HOOK_POSTUNINSTALL
+  DeleteRegKey SHCTX "Software\Classes\.nctx"
+  DeleteRegKey SHCTX "Software\Classes\NoCapEdit.nctx"
+  DeleteRegKey SHCTX "Software\Classes\.ncmd"
+  DeleteRegKey SHCTX "Software\Classes\NoCapEdit.ncmd"
+  System::Call 'Shell32::SHChangeNotify(i 0x08000000, i 0, i 0, i 0)'
+!macroend
+```
+
+#### 8-3: `nsis/Japanese.nsh` の流用
+既存の日本語翻訳ファイルはそのまま流用する。`tauri.conf.json` の `customLanguageFiles` で参照する。
+
+#### 変更のインパクト
+| 対象 | 変更内容 |
+|---|---|
+| `nsis/installer.nsi`（797行） | **削除** |
+| `nsis/hooks.nsh`（新規、約30行） | **新規作成** |
+| `nsis/Japanese.nsh`（26行） | そのまま流用 |
+| `wix/file-association.wxs`（24行） | **削除** |
+| `wix/` ディレクトリ | **削除** |
+| 配布形態 | exe + zip の 2 種類に統一（MSI 廃止） |
 
 #### 確認ポイント
-- [ ] `cargo tauri build` でインストーラーが生成されること
+- [ ] `cargo tauri build` で NSIS インストーラー（.exe）が生成されること
+- [ ] MSI が生成されないこと
 - [ ] 生成されたインストーラーが正常にインストール・アンインストールできること
-- [ ] ファイル関連付けが正常に動作すること
+- [ ] `.nctx`, `.ncmd` のファイル関連付けが正常に動作すること
+- [ ] インストーラーの UI が日本語で表示されること
 
 ---
 
@@ -462,7 +518,7 @@ tauri::Builder::default()
 
 | リスク | 影響度 | 対策 |
 |---|---|---|
-| NSIS テンプレートの非互換 | 高 | フェーズ 8 で早期に検証。最悪の場合はデフォルトテンプレートに戻す |
+| ~~NSIS テンプレートの非互換~~ | ~~高~~ | **解決済み**: カスタムテンプレートを全廃し、v2 デフォルトテンプレート + `installerHooks` に移行する方針に決定 |
 | ~~`window.hwnd()` の API 変更~~ | ~~中~~ | **解決済み**: v2 のビルトイン `set_theme()` API で完全に代替可能。DWM 直接呼び出し不要 |
 | capabilities の設定不足 | 低 | 実行時エラーで即座に判明。権限を追加すればよい |
 | `withGlobalTauri` の動作変更 | 低 | v2 でも同機能をサポートしていることを確認済み |
@@ -482,7 +538,7 @@ tauri::Builder::default()
 | フェーズ 5: Rust API 移行 | 2-3h |
 | フェーズ 6: フロントエンド API 移行 | 1h |
 | フェーズ 7: 開発ビルド動作検証 | 1h |
-| フェーズ 8: NSIS 対応 | 2-4h（調査含む） |
+| フェーズ 8: インストーラー v2 ネイティブ化 | 1-2h |
 | フェーズ 9: 総合動作検証 | 2h |
 | **合計** | **約 12-16h（2-2.5日）** |
 
@@ -492,6 +548,6 @@ tauri::Builder::default()
 
 1. ~~**プロジェクト構造**: `src-tauri/` を使わない構造で `capabilities/` フォルダがどこに配置されるべきか~~ → **解決済み**: `src-tauri/` 標準構造に移行し、`src-tauri/capabilities/` に配置する
 2. ~~**`window.hwnd()`**: v2 での HWND 取得方法（DWM ダークモード適用に使用）~~ → **解決済み**: v2 ではビルトインの `WebviewWindowBuilder::theme()` および `WebviewWindow::set_theme()` API が提供されており、`hwnd()` + `DwmSetWindowAttribute` による手動実装は不要。`windows-sys` クレートの除去、`unsafe` ブロックの全廃も可能。
-3. **NSIS テンプレート**: v2 のデフォルトテンプレートとの差分調査
-4. **WiX ファイル関連付け**: v2 での互換性
+3. ~~**NSIS テンプレート**: v2 のデフォルトテンプレートとの差分調査~~ → **解決済み**: カスタムテンプレート（`installer.nsi` 797行）を全廃し、v2 デフォルトテンプレートを使用する。NoCapEdit 固有のカスタマイズ（ファイル関連付け約30行）は `installerHooks`（`hooks.nsh`）で実装。日本語化は `languages` + `customLanguageFiles` 設定で対応。
+4. ~~**WiX ファイル関連付け**: v2 での互換性~~ → **解決済み**: WiX/MSI ビルドを廃止する。Microsoft Store 公開は MSI ではなく MSIX が必要なため、MSI を維持する意味がない。配布形態は exe（NSIS）+ zip（ポータブル）の 2 種類に統一。
 5. ~~**`build.devPath`**: 静的ファイル構成の場合、v2 で `frontendDist` のみでよいか、`devUrl` も必要か~~ → **解決済み**: バンドラー未使用の静的ファイル構成では `frontendDist` のみでよい（`devUrl` は開発サーバー使用時のみ）
