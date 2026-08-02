@@ -4,18 +4,27 @@
 const DICT = {
     ja: {
         // 例: エラーメッセージなど、新しく追加する文字列をここに追記していく
-        // status_api_error: "Tauri API 初期化失敗",
-        folder_delete_error_not_empty_title: "フォルダ削除エラー",
-        folder_delete_error_not_empty_msg: "このフォルダは空ではないため削除できません。\nエクスプローラでフォルダを開いて中身を確認しますか？",
+        folder: {
+            delete: {
+                error_not_empty_title: "フォルダ削除エラー",
+                error_not_empty_msg: "このフォルダは空ではないため削除できません。\nエクスプローラでフォルダを開いて中身を確認しますか？",
+            }
+        }
     }
 };
 
 let currentLang = 'ja';
 
 window.t = function(key) {
-    if (DICT[currentLang] && DICT[currentLang][key]) {
-        return DICT[currentLang][key];
+    if (!key || typeof key !== 'string') return key;
+    const keys = key.split('.');
+    let current = DICT[currentLang];
+    for (const k of keys) {
+        if (current && typeof current === 'object' && k in current) {
+            current = current[k];
+        } else {
+            return key;
+        }
     }
-    // 開発中のデバッグ用に、キーが見つからない場合はそのままキー名を出力する
-    return key;
+    return typeof current === 'string' ? current : key;
 };
