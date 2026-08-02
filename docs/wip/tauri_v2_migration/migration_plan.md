@@ -296,7 +296,64 @@ fn main() {
 | `app.get_window("main")` | `app.get_webview_window("main")` | setup フック, single-instance |
 | `app_handle.emit_all(...)` | `app_handle.emit(...)` | ファイル監視イベント送信 |
 | `use tauri::Manager;` | `use tauri::Manager;` + `use tauri::Emitter;` | emit 使用箇所 |
-| `window.hwnd()` | 要調査（raw-window-handle 経由の可能性） | DWM ダークモード適用 |
+| `tauri::Window` (コマンド引数) | `tauri::WebviewWindow` | 全コマンド |
+
+#### 5-4: テーマ適用の実装変更（DWM 直接呼び出しの廃止）
+
+Tauri v2 ではビルトインの `set_theme()` / `.theme()` API が提供されており、
+`window.hwnd()` + `DwmSetWindowAttribute` による手動ダークモード適用は**完全に不要**になる。
+Tauri v2 が内部的に `DWMWA_USE_IMMERSIVE_DARK_MODE` を処理する。
+
+**① setup フック内（起動時テーマ適用）— 変更前:**
+```rust
+// v1: hwnd + DWM API 直接呼び出し（約15行）
+use windows_sys::Win32::Graphics::Dwm::{DwmSetWindowAttribute, DWMWA_USE_IMMERSIVE_DARK_MODE};
+if let Ok(hwnd) = window.hwnd() {
+    let hwnd_raw = hwnd.0 as HWND;
+    unsafe { DwmSetWindowAttribute(...) }
+}
+```
+
+**変更後:**
+```rust
+// v2: WebviewWindowBuilder の .theme() で直接指定（1行）
+use tauri::{WebviewWindowBuilder, WebviewUrl, Theme};
+
+let window = WebviewWindowBuilder::new(app, "main", WebviewUrl::App("index.html".into()))
+    .theme(if is_dark { Some(Theme::Dark) } else { Some(Theme::Light) })
+    // ... 他のビルダー設定
+    .build()?;
+```
+
+**② apply_theme コマンド — 変更前:**
+```rust
+// v1: hwnd + DWM API 直接呼び出し（約15行）
+#[tauri::command]
+fn apply_theme(window: tauri::Window, theme: String) -> Result<(), String> {
+    #[cfg(target_os = "windows")]
+    {
+        use windows_sys::Win32::Graphics::Dwm::...;
+        if let Ok(hwnd) = window.hwnd() { unsafe { ... } }
+    }
+    Ok(())
+}
+```
+
+**変更後:**
+```rust
+// v2: ビルトイン set_theme() API（3行）
+#[tauri::command]
+fn apply_theme(window: tauri::WebviewWindow, theme: String) -> Result<(), String> {
+    let tauri_theme = if theme == "light" { Some(Theme::Light) } else { Some(Theme::Dark) };
+    window.set_theme(tauri_theme).map_err(|e| e.to_string())
+}
+```
+
+**副次的な改善:**
+- `windows-sys` クレートが不要になる可能性（他で使用していなければ `Cargo.toml` から除去）
+- `unsafe` ブロックが全廃される
+- `#[cfg(target_os = "windows")]` 条件分岐が不要になる（Tauri がクロスプラットフォーム対応）
+- capabilities に `"core:window:allow-set-theme"` の追加が必要
 
 #### 5-3: プラグインの初期化コード追加
 
@@ -406,7 +463,7 @@ tauri::Builder::default()
 | リスク | 影響度 | 対策 |
 |---|---|---|
 | NSIS テンプレートの非互換 | 高 | フェーズ 8 で早期に検証。最悪の場合はデフォルトテンプレートに戻す |
-| `window.hwnd()` の API 変更 | 中 | v2 での raw-window-handle の取得方法を事前調査 |
+| ~~`window.hwnd()` の API 変更~~ | ~~中~~ | **解決済み**: v2 のビルトイン `set_theme()` API で完全に代替可能。DWM 直接呼び出し不要 |
 | capabilities の設定不足 | 低 | 実行時エラーで即座に判明。権限を追加すればよい |
 | `withGlobalTauri` の動作変更 | 低 | v2 でも同機能をサポートしていることを確認済み |
 | プロジェクト構造変更によるパス参照の破損 | 中 | フェーズ 1 でファイル移動のみ行い、内容変更は後続フェーズで対応 |
@@ -434,7 +491,7 @@ tauri::Builder::default()
 ## 未決事項・要調査
 
 1. ~~**プロジェクト構造**: `src-tauri/` を使わない構造で `capabilities/` フォルダがどこに配置されるべきか~~ → **解決済み**: `src-tauri/` 標準構造に移行し、`src-tauri/capabilities/` に配置する
-2. **`window.hwnd()`**: v2 での HWND 取得方法（DWM ダークモード適用に使用）
+2. ~~**`window.hwnd()`**: v2 での HWND 取得方法（DWM ダークモード適用に使用）~~ → **解決済み**: v2 ではビルトインの `WebviewWindowBuilder::theme()` および `WebviewWindow::set_theme()` API が提供されており、`hwnd()` + `DwmSetWindowAttribute` による手動実装は不要。`windows-sys` クレートの除去、`unsafe` ブロックの全廃も可能。
 3. **NSIS テンプレート**: v2 のデフォルトテンプレートとの差分調査
 4. **WiX ファイル関連付け**: v2 での互換性
 5. ~~**`build.devPath`**: 静的ファイル構成の場合、v2 で `frontendDist` のみでよいか、`devUrl` も必要か~~ → **解決済み**: バンドラー未使用の静的ファイル構成では `frontendDist` のみでよい（`devUrl` は開発サーバー使用時のみ）
