@@ -6,12 +6,16 @@
 ## 変更内容
 
 ### 1. `src/dist/i18n.js`
-- **辞書データ構造**: `DICT.ja` をネストオブジェクト形式に修正。
+- **辞書データ構造**: `DICT.ja` を完全なネストオブジェクト形式に修正。
   ```js
   folder: {
       delete: {
-          error_not_empty_title: "フォルダ削除エラー",
-          error_not_empty_msg: "このフォルダは空ではないため削除できません。\nエクスプローラでフォルダを開いて中身を確認しますか？",
+          error: {
+              not_empty: {
+                  title: "フォルダ削除エラー",
+                  msg: "このフォルダは空ではないため削除できません。\nエクスプローラでフォルダを開いて中身を確認しますか？",
+              }
+          }
       }
   }
   ```
@@ -22,6 +26,6 @@
 ## 検証結果
 
 Node.js 環境での単体テストにより以下を確認しました：
-1. `window.t('folder.delete.error_not_empty_title')` ➔ `"フォルダ削除エラー"`
-2. `window.t('folder.delete.error_not_empty_msg')` ➔ `"このフォルダは空ではないため削除できません。\n..."`
+1. `window.t('folder.delete.error.not_empty.title')` ➔ `"フォルダ削除エラー"`
+2. `window.t('folder.delete.error.not_empty.msg')` ➔ `"このフォルダは空ではないため削除できません。\n..."`
 3. `window.t('unknown.key')`（未登録キー） ➔ `"unknown.key"`（フォールバック動作）
