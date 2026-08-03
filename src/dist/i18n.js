@@ -13,6 +13,46 @@ const DICT = {
                     }
                 }
             }
+        },
+        settings: {
+            folder: {
+                hint: {
+                    missing: "保存先フォルダが見つからないため、再設定してください",
+                    default: "ここにファイルが保存されます"
+                }
+            },
+            alert: {
+                home: {
+                    folder: {
+                        required: "ホームフォルダを指定してください"
+                    }
+                }
+            },
+            font: {
+                group: {
+                    monospace: "等幅フォント",
+                    other: "その他のフォント"
+                }
+            }
+        },
+        status: {
+            ready: "準備完了",
+            loading: {
+                fonts: "システムフォントを読み込み中..."
+            },
+            error: {
+                settings: {
+                    save: "設定保存エラー"
+                },
+                font: {
+                    load: "フォント読み込み失敗"
+                }
+            }
+        },
+        tabs: {
+            unsaved: {
+                label: "未保存"
+            }
         }
     }
 };

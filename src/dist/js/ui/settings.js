@@ -54,8 +54,8 @@ export function openSettingsDialog(isMissingFolder = false) {
     }
     if (elements.folderHint) {
         elements.folderHint.textContent = isMissingFolder
-            ? '保存先フォルダが見つからないため、再設定してください'
-            : 'ここにファイルが保存されます';
+            ? window.t('settings.folder.hint.missing')
+            : window.t('settings.folder.hint.default');
     }
     
     if (elements.settingsDialog) {
@@ -116,7 +116,7 @@ export async function saveSettings() {
     const previousSaveMode = appState.saveMode;
 
     if (!homeFolder) {
-        alert('ホームフォルダを指定してください');
+        alert(window.t('settings.alert.home.folder.required'));
         return;
     }
 
@@ -138,10 +138,10 @@ export async function saveSettings() {
         if (previousSaveMode === 'manual' && saveMode === 'auto') {
             for (const tab of appState.tabs) {
                 if (!tab.filePath) {
-                    if (tab.fileName.startsWith('[未保存') && tab.fileName.endsWith(']')) {
+                    if (tab.fileName.startsWith(`[${window.t('tabs.unsaved.label')}`) && tab.fileName.endsWith(']')) {
                         tab.fileName = tab.fileName.slice(1, -1);
-                    } else if (!tab.fileName.startsWith('未保存')) {
-                        tab.fileName = `未保存${tab.unsavedNumber}`;
+                    } else if (!tab.fileName.startsWith(window.t('tabs.unsaved.label'))) {
+                        tab.fileName = `${window.t('tabs.unsaved.label')}${tab.unsavedNumber}`;
                     }
                     if (tab.content.trim() !== '') {
                         tab.isDirty = true;
@@ -162,10 +162,10 @@ export async function saveSettings() {
                 }
 
                 if (!tab.filePath) {
-                    if (tab.fileName.startsWith('未保存')) {
+                    if (tab.fileName.startsWith(window.t('tabs.unsaved.label'))) {
                         tab.fileName = `[${tab.fileName}]`;
-                    } else if (!tab.fileName.startsWith('[未保存')) {
-                        tab.fileName = `[未保存${tab.unsavedNumber}]`;
+                    } else if (!tab.fileName.startsWith(`[${window.t('tabs.unsaved.label')}`)) {
+                        tab.fileName = `[${window.t('tabs.unsaved.label')}${tab.unsavedNumber}]`;
                     }
                 }
             }
@@ -180,12 +180,12 @@ export async function saveSettings() {
             if (currentTab) {
                 updateTabStatus(currentTab);
             } else {
-                updateStatus('準備完了');
+                updateStatus(window.t('status.ready'));
             }
         }
     } catch (error) {
         console.error('Failed to save settings:', error);
-        updateStatus('設定保存エラー', 'error');
+        updateStatus(window.t('status.error.settings.save'), 'error');
     }
 }
 
@@ -221,7 +221,7 @@ export async function loadSystemFonts() {
     try {
         if (!ensureTauriApi()) return;
         appState.fontsLoading = true;
-        updateStatus('システムフォントを読み込み中...');
+        updateStatus(window.t('status.loading.fonts'));
         const fonts = await invoke('get_system_fonts');
 
         while (elements.fontFamilySelectModal.options.length > 1) {
@@ -229,10 +229,10 @@ export async function loadSystemFonts() {
         }
 
         const monoGroup = document.createElement('optgroup');
-        monoGroup.label = '等幅フォント';
+        monoGroup.label = window.t('settings.font.group.monospace');
 
         const otherGroup = document.createElement('optgroup');
-        otherGroup.label = 'その他のフォント';
+        otherGroup.label = window.t('settings.font.group.other');
 
         fonts.forEach(font => {
             const option = document.createElement('option');
@@ -255,10 +255,10 @@ export async function loadSystemFonts() {
 
         elements.fontFamilySelectModal.value = appState.fontFamily;
         appState.fontsLoaded = true;
-        updateStatus('準備完了');
+        updateStatus(window.t('status.ready'));
     } catch (error) {
         console.error('Failed to load system fonts:', error);
-        updateStatus('フォント読み込み失敗', 'error');
+        updateStatus(window.t('status.error.font.load'), 'error');
     } finally {
         appState.fontsLoading = false;
     }
