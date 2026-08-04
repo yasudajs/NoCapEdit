@@ -1,4 +1,3 @@
-// import { updateStatus } from '../ui/tabs.js';
 
 const tauriApi = window.__TAURI__ || null;
 export const invoke = tauriApi?.tauri?.invoke || tauriApi?.invoke || null;
@@ -10,7 +9,6 @@ export const listen = tauriApi?.event?.listen || null;
 export function ensureTauriApi() {
     if (!invoke) {
         console.error('Tauri invoke API is not available.', window.__TAURI__);
-        // updateStatus('Tauri API 初期化失敗', 'error');
         return false;
     }
     return true;
