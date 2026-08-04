@@ -79,6 +79,26 @@ const DICT = {
                 font: "フォント {size} pt",
                 lh: "行間 x {lh}"
             }
+        },
+        fs: {
+            error: {
+                noSaveDialog: "別名保存ダイアログを利用できません",
+                deleteEmptyFile: "空ファイル削除失敗"
+            },
+            status: {
+                saving: "保存中...",
+                saved: "保存済み",
+                savedAs: "別名で保存済み",
+                saveFailed: "保存失敗",
+                aborted: "処理を中止しました",
+                created: "{prefix}{fileName} を作成",
+                loading: "ファイルを読み込み中...",
+                opened: "{fileName} を開きました",
+                loadFailed: "ファイル読み込み失敗"
+            },
+            dialog: {
+                saveError: "保存に失敗しました。\n対象: {fileName}\n理由: {error}"
+            }
         }
     }
 };

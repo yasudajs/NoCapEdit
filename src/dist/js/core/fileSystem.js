@@ -39,7 +39,7 @@ export function showSaveErrorDialog(message) {
 
 export async function saveTabAs(tab) {
     if (!saveDialog) {
-        throw new Error('別名保存ダイアログを利用できません');
+        throw new Error(window.t('fs.error.noSaveDialog'));
     }
 
     const targetPath = await saveDialog({
@@ -64,7 +64,7 @@ export async function saveTabAs(tab) {
     tab.fileName = getFileNameFromPath(targetPath);
     tab.isDirty = false;
     renderTabs();
-    updateStatus('別名で保存済み', 'saved');
+    updateStatus(window.t('fs.status.savedAs'), 'saved');
     return true;
 }
 
@@ -153,7 +153,7 @@ export async function persistTabWithRecovery(tab, contextLabel) {
             await invoke('delete_text_file', { filePath: tab.filePath });
         } catch (error) {
             console.error('Failed to delete empty file:', error);
-            updateStatus('空ファイル削除失敗', 'error');
+            updateStatus(window.t('fs.error.deleteEmptyFile'), 'error');
             return false;
         }
         return true;
@@ -169,14 +169,14 @@ export async function persistTabWithRecovery(tab, contextLabel) {
 
     while (true) {
         try {
-            updateStatus('保存中...', 'saving');
+            updateStatus(window.t('fs.status.saving'), 'saving');
             await saveTabIfDirty(tab);
-            updateStatus('保存済み', 'saved');
+            updateStatus(window.t('fs.status.saved'), 'saved');
             return true;
         } catch (error) {
             console.error(`Save failed (${contextLabel}):`, error);
             const choice = await showSaveErrorDialog(
-                `保存に失敗しました。\n対象: ${tab.fileName}\n理由: ${error}`
+                window.t('fs.dialog.saveError', { fileName: tab.fileName, error: error })
             );
 
             if (choice === 'retry') {
@@ -195,7 +195,7 @@ export async function persistTabWithRecovery(tab, contextLabel) {
                 continue;
             }
 
-            updateStatus('処理を中止しました', 'error');
+            updateStatus(window.t('fs.status.aborted'), 'error');
             return false;
         }
     }
@@ -224,22 +224,22 @@ export async function autoSave() {
     const isFirstSave = !tab.filePath;
 
     try {
-        updateTabStatus(tab, '保存中...', 'saving');
+        updateTabStatus(tab, window.t('fs.status.saving'), 'saving');
 
         const saved = await saveTabIfDirty(tab);
 
         if (saved) {
             if (isFirstSave) {
-                updateStatus(tab.fileName + ' を作成', 'saved');
+                updateStatus(window.t('fs.status.created', { prefix: '', fileName: tab.fileName }), 'saved');
             } else {
-                updateTabStatus(tab, '保存済み', 'saved');
+                updateTabStatus(tab, window.t('fs.status.saved'), 'saved');
             }
         } else {
             updateTabStatus(tab);
         }
     } catch (error) {
         console.error('Auto-save failed:', error);
-        updateTabStatus(tab, '保存失敗', 'error');
+        updateTabStatus(tab, window.t('fs.status.saveFailed'), 'error');
     }
 }
 
@@ -260,7 +260,7 @@ export async function triggerManualSave() {
     const isFirstSave = !tab.filePath;
 
     try {
-        updateTabStatus(tab, '保存中...', 'saving');
+        updateTabStatus(tab, window.t('fs.status.saving'), 'saving');
 
         let saved = false;
         if (appState.saveMode === 'manual') {
@@ -295,18 +295,18 @@ export async function triggerManualSave() {
             if (isFirstSave) {
                 let prefix = '';
                 if (appState.saveMode === 'manual') {
-                    prefix = '[手動保存:Ctrl+S] ';
+                    prefix = window.t('tabs.status.manualSavePrefix');
                 }
-                updateStatus(`${prefix}${tab.fileName} を作成`, 'saved', true);
+                updateStatus(window.t('fs.status.created', { prefix: prefix, fileName: tab.fileName }), 'saved', true);
             } else {
-                updateTabStatus(tab, '保存済み', 'saved');
+                updateTabStatus(tab, window.t('fs.status.saved'), 'saved');
             }
         } else {
             updateTabStatus(tab);
         }
     } catch (error) {
         console.error('Manual save failed:', error);
-        updateTabStatus(tab, '保存失敗', 'error');
+        updateTabStatus(tab, window.t('fs.status.saveFailed'), 'error');
     }
 }
 
@@ -319,7 +319,7 @@ export async function openExistingFile(filePath) {
     }
 
     try {
-        updateStatus('ファイルを読み込み中...', 'saving');
+        updateStatus(window.t('fs.status.loading'), 'saving');
         if (!ensureTauriApi()) return;
         const content = await invoke('read_text_file', { filePath });
         const fileName = getFileNameFromPath(filePath);
@@ -338,10 +338,10 @@ export async function openExistingFile(filePath) {
         appState.tabs.push(tab);
         await switchTab(tab.id);
         renderTabs();
-        updateStatus(tab.fileName + ' を開きました', 'saved');
+        updateStatus(window.t('fs.status.opened', { fileName: tab.fileName }), 'saved');
     } catch (error) {
         console.error('Failed to open file:', error);
-        updateStatus('ファイル読み込み失敗', 'error');
+        updateStatus(window.t('fs.status.loadFailed'), 'error');
         await createNewTab();
     }
 }
