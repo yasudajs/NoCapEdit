@@ -208,7 +208,7 @@ fn next_available_file_path(home_folder: &PathBuf, timestamp: &str) -> Result<(S
 
         index += 1;
         if index > 99 {
-            return Err("同名ファイル回避の上限に達しました".to_string());
+            return Err("fs.error.maxLimitReached".to_string());
         }
     }
 }
@@ -272,7 +272,7 @@ fn read_text_file(file_path: PathBuf) -> Result<String, String> {
 fn save_text_file(file_path: PathBuf, content: String) -> Result<(), String> {
     let parent = file_path
         .parent()
-        .ok_or_else(|| "保存先パスが不正です".to_string())?
+        .ok_or_else(|| "fs.error.invalidPath".to_string())?
         .to_path_buf();
     fs::create_dir_all(parent).map_err(|e| e.to_string())?;
 
