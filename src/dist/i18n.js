@@ -42,6 +42,7 @@ const DICT = {
             }
         },
         status: {
+            initializing: "準備中...",
             ready: "準備完了",
             loading: {
                 fonts: "システムフォントを読み込み中..."
@@ -105,6 +106,62 @@ const DICT = {
             dialog: {
                 saveError: "保存に失敗しました。\n対象: {fileName}\n理由: {error}"
             }
+        },
+        ui: {
+            tooltip: {
+                addTab: "新規タブを作成",
+                settings: "設定",
+                fontSelect: "フォントを変更",
+                tabBehavior: "Tabキーの挙動を変更",
+                saveMode: "保存モードを変更",
+                charCount: "文字数カウント方法を変更",
+                theme: "テーマを変更"
+            },
+            dialog: {
+                settings: {
+                    title: "NoCapEdit - 設定",
+                    update: {
+                        available: "アップデート可能です:",
+                        releaseNotes: "リリースノートを開く"
+                    },
+                    folder: {
+                        label: "ホームフォルダ:",
+                        browse: "参照..."
+                    },
+                    font: {
+                        label: "フォント:",
+                        default: "デフォルト (Monospace)"
+                    },
+                    tabBehavior: {
+                        label: "Tabキーの挙動:",
+                        tab: "タブ文字 (\\t)",
+                        space2: "スペース 2文字",
+                        space4: "スペース 4文字"
+                    },
+                    saveMode: {
+                        label: "保存モード:",
+                        auto: "自動保存（推奨）",
+                        manual: "手動保存(Ctrl+Sで保存)"
+                    },
+                    charCount: {
+                        label: "文字数カウント:",
+                        withNewline: "改行を含む（デフォルト）",
+                        noNewline: "文字数のみ（改行を除く）"
+                    },
+                    theme: {
+                        label: "テーマ:",
+                        dark: "ダーク",
+                        softDark: "ソフトダーク",
+                        light: "ライト"
+                    }
+                },
+                error: {
+                    title: "エラー",
+                    retry: "再試行",
+                    saveAs: "別名で保存",
+                    cancel: "キャンセル"
+                }
+            }
         }
     }
 };
@@ -131,4 +188,19 @@ window.t = function(key, params = {}) {
         return result;
     }
     return key;
+};
+
+window.applyI18nToDOM = function() {
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const text = window.t(el.dataset.i18n);
+        if (text) {
+            // テキストノードのみを置換し、内部のタグ（spanやbrなど）を破壊しないように配慮
+            // ここではシンプルに textContent を置換する。内部タグがある場合は注意
+            el.textContent = text;
+        }
+    });
+    document.querySelectorAll('[data-i18n-title]').forEach(el => {
+        const text = window.t(el.dataset.i18nTitle);
+        if (text) el.title = text;
+    });
 };

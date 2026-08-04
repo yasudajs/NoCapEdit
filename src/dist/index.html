@@ -13,11 +13,11 @@
         <div class="tab-bar">
             <div class="tabs-group">
                 <div class="tabs-container" id="tabsContainer"></div>
-                <button class="add-tab-btn" id="addTabBtn" title="新規タブを作成">
+                <button class="add-tab-btn" id="addTabBtn" title="新規タブを作成" data-i18n-title="ui.tooltip.addTab">
                     <span class="plus-icon">+</span>
                 </button>
             </div>
-            <button class="settings-btn" id="settingsBtn" title="設定">
+            <button class="settings-btn" id="settingsBtn" title="設定" data-i18n-title="ui.tooltip.settings">
                 <!-- 歯車アイコン -->
                 <svg class="settings-icon gear-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="3"></circle>
@@ -38,7 +38,7 @@
 
         <!-- ステータスバー -->
         <div class="status-bar">
-            <span class="status-text" id="statusText">準備中...</span>
+            <span class="status-text" id="statusText" data-i18n="status.initializing">準備中...</span>
             <div class="status-meta">
                 <span class="status-metrics" id="statusMetrics">Ln 1, Col 1 | 0 chars</span>
             </div>
@@ -48,49 +48,49 @@
     <!-- 設定ダイアログ -->
     <div id="settingsDialog" class="dialog-overlay hidden">
         <div class="dialog-box">
-            <h2>NoCapEdit - 設定</h2>
+            <h2 data-i18n="ui.dialog.settings.title">NoCapEdit - 設定</h2>
             <div class="dialog-content">
                 <div id="updateNoticeContainer" class="update-notice hidden">
-                    <p>アップデート可能です:<br>Ver. <span id="currentVerSpan"></span> → Ver. <span id="latestVerSpan"></span></p>
-                    <a href="#" id="releaseLink">リリースノートを開く</a>
+                    <p><span data-i18n="ui.dialog.settings.update.available">アップデート可能です:</span><br>Ver. <span id="currentVerSpan"></span> → Ver. <span id="latestVerSpan"></span></p>
+                    <a href="#" id="releaseLink" data-i18n="ui.dialog.settings.update.releaseNotes">リリースノートを開く</a>
                 </div>
 
-                <label for="homeFolderInput">ホームフォルダ:</label>
+                <label for="homeFolderInput" data-i18n="ui.dialog.settings.folder.label">ホームフォルダ:</label>
                 <small id="folderHint" class="hint"></small>
                 <div class="folder-input-group">
                     <input type="text" id="homeFolderInput" class="folder-input" readonly>
-                    <button id="browseFolderBtn" class="browse-btn">参照...</button>
+                    <button id="browseFolderBtn" class="browse-btn" data-i18n="ui.dialog.settings.folder.browse">参照...</button>
                 </div>
 
-                <label for="fontFamilySelectModal">フォント:</label>
-                <select id="fontFamilySelectModal" class="font-select" title="フォントを変更">
-                    <option value="default">デフォルト (Monospace)</option>
+                <label for="fontFamilySelectModal" data-i18n="ui.dialog.settings.font.label">フォント:</label>
+                <select id="fontFamilySelectModal" class="font-select" title="フォントを変更" data-i18n-title="ui.tooltip.fontSelect">
+                    <option value="default" data-i18n="ui.dialog.settings.font.default">デフォルト (Monospace)</option>
                 </select>
 
-                <label for="tabBehaviorSelectModal">Tabキーの挙動:</label>
-                <select id="tabBehaviorSelectModal" class="tab-select" title="Tabキーの挙動を変更">
-                    <option value="tab">タブ文字 (\t)</option>
-                    <option value="space2">スペース 2文字</option>
-                    <option value="space4">スペース 4文字</option>
+                <label for="tabBehaviorSelectModal" data-i18n="ui.dialog.settings.tabBehavior.label">Tabキーの挙動:</label>
+                <select id="tabBehaviorSelectModal" class="tab-select" title="Tabキーの挙動を変更" data-i18n-title="ui.tooltip.tabBehavior">
+                    <option value="tab" data-i18n="ui.dialog.settings.tabBehavior.tab">タブ文字 (\t)</option>
+                    <option value="space2" data-i18n="ui.dialog.settings.tabBehavior.space2">スペース 2文字</option>
+                    <option value="space4" data-i18n="ui.dialog.settings.tabBehavior.space4">スペース 4文字</option>
                 </select>
 
-                <label for="saveModeSelectModal">保存モード:</label>
-                <select id="saveModeSelectModal" class="tab-select" title="保存モードを変更">
-                    <option value="auto">自動保存（推奨）</option>
-                    <option value="manual">手動保存(Ctrl+Sで保存)</option>
+                <label for="saveModeSelectModal" data-i18n="ui.dialog.settings.saveMode.label">保存モード:</label>
+                <select id="saveModeSelectModal" class="tab-select" title="保存モードを変更" data-i18n-title="ui.tooltip.saveMode">
+                    <option value="auto" data-i18n="ui.dialog.settings.saveMode.auto">自動保存（推奨）</option>
+                    <option value="manual" data-i18n="ui.dialog.settings.saveMode.manual">手動保存(Ctrl+Sで保存)</option>
                 </select>
 
-                <label for="charCountModeSelectModal">文字数カウント:</label>
-                <select id="charCountModeSelectModal" class="tab-select" title="文字数カウント方法を変更">
-                    <option value="with_newline">改行を含む（デフォルト）</option>
-                    <option value="no_newline">文字数のみ（改行を除く）</option>
+                <label for="charCountModeSelectModal" data-i18n="ui.dialog.settings.charCount.label">文字数カウント:</label>
+                <select id="charCountModeSelectModal" class="tab-select" title="文字数カウント方法を変更" data-i18n-title="ui.tooltip.charCount">
+                    <option value="with_newline" data-i18n="ui.dialog.settings.charCount.withNewline">改行を含む（デフォルト）</option>
+                    <option value="no_newline" data-i18n="ui.dialog.settings.charCount.noNewline">文字数のみ（改行を除く）</option>
                 </select>
 
-                <label for="themeSelectModal">テーマ:</label>
-                <select id="themeSelectModal" class="tab-select" title="テーマを変更">
-                    <option value="dark">ダーク</option>
-                    <option value="soft-dark">ソフトダーク</option>
-                    <option value="light">ライト</option>
+                <label for="themeSelectModal" data-i18n="ui.dialog.settings.theme.label">テーマ:</label>
+                <select id="themeSelectModal" class="tab-select" title="テーマを変更" data-i18n-title="ui.tooltip.theme">
+                    <option value="dark" data-i18n="ui.dialog.settings.theme.dark">ダーク</option>
+                    <option value="soft-dark" data-i18n="ui.dialog.settings.theme.softDark">ソフトダーク</option>
+                    <option value="light" data-i18n="ui.dialog.settings.theme.light">ライト</option>
                 </select>
             </div>
         </div>
@@ -99,14 +99,14 @@
     <!-- 保存失敗ダイアログ -->
     <div id="errorDialog" class="dialog-overlay hidden">
         <div class="dialog-box">
-            <h2>エラー</h2>
+            <h2 data-i18n="ui.dialog.error.title">エラー</h2>
             <div class="dialog-content">
                 <p id="errorMessage"></p>
             </div>
             <div class="dialog-actions">
-                <button id="retryBtn" class="btn-secondary">再試行</button>
-                <button id="saveAsBtn" class="btn-secondary">別名で保存</button>
-                <button id="cancelExitBtn" class="btn-primary">キャンセル</button>
+                <button id="retryBtn" class="btn-secondary" data-i18n="ui.dialog.error.retry">再試行</button>
+                <button id="saveAsBtn" class="btn-secondary" data-i18n="ui.dialog.error.saveAs">別名で保存</button>
+                <button id="cancelExitBtn" class="btn-primary" data-i18n="ui.dialog.error.cancel">キャンセル</button>
             </div>
         </div>
     </div>

@@ -306,6 +306,9 @@ function setupUIEventListeners() {
 // アプリケーション起動
 document.addEventListener('DOMContentLoaded', async () => {
     initElements();
+    if (typeof window.applyI18nToDOM === 'function') {
+        window.applyI18nToDOM();
+    }
     await init();
     updateEditorMetrics();
 });
