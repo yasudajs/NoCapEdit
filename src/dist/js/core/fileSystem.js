@@ -176,7 +176,7 @@ export async function persistTabWithRecovery(tab, contextLabel) {
         } catch (error) {
             console.error(`Save failed (${contextLabel}):`, error);
             const choice = await showSaveErrorDialog(
-                window.t('fs.dialog.saveError', { fileName: tab.fileName, error: error })
+                window.t('fs.dialog.saveError', { fileName: tab.fileName, error: window.t(error) })
             );
 
             if (choice === 'retry') {

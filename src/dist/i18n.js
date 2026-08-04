@@ -90,7 +90,9 @@ const DICT = {
         fs: {
             error: {
                 noSaveDialog: "別名保存ダイアログを利用できません",
-                deleteEmptyFile: "空ファイル削除失敗"
+                deleteEmptyFile: "空ファイル削除失敗",
+                maxLimitReached: "同名ファイル回避の上限に達しました",
+                invalidPath: "保存先パスが不正です"
             },
             status: {
                 saving: "保存中...",
