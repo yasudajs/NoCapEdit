@@ -14,6 +14,12 @@ const DICT = {
                 }
             }
         },
+        main: {
+            error: {
+                exitFailed: "終了処理失敗",
+                initFailed: "初期化エラー: {error}"
+            }
+        },
         settings: {
             folder: {
                 hint: {

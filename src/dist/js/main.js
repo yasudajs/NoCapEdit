@@ -33,7 +33,7 @@ function registerCloseHandler() {
             await invoke('exit_app');
         } catch (error) {
             console.error('Failed while processing app close:', error);
-            updateStatus('終了処理失敗', 'error');
+            updateStatus(window.t('main.error.exitFailed'), 'error');
             appState.closeGuard = false;
             appState.forceClosing = false;
         }
@@ -123,7 +123,7 @@ async function init() {
         if (isFirstLaunch || isHomeFolderMissing) {
             openSettingsDialog(isHomeFolderMissing);
         } else {
-            updateStatus('準備完了');
+            updateStatus(window.t('status.ready'));
 
             // 起動時引数のチェック
             const launchFile = await invoke('get_launch_file');
@@ -140,7 +140,7 @@ async function init() {
         }
     } catch (error) {
         console.error('Failed to initialize:', error);
-        updateStatus(`初期化エラー: ${error.message || error}`, 'error');
+        updateStatus(window.t('main.error.initFailed', { error: error.message || error }), 'error');
     } finally {
         // 初期化エラーなどの例外が発生した場合でも、確実にウィンドウを表示してユーザーに状態が見えるようにする（フェイルセーフ）
         if (appWindow && typeof appWindow.show === 'function') {
