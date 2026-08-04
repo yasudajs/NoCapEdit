@@ -52,6 +52,22 @@ const DICT = {
         tabs: {
             unsaved: {
                 label: "未保存"
+            },
+            state: {
+                saving: "保存中...",
+                editing: "編集中",
+                saved: "保存済み"
+            },
+            status: {
+                manualSaveHint: "※Ctrl+Sで保存できます",
+                ready: "保存準備完了",
+                manualSavePrefix: "[手動保存:Ctrl+S] ",
+                manualModePrefix: "[手動保存モード] "
+            },
+            error: {
+                noHomeFolder: "ホームフォルダ未設定",
+                createFailed: "新規ファイル作成失敗",
+                switchFailed: "タブ切替失敗"
             }
         }
     }
