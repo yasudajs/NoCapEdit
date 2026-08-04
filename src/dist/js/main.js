@@ -112,6 +112,10 @@ async function init() {
         // UIイベントリスナーを一括登録
         setupUIEventListeners();
 
+        if (elements.editor) {
+            elements.editor.placeholder = t('editor.placeholder');
+        }
+
         // 初回起動チェック
         const isFirstLaunch = !!settings.is_first_launch;
         const isHomeFolderMissing = settings.home_folder_exists === false;

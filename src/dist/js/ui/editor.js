@@ -47,9 +47,9 @@ export function updateEditorMetrics() {
 
     let charDisplay = '';
     if (isSelected) {
-        charDisplay = `${selectedChars} / ${chars} chars`;
+        charDisplay = t('editor.metrics.selection', { selected: selectedChars, total: chars });
     } else {
-        charDisplay = `${chars} chars`;
+        charDisplay = t('editor.metrics.length', { total: chars });
     }
 
     const before = value.slice(0, caret);
@@ -59,7 +59,11 @@ export function updateEditorMetrics() {
 
     const lh = appState.lineHeight || 1.5;
     const fs = appState.fontSize || 13;
-    elements.statusMetrics.textContent = `Ln ${line}, Col ${col} | ${charDisplay} | Font ${fs} pt | LH x ${lh.toFixed(1)}`;
+    
+    const positionStr = t('editor.metrics.position', { line, col });
+    const fontStr = t('editor.metrics.font', { size: fs });
+    const lhStr = t('editor.metrics.lh', { lh: lh.toFixed(1) });
+    elements.statusMetrics.textContent = `${positionStr} | ${charDisplay} | ${fontStr} | ${lhStr}`;
 }
 
 export function onEditorInput(e) {
@@ -75,7 +79,7 @@ export function onEditorInput(e) {
     renderTabs();
     updateEditorMetrics();
 
-    updateTabStatus(tab, '編集中');
+    updateTabStatus(tab, t('tabs.state.editing'));
 
     // 自動保存タイマーをリセット
     if (appState.saveMode !== 'manual') {

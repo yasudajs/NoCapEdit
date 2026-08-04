@@ -69,13 +69,23 @@ const DICT = {
                 createFailed: "新規ファイル作成失敗",
                 switchFailed: "タブ切替失敗"
             }
+        },
+        editor: {
+            placeholder: "入力準備完了",
+            metrics: {
+                position: "{line}行, {col}列",
+                selection: "{selected} / {total} 文字",
+                length: "{total} 文字",
+                font: "フォント {size} pt",
+                lh: "行間 x {lh}"
+            }
         }
     }
 };
 
 let currentLang = 'ja';
 
-window.t = function(key) {
+window.t = function(key, params = {}) {
     if (!key || typeof key !== 'string') return key;
     const keys = key.split('.');
     let current = DICT[currentLang];
@@ -86,5 +96,13 @@ window.t = function(key) {
             return key;
         }
     }
-    return typeof current === 'string' ? current : key;
+    
+    if (typeof current === 'string') {
+        let result = current;
+        for (const [k, v] of Object.entries(params)) {
+            result = result.replace(new RegExp(`\\{${k}\\}`, 'g'), v);
+        }
+        return result;
+    }
+    return key;
 };
