@@ -81,7 +81,7 @@ NoCapEdit/（現在）                     NoCapEdit/（変更後）
 ### フェーズ 0: 事前準備
 **目的**: 移行作業のための環境準備
 
-- [ ] `cargo install tauri-cli --version "^2.0.0" --locked` で Tauri CLI v2 をインストール
+- [ ] `cargo install tauri-cli --version "^2.0.0" --locked` で Tauri CLI v2 をインストール（`^2.0.0` 指定により 2.x 系の最新版が自動的にインストールされる）
 - [ ] v0.2 ブランチから作業ブランチ `feature/tauri-v2-migration` を作成
 - [ ] 現在のビルドが正常に通ることを確認（`cargo build`）
 - [ ] 現在のアプリが正常に動作することを手動確認
