@@ -5,6 +5,11 @@ NoCapEdit のバージョンアップおよび仕様変更の履歴です。
 
 ## 改定履歴一覧
 
+### Ver 0.1.54 | 2026-08-08 | yasudajs
+- `fileSystem.js` 内のタブID生成ロジックを `helpers.js` の `generateTabId` に置き換え、ハードコードされた冗長なコードを排除（リファクタリング ステップ 2.2）
+
+---
+
 ### Ver 0.1.53 | 2026-08-08 | yasudajs
 - JSフロントエンドのタイムスタンプ生成ロジック（`YYYYMMDD_HHmmss`）を `helpers.js` の `generateTimestamp` 関数に共通化し、コードの重複を排除（リファクタリング ステップ 2.1）
 
