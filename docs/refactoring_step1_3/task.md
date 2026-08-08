@@ -1,0 +1,17 @@
+- [x] バージョン番号の更新（0.1.51）
+- [x] `src/commands.rs` の新規作成とロジック移行
+  - [x] 構造体 (`FileInfo`, `SystemFontInfo`) の移行
+  - [x] 補助関数 (`normalize_crlf`, `next_available_file_path`) の移行
+  - [x] 各Tauriコマンドハンドラの移行と `pub` 化
+- [x] `src/main.rs` の修正
+  - [x] 移行した構造体・関数・ハンドラの削除
+  - [x] `mod commands;` の追加
+  - [x] 定数 `FILE_EXTENSION` の `pub` 化
+  - [x] `tauri::generate_handler!` の呼び出し修正
+  - [x] 不要インポート削除
+- [x] 動作検証
+  - [x] `cargo check` および `cargo build`
+  - [x] アプリの起動と設定ロードの確認
+  - [x] ファイル保存・読み込みの確認
+- [x] ウォークスルーの作成と履歴の追記
+- [x] 最終コミットとプッシュ
