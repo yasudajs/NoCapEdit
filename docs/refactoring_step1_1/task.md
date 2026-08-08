@@ -1,0 +1,15 @@
+- `[x]` バージョン番号の更新（0.1.49）と spec.md 更新
+- `[x]` `src/settings.rs` の新規作成とロジック移行
+  - `[x]` `AppSettings`, `SettingsResponse` 構造体
+  - `[x]` デフォルト値関数群
+  - `[x]` `APP_DIR_NAME`, `HOME_DIR_NAME` の定数定義
+- `[x]` `src/main.rs` の修正
+  - `[x]` 移行した構造体・関数の削除
+  - `[x]` `mod settings;` 追加
+  - `[x]` 各所での `settings::` 利用への書き換え
+- `[x]` 動作検証
+  - `[x]` `cargo check` および `cargo build`
+  - `[x]` アプリの起動と設定読み込みの確認
+  - `[x]` 設定変更と保存の動作確認
+- `[x]` ウォークスルーの作成と履歴の追記
+- `[x]` 最終コミットとプッシュ
