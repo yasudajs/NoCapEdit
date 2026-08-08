@@ -3,7 +3,7 @@
     windows_subsystem = "windows"
 )]
 
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use std::fs;
 use std::path::PathBuf;
 
@@ -11,6 +11,9 @@ use tauri::Manager;
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
 use std::thread;
+
+mod settings;
+use settings::{AppSettings, SettingsResponse, APP_DIR_NAME};
 
 const SINGLE_INSTANCE_PORT: u16 = 49423;
 const SINGLE_INSTANCE_HOST: &str = "127.0.0.1";
@@ -21,17 +24,7 @@ const WINDOW_HEIGHT: f64 = 600.0;
 const WINDOW_MIN_WIDTH: f64 = 400.0;
 const WINDOW_MIN_HEIGHT: f64 = 300.0;
 
-// デフォルト設定
-const DEFAULT_THEME: &str = "dark";
-const DEFAULT_FONT_SIZE: u32 = 13;
-const DEFAULT_FONT_FAMILY: &str = "default";
-const DEFAULT_LINE_HEIGHT: f32 = 1.5;
-const DEFAULT_TAB_BEHAVIOR: &str = "tab";
-const DEFAULT_SAVE_MODE: &str = "auto";
 
-// パス・ファイル関連設定
-const APP_DIR_NAME: &str = "NoCapEdit";
-const HOME_DIR_NAME: &str = "nce";
 const FILE_EXTENSION: &str = ".nctx";
 
 
@@ -70,119 +63,10 @@ fn start_instance_listener(app_handle: tauri::AppHandle) {
     });
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-struct AppSettings {
-    home_folder: PathBuf,
-    #[serde(default = "default_theme")]
-    theme: String,
-    #[serde(default = "default_font_size")]
-    font_size: u32,
-    #[serde(default = "default_font_family")]
-    font_family: String,
-    #[serde(default = "default_line_height")]
-    line_height: f32,
-    #[serde(default = "default_tab_behavior")]
-    tab_behavior: String,
-    #[serde(default = "default_save_mode")]
-    save_mode: String,
-    #[serde(default = "default_char_count_mode")]
-    char_count_mode: String,
-}
-
-fn default_theme() -> String {
-    DEFAULT_THEME.to_string()
-}
-
-fn default_font_size() -> u32 {
-    DEFAULT_FONT_SIZE
-}
-
-fn default_font_family() -> String {
-    DEFAULT_FONT_FAMILY.to_string()
-}
-
-fn default_line_height() -> f32 {
-    DEFAULT_LINE_HEIGHT
-}
-
-fn default_tab_behavior() -> String {
-    DEFAULT_TAB_BEHAVIOR.to_string()
-}
-
-fn default_save_mode() -> String {
-    DEFAULT_SAVE_MODE.to_string()
-}
-
-fn default_char_count_mode() -> String {
-    "with_newline".to_string()
-}
-
-#[derive(Debug, Serialize)]
-struct SettingsResponse {
-    home_folder: String,
-    theme: String,
-    font_size: u32,
-    font_family: String,
-    line_height: f32,
-    tab_behavior: String,
-    save_mode: String,
-    char_count_mode: String,
-    is_first_launch: bool,
-    home_folder_exists: bool,
-    app_version: String,
-}
-
 #[derive(Debug, Serialize)]
 struct FileInfo {
     file_name: String,
     file_path: String,
-}
-
-impl AppSettings {
-    fn config_path() -> PathBuf {
-        let app_data = dirs::config_dir().unwrap_or_else(|| PathBuf::from("."));
-        app_data.join(APP_DIR_NAME).join("config.json")
-    }
-
-    fn load() -> Self {
-        if let Ok(content) = fs::read_to_string(Self::config_path()) {
-            if let Ok(settings) = serde_json::from_str(&content) {
-                return settings;
-            }
-        }
-        Self::default()
-    }
-
-    fn save(&self) -> Result<(), Box<dyn std::error::Error>> {
-        let config_path = Self::config_path();
-        if let Some(parent) = config_path.parent() {
-            fs::create_dir_all(parent)?;
-        }
-        let json = serde_json::to_string_pretty(self)?;
-        fs::write(config_path, json)?;
-        Ok(())
-    }
-
-    fn exists() -> bool {
-        Self::config_path().exists()
-    }
-}
-
-impl Default for AppSettings {
-    fn default() -> Self {
-        let documents = dirs::document_dir()
-            .unwrap_or_else(|| PathBuf::from(env!("USERPROFILE")));
-        Self {
-            home_folder: documents.join(HOME_DIR_NAME),
-            theme: default_theme(),
-            font_size: default_font_size(),
-            font_family: default_font_family(),
-            line_height: default_line_height(),
-            tab_behavior: default_tab_behavior(),
-            save_mode: default_save_mode(),
-            char_count_mode: default_char_count_mode(),
-        }
-    }
 }
 
 fn normalize_crlf(content: &str) -> String {
