@@ -2,7 +2,7 @@ import { appState, elements, FILE_EXT_NCTX, FILE_EXT_NCMD } from '../state.js';
 import { invoke, saveDialog, appWindow, ensureTauriApi } from './tauri.js';
 import { updateStatus, updateTabStatus, renderTabs, switchTab, createNewTab } from '../ui/tabs.js';
 import { syncCurrentEditorToState } from '../ui/editor.js';
-import { getFileNameFromPath, isAutoCreatedFileName, generateTimestamp } from '../utils/helpers.js';
+import { getFileNameFromPath, isAutoCreatedFileName, generateTimestamp, generateTabId } from '../utils/helpers.js';
 
 export function showSaveErrorDialog(message) {
     return new Promise((resolve) => {
@@ -311,7 +311,7 @@ export async function openExistingFile(filePath) {
         const fileName = getFileNameFromPath(filePath);
 
         const tab = {
-            id: 'tab-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8),
+            id: generateTabId(),
             fileName: fileName,
             filePath: filePath,
             content: content,
