@@ -1,0 +1,17 @@
+- [x] バージョン番号の更新（0.1.50）
+- [x] `src/instance.rs` の新規作成とロジック移行
+  - [x] `SINGLE_INSTANCE_PORT`, `SINGLE_INSTANCE_HOST` 定義
+  - [x] `send_to_existing_instance` 実装
+  - [x] `start_instance_listener` 実装
+  - [x] `check_primary_or_forward` 新設
+- [x] `src/main.rs` の修正
+  - [x] 移行した定数・関数の削除
+  - [x] `mod instance;` 追加
+  - [x] `main` 内の重複起動判定ロジック置換
+  - [x] 不要インポート削除
+- [x] 動作検証
+  - [x] `cargo check` および `cargo build`
+  - [x] アプリの起動（単一ウィンドウ動作）確認
+  - [x] 別プロセスからのファイル渡し確認
+- [x] ウォークスルーの作成と履歴の追記
+- [x] 最終コミットとプッシュ
