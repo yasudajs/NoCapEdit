@@ -4,8 +4,8 @@ import { updateStatus, renderTabs, createNewTab, getCurrentTab, updateTabStatus 
 import { updateEditorMetrics } from './editor.js';
 import { autoSave, shouldDeleteEmptyFile } from '../core/fileSystem.js';
 
+import { saveApplicationSettings } from '../core/settingsManager.js';
 
-let settingsSaveTimer = null;
 
 export function toggleSettingsDialog() {
     if (elements.settingsDialog.classList.contains('hidden')) {
@@ -86,27 +86,6 @@ export function openSettingsDialog(isMissingFolder = false) {
     }
 }
 
-export async function saveApplicationSettings() {
-    if (!ensureTauriApi() || !appState.homeFolder) {
-        return;
-    }
-    try {
-        await invoke('save_settings', {
-            settings: {
-                home_folder: appState.homeFolder,
-                theme: appState.theme,
-                font_size: appState.fontSize,
-                font_family: appState.fontFamily,
-                line_height: appState.lineHeight,
-                tab_behavior: appState.tabBehavior,
-                save_mode: appState.saveMode,
-                char_count_mode: appState.charCountMode
-            }
-        });
-    } catch (error) {
-        console.error('Failed to save settings:', error);
-    }
-}
 
 export async function saveSettings() {
     const homeFolder = elements.homeFolderInput ? elements.homeFolderInput.value : appState.homeFolder;
@@ -280,12 +259,5 @@ export function onFontFamilyChange(event) {
     }
     applyFontFamily();
     saveSettings();
-}
-
-export function saveSettingsDelay() {
-    clearTimeout(settingsSaveTimer);
-    settingsSaveTimer = setTimeout(async () => {
-        await saveApplicationSettings();
-    }, 1000);
 }
 
