@@ -1,41 +1,11 @@
-import { appState, elements, FILE_EXT_NCTX, FILE_EXT_NCMD } from '../state.js';
+import { appState, FILE_EXT_NCTX, FILE_EXT_NCMD } from '../state.js';
 import { invoke, saveDialog, appWindow, ensureTauriApi } from './tauri.js';
 import { updateStatus, updateTabStatus, renderTabs, switchTab, createNewTab } from '../ui/tabs.js';
 import { syncCurrentEditorToState } from '../ui/editor.js';
 import { getFileNameFromPath, isAutoCreatedFileName, generateTimestamp, generateTabId } from '../utils/helpers.js';
+import { showSaveErrorDialog } from '../ui/dialogs.js';
 
-export function showSaveErrorDialog(message) {
-    return new Promise((resolve) => {
-        elements.errorMessage.textContent = message;
-        elements.errorDialog.classList.remove('hidden');
 
-        const onRetry = () => {
-            cleanup();
-            resolve('retry');
-        };
-
-        const onSaveAs = () => {
-            cleanup();
-            resolve('saveAs');
-        };
-
-        const onCancel = () => {
-            cleanup();
-            resolve('cancel');
-        };
-
-        function cleanup() {
-            elements.errorDialog.classList.add('hidden');
-            elements.retryBtn.removeEventListener('click', onRetry);
-            elements.saveAsBtn.removeEventListener('click', onSaveAs);
-            elements.cancelExitBtn.removeEventListener('click', onCancel);
-        }
-
-        elements.retryBtn.addEventListener('click', onRetry);
-        elements.saveAsBtn.addEventListener('click', onSaveAs);
-        elements.cancelExitBtn.addEventListener('click', onCancel);
-    });
-}
 
 export async function saveTabAs(tab) {
     if (!saveDialog) {
