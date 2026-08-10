@@ -36,8 +36,14 @@
   * `src/dist/js/core/updater.js`（または `utils/updater.js`）を新規作成する。
   * `checkNewVersion` 関数とGitHub API呼び出しロジックを移動する。
   * `main.js` または `settings.js` からインポートして正常にアップデート通知が動作するか検証する。
-* **ステップ 3.2：テーマおよびフォント適用ロジックの抽出（オプション）**
-  * 必要に応じて、`ui/theme.js` を作成し、`applyThemeUI`, `onThemeChange`, `loadSystemFonts` などを移動して `settings.js` を純粋なダイアログUI制御に特化させる。
+* **ステップ 3.2：設定管理（永続化）ロジックの抽出**
+  * `src/dist/js/core/settingsManager.js` を新規作成する。
+  * `settings.js` 内の `loadSettings`、`saveSettings`、`saveApplicationSettings` などの設定のファイル読み書きロジックのみを移動する。
+  * 設定管理の依存方向を `settingsManager.js` に集約する基盤作りを行う。
+* **ステップ 3.3：テーマおよびフォント適用ロジックの抽出**
+  * `src/dist/js/ui/theme.js` を新規作成する。
+  * `applyThemeUI`, `onThemeChange`, `loadSystemFonts`, `applyFontFamily`, `onFontFamilyChange` などを移動し、`settings.js` を純粋なダイアログUI制御に特化させる。
+  * 設定の保存は `settingsManager.js` を呼び出すことで循環参照を防止する。
 
 ## フェーズ4：メイン処理とショートカットキー制御の分離（`main.js`）
 巨大化している `main.js` を整理し、アプリ初期化コードの可読性を高めます。
