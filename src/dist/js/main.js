@@ -3,7 +3,8 @@ import { invoke, appWindow, listen, ensureTauriApi } from './core/tauri.js';
 import { createNewTab, updateStatus, renderTabs, switchTabByOffset } from './ui/tabs.js';
 import { openExistingFile, triggerManualSave, persistAllTabsBeforeExit } from './core/fileSystem.js';
 import { updateEditorMetrics, onEditorInput, zoomIn, zoomOut, applyFontSize, applyLineHeight, increaseLineHeight, decreaseLineHeight, handleTabKey } from './ui/editor.js';
-import { toggleSettingsDialog, closeSettingsDialog, openSettingsDialog, applyThemeUI, onThemeChange, onFontFamilyChange, loadSystemFonts, applyFontFamily, saveSettings } from './ui/settings.js';
+import { toggleSettingsDialog, closeSettingsDialog, openSettingsDialog, onThemeChange, onFontFamilyChange, saveSettings } from './ui/settings.js';
+import { applyThemeUI, loadSystemFonts, applyFontFamily } from './ui/theme.js';
 import { checkNewVersion } from './core/updater.js';
 
 function registerCloseHandler() {
