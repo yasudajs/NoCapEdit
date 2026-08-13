@@ -3,7 +3,7 @@ import { appState, FILE_EXT_NCTX, FILE_EXT_NCMD } from '../state.js';
 import { invoke, saveDialog, appWindow, ensureTauriApi } from './tauri.js';
 import { updateStatus, updateTabStatus, renderTabs, switchTab, createNewTab } from '../ui/tabs.js';
 import { syncCurrentEditorToState } from '../ui/editor.js';
-import { getFileNameFromPath, isAutoCreatedFileName, generateTimestamp, generateTabId, getPathSeparator } from '../utils/helpers.js';
+import { getFileNameFromPath, isAutoCreatedFileName, generateTimestamp, generateTabId } from '../utils/helpers.js';
 import { showSaveErrorDialog } from '../ui/dialogs.js';
 
 
@@ -229,16 +229,13 @@ export async function triggerManualSave() {
         let saved = false;
         if (appState.saveMode === 'manual') {
             const saveTimestamp = generateTimestamp();
-            const fileName = `${saveTimestamp}.nctx`;
-            const separator = getPathSeparator();
-            const filePath = appState.homeFolder.replace(/[\\\/]$/, '') + separator + fileName;
-            
-            await invoke('save_text_file', {
-                filePath: filePath,
-                content: tab.content
+            const file = await invoke('create_and_save_file', {
+                homeFolder: appState.homeFolder,
+                timestamp: saveTimestamp,
+                content: tab.content,
             });
-            tab.filePath = filePath;
-            tab.fileName = fileName;
+            tab.filePath = file.file_path;
+            tab.fileName = file.file_name;
             tab.createdTimestamp = saveTimestamp;
             tab.isDirty = false;
             saved = true;

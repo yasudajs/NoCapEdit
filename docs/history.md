@@ -5,6 +5,12 @@ NoCapEdit のバージョンアップおよび仕様変更の履歴です。
 
 ## 改定履歴一覧
 
+### Ver 0.1.71 | 2026-08-13 | yasudajs
+- 手動保存モードの初回保存で、JS側でのパス文字列結合（`getPathSeparator()` + 文字列連結）を廃止し、自動保存と同様にRust側の `create_and_save_file` コマンド（`PathBuf::join()` によるパス結合）を使用するように統一（リファクタリングレビュー指摘事項 7 の改善）
+- 不要になった `getPathSeparator()` 関数を `helpers.js` から削除
+
+---
+
 ### Ver 0.1.70 | 2026-08-13 | yasudajs
 - `i18n.js` のESモジュール化に伴い、UIモジュール（`tabs.js`, `editor.js`）で翻訳関数 `t` が未定義となりアプリの初期化が停止していたバグを修正
 
