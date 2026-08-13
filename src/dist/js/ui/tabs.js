@@ -207,7 +207,8 @@ export async function closeTab(tabId) {
 
     if (appState.currentTab === tabId) {
         if (appState.tabs.length > 0) {
-            await switchTab(appState.tabs[0].id);
+            const nextIdx = Math.min(idx, appState.tabs.length - 1);
+            await switchTab(appState.tabs[nextIdx].id);
         } else {
             appState.currentTab = null;
             if (elements.editor) {
