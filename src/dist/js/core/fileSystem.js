@@ -2,7 +2,7 @@ import { appState, FILE_EXT_NCTX, FILE_EXT_NCMD } from '../state.js';
 import { invoke, saveDialog, appWindow, ensureTauriApi } from './tauri.js';
 import { updateStatus, updateTabStatus, renderTabs, switchTab, createNewTab } from '../ui/tabs.js';
 import { syncCurrentEditorToState } from '../ui/editor.js';
-import { getFileNameFromPath, isAutoCreatedFileName, generateTimestamp, generateTabId } from '../utils/helpers.js';
+import { getFileNameFromPath, isAutoCreatedFileName, generateTimestamp, generateTabId, getPathSeparator } from '../utils/helpers.js';
 import { showSaveErrorDialog } from '../ui/dialogs.js';
 
 
@@ -229,7 +229,8 @@ export async function triggerManualSave() {
         if (appState.saveMode === 'manual') {
             const saveTimestamp = generateTimestamp();
             const fileName = `${saveTimestamp}.nctx`;
-            const filePath = appState.homeFolder.replace(/[\\\/]$/, '') + '\\' + fileName;
+            const separator = getPathSeparator();
+            const filePath = appState.homeFolder.replace(/[\\\/]$/, '') + separator + fileName;
             
             await invoke('save_text_file', {
                 filePath: filePath,
