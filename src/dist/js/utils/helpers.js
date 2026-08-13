@@ -43,6 +43,3 @@ export function generateTimestamp() {
     return `${yyyy}${mm}${dd}_${hh}${min}${ss}`;
 }
 
-export function getPathSeparator() {
-    return navigator.userAgent.includes('Windows') ? '\\' : '/';
-}
