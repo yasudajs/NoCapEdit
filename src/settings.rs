@@ -109,7 +109,12 @@ impl AppSettings {
 impl Default for AppSettings {
     fn default() -> Self {
         let documents = dirs::document_dir()
-            .unwrap_or_else(|| PathBuf::from(env!("USERPROFILE")));
+            .unwrap_or_else(|| {
+                let profile = std::env::var("USERPROFILE")
+                    .or_else(|_| std::env::var("HOME"))
+                    .unwrap_or_else(|_| ".".to_string());
+                PathBuf::from(profile)
+            });
         Self {
             home_folder: documents.join(HOME_DIR_NAME),
             theme: default_theme(),
