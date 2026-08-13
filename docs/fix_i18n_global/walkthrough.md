@@ -12,8 +12,9 @@
   - `src/dist/js/core/fileSystem.js`
   - `src/dist/js/ui/settings.js`
   - `src/dist/js/ui/theme.js`
-- **バージョンの更新**: バージョン番号を `0.1.68` から `0.1.69` へ更新しました。（`Cargo.toml`, `tauri.conf.json`, `nsis/installer.nsi`, `docs/DEVELOPMENT.md`）
+- **追加バグ修正**: 上記のモジュール化の際、`window.` を省略して直接 `t('...')` を呼び出していたため置換処理から漏れ、アプリの初期化エラー（「準備中...」で停止）を引き起こしていた `src/dist/js/ui/tabs.js` および `src/dist/js/ui/editor.js` に対して、`import { t } from '../../i18n.js';` を追加しました。
+- **バージョンの更新**: バージョン番号を最終的に `0.1.68` から `0.1.70` へ更新しました。（`Cargo.toml`, `tauri.conf.json`, `nsis/installer.nsi`, `docs/DEVELOPMENT.md`）
 - **履歴の追記**: `docs/history.md` に今回の修正内容を追記しました。
 
 ## 動作確認 (Verification)
-- コードベース全体から `window.t` の使用箇所がなくなったことを確認しました。また、コンソールエラーが発生しないこと（初期化時に正常にモジュール解決が行われること）を確認可能です。
+- コードベース全体から `window.t` の使用箇所がなくなったこと、およびアプリ起動時の初期化が正常に完了し、新規タブが開いてエラーが表示されないことを確認しました。

@@ -1,3 +1,4 @@
+import { t } from '../../i18n.js';
 import { appState, elements } from '../state.js';
 import { incrementUnsavedTabCounter } from '../state.js';
 import { generateTabId, getFileNameFromPath, isAutoCreatedFileName } from '../utils/helpers.js';

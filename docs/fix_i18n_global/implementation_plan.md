@@ -31,10 +31,25 @@
 - **[theme.js](file:///c:/work/NoCapEdit/src/dist/js/ui/theme.js)**
   - `import { t } from '../../i18n.js';` を追加。
 
+## 追加修正: 初期化停止バグの解消
+
+### 問題の状況と原因
+先の修正後にアプリを起動すると、エディタ画面が「準備中...」のまま新規タブが表示されない不具合が発生しました。
+原因は、`src/dist/js/ui/tabs.js` と `src/dist/js/ui/editor.js` の2ファイルにて、これまでグローバルに存在していた `t('...')` を直接呼び出していた箇所が残っていたためです。
+これらは `window.t` という明示的な呼び出し方ではなかったため前回の置換処理から漏れており、ESモジュール化によってグローバルから `t` が消滅したことで未定義エラー (`ReferenceError: t is not defined`) となり、アプリの初期化が停止していました。
+
+### 修正案
+以下の2ファイルにおいて、`i18n.js` からの `import` 文を追加します。
+
+- **[tabs.js](file:///c:/work/NoCapEdit/src/dist/js/ui/tabs.js)**
+  - `import { t } from '../../i18n.js';` を追加。
+- **[editor.js](file:///c:/work/NoCapEdit/src/dist/js/ui/editor.js)**
+  - `import { t } from '../../i18n.js';` を追加。
+
 ## Verification Plan
 
 ### Automated Tests
-- なし（フロントエンドJSのリファクタリング）
+- なし
 
 ### Manual Verification
-- アプリを起動し、初期化時や設定画面でのテキスト表示、ファイル保存時のステータスバー等にエラーが出ず、正常に日本語文字列が表示されることを確認します。
+- アプリを起動し、初期化が正常に完了して新規タブが開くこと、エラーが表示されずUIの翻訳が正しく反映されることを確認します。
