@@ -73,6 +73,10 @@ export const elements = {
     saveAsBtn: null,
     cancelExitBtn: null,
     folderHint: null,
+    updateNoticeContainer: null,
+    currentVerSpan: null,
+    latestVerSpan: null,
+    releaseLink: null,
 };
 
 // DOM要素のキャッシュを再取得する関数（現状は起動時の一回でOK）
