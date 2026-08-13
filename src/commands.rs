@@ -130,14 +130,7 @@ pub fn exit_app(app: tauri::AppHandle) {
 
 #[tauri::command]
 pub fn get_launch_file() -> Option<String> {
-    let args: Vec<String> = std::env::args().collect();
-    if args.len() > 1 {
-        let path = &args[1];
-        if std::path::Path::new(path).is_file() {
-            return Some(path.clone());
-        }
-    }
-    None
+    crate::cli::parse_launch_file_arg()
 }
 
 #[derive(Debug, Serialize, Clone, PartialEq, Eq)]
