@@ -7,8 +7,8 @@ use crate::FILE_EXTENSION;
 
 #[derive(Debug, Serialize)]
 pub struct FileInfo {
-    file_name: String,
-    file_path: String,
+    pub file_name: String,
+    pub file_path: String,
 }
 
 fn normalize_crlf(content: &str) -> String {
