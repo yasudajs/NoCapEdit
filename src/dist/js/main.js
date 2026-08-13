@@ -1,3 +1,4 @@
+import { t, applyI18nToDOM } from '../i18n.js';
 import { appState, elements, initElements } from './state.js';
 import { invoke, appWindow, listen, ensureTauriApi } from './core/tauri.js';
 import { createNewTab, updateStatus, renderTabs } from './ui/tabs.js';
@@ -36,7 +37,7 @@ function registerCloseHandler() {
             await invoke('exit_app');
         } catch (error) {
             console.error('Failed while processing app close:', error);
-            updateStatus(window.t('main.error.exitFailed'), 'error');
+            updateStatus(t('main.error.exitFailed'), 'error');
             appState.closeGuard = false;
             appState.forceClosing = false;
         }
@@ -126,7 +127,7 @@ async function init() {
         if (isFirstLaunch || isHomeFolderMissing) {
             openSettingsDialog(isHomeFolderMissing);
         } else {
-            updateStatus(window.t('status.ready'));
+            updateStatus(t('status.ready'));
 
             // 起動時引数のチェック
             const launchFile = await invoke('get_launch_file');
@@ -143,7 +144,7 @@ async function init() {
         }
     } catch (error) {
         console.error('Failed to initialize:', error);
-        updateStatus(window.t('main.error.initFailed', { error: error.message || error }), 'error');
+        updateStatus(t('main.error.initFailed', { error: error.message || error }), 'error');
     } finally {
         // 初期化エラーなどの例外が発生した場合でも、確実にウィンドウを表示してユーザーに状態が見えるようにする（フェイルセーフ）
         if (appWindow && typeof appWindow.show === 'function') {
@@ -234,8 +235,8 @@ function setupUIEventListeners() {
 // アプリケーション起動
 document.addEventListener('DOMContentLoaded', async () => {
     initElements();
-    if (typeof window.applyI18nToDOM === 'function') {
-        window.applyI18nToDOM();
+    if (typeof applyI18nToDOM === 'function') {
+        applyI18nToDOM();
     }
     await init();
     updateEditorMetrics();
@@ -248,3 +249,4 @@ window.addEventListener('error', (event) => {
 window.addEventListener('unhandledrejection', (event) => {
     console.error('Unhandled promise rejection:', event.reason);
 });
+

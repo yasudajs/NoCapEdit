@@ -1,3 +1,4 @@
+import { t } from '../../i18n.js';
 import { appState, elements, DEFAULT_MONOSPACE_FONTS } from '../state.js';
 import { invoke, ensureTauriApi } from '../core/tauri.js';
 import { updateStatus } from './tabs.js';
@@ -21,7 +22,7 @@ export async function loadSystemFonts() {
     try {
         if (!ensureTauriApi()) return;
         appState.fontsLoading = true;
-        updateStatus(window.t('status.loading.fonts'));
+        updateStatus(t('status.loading.fonts'));
         const fonts = await invoke('get_system_fonts');
 
         while (elements.fontFamilySelectModal.options.length > 1) {
@@ -29,10 +30,10 @@ export async function loadSystemFonts() {
         }
 
         const monoGroup = document.createElement('optgroup');
-        monoGroup.label = window.t('settings.font.group.monospace');
+        monoGroup.label = t('settings.font.group.monospace');
 
         const otherGroup = document.createElement('optgroup');
-        otherGroup.label = window.t('settings.font.group.other');
+        otherGroup.label = t('settings.font.group.other');
 
         fonts.forEach(font => {
             const option = document.createElement('option');
@@ -55,10 +56,10 @@ export async function loadSystemFonts() {
 
         elements.fontFamilySelectModal.value = appState.fontFamily;
         appState.fontsLoaded = true;
-        updateStatus(window.t('status.ready'));
+        updateStatus(t('status.ready'));
     } catch (error) {
         console.error('Failed to load system fonts:', error);
-        updateStatus(window.t('status.error.font.load'), 'error');
+        updateStatus(t('status.error.font.load'), 'error');
     } finally {
         appState.fontsLoading = false;
     }
@@ -71,3 +72,4 @@ export function applyFontFamily() {
         document.documentElement.style.setProperty('--editor-font-family', `"${appState.fontFamily}", ${DEFAULT_MONOSPACE_FONTS}`);
     }
 }
+

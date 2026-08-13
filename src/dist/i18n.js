@@ -170,7 +170,7 @@ const DICT = {
 
 let currentLang = 'ja';
 
-window.t = function(key, params = {}) {
+export function t(key, params = {}) {
     if (!key || typeof key !== 'string') return key;
     const keys = key.split('.');
     let current = DICT[currentLang];
@@ -192,9 +192,9 @@ window.t = function(key, params = {}) {
     return key;
 };
 
-window.applyI18nToDOM = function() {
+export function applyI18nToDOM() {
     document.querySelectorAll('[data-i18n]').forEach(el => {
-        const text = window.t(el.dataset.i18n);
+        const text = t(el.dataset.i18n);
         if (text) {
             // テキストノードのみを置換し、内部のタグ（spanやbrなど）を破壊しないように配慮
             // ここではシンプルに textContent を置換する。内部タグがある場合は注意
@@ -202,7 +202,7 @@ window.applyI18nToDOM = function() {
         }
     });
     document.querySelectorAll('[data-i18n-title]').forEach(el => {
-        const text = window.t(el.dataset.i18nTitle);
+        const text = t(el.dataset.i18nTitle);
         if (text) el.title = text;
     });
 };

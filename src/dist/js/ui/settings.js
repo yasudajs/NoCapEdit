@@ -1,3 +1,4 @@
+import { t } from '../../i18n.js';
 import { appState, elements, savedEditorCursor, setSavedEditorCursor, DEFAULT_MONOSPACE_FONTS } from '../state.js';
 import { invoke, openDialog, ensureTauriApi, appWindow } from '../core/tauri.js';
 import { updateStatus, renderTabs, createNewTab, getCurrentTab, updateTabStatus } from './tabs.js';
@@ -55,8 +56,8 @@ export function openSettingsDialog(isMissingFolder = false) {
     }
     if (elements.folderHint) {
         elements.folderHint.textContent = isMissingFolder
-            ? window.t('settings.folder.hint.missing')
-            : window.t('settings.folder.hint.default');
+            ? t('settings.folder.hint.missing')
+            : t('settings.folder.hint.default');
     }
     
     if (elements.settingsDialog) {
@@ -96,7 +97,7 @@ export async function saveSettings() {
     const previousSaveMode = appState.saveMode;
 
     if (!homeFolder) {
-        alert(window.t('settings.alert.home.folder.required'));
+        alert(t('settings.alert.home.folder.required'));
         return;
     }
 
@@ -118,12 +119,12 @@ export async function saveSettings() {
             if (currentTab) {
                 updateTabStatus(currentTab);
             } else {
-                updateStatus(window.t('status.ready'));
+                updateStatus(t('status.ready'));
             }
         }
     } catch (error) {
         console.error('Failed to save settings:', error);
-        updateStatus(window.t('status.error.settings.save'), 'error');
+        updateStatus(t('status.error.settings.save'), 'error');
     }
 }
 
@@ -163,10 +164,10 @@ async function handleSaveModeSwitch(previousSaveMode, saveMode) {
     if (previousSaveMode === 'manual' && saveMode === 'auto') {
         for (const tab of appState.tabs) {
             if (!tab.filePath) {
-                if (tab.fileName.startsWith(`[${window.t('tabs.unsaved.label')}`) && tab.fileName.endsWith(']')) {
+                if (tab.fileName.startsWith(`[${t('tabs.unsaved.label')}`) && tab.fileName.endsWith(']')) {
                     tab.fileName = tab.fileName.slice(1, -1);
-                } else if (!tab.fileName.startsWith(window.t('tabs.unsaved.label'))) {
-                    tab.fileName = `${window.t('tabs.unsaved.label')}${tab.unsavedNumber}`;
+                } else if (!tab.fileName.startsWith(t('tabs.unsaved.label'))) {
+                    tab.fileName = `${t('tabs.unsaved.label')}${tab.unsavedNumber}`;
                 }
                 if (tab.content.trim() !== '') {
                     tab.isDirty = true;
@@ -187,13 +188,14 @@ async function handleSaveModeSwitch(previousSaveMode, saveMode) {
             }
 
             if (!tab.filePath) {
-                if (tab.fileName.startsWith(window.t('tabs.unsaved.label'))) {
+                if (tab.fileName.startsWith(t('tabs.unsaved.label'))) {
                     tab.fileName = `[${tab.fileName}]`;
-                } else if (!tab.fileName.startsWith(`[${window.t('tabs.unsaved.label')}`)) {
-                    tab.fileName = `[${window.t('tabs.unsaved.label')}${tab.unsavedNumber}]`;
+                } else if (!tab.fileName.startsWith(`[${t('tabs.unsaved.label')}`)) {
+                    tab.fileName = `[${t('tabs.unsaved.label')}${tab.unsavedNumber}]`;
                 }
             }
         }
         renderTabs();
     }
 }
+

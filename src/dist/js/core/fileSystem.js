@@ -1,3 +1,4 @@
+import { t } from '../../i18n.js';
 import { appState, FILE_EXT_NCTX, FILE_EXT_NCMD } from '../state.js';
 import { invoke, saveDialog, appWindow, ensureTauriApi } from './tauri.js';
 import { updateStatus, updateTabStatus, renderTabs, switchTab, createNewTab } from '../ui/tabs.js';
@@ -9,7 +10,7 @@ import { showSaveErrorDialog } from '../ui/dialogs.js';
 
 export async function saveTabAs(tab) {
     if (!saveDialog) {
-        throw new Error(window.t('fs.error.noSaveDialog'));
+        throw new Error(t('fs.error.noSaveDialog'));
     }
 
     const targetPath = await saveDialog({
@@ -34,7 +35,7 @@ export async function saveTabAs(tab) {
     tab.fileName = getFileNameFromPath(targetPath);
     tab.isDirty = false;
     renderTabs();
-    updateStatus(window.t('fs.status.savedAs'), 'saved');
+    updateStatus(t('fs.status.savedAs'), 'saved');
     return true;
 }
 
@@ -116,7 +117,7 @@ export async function persistTabWithRecovery(tab, contextLabel) {
             await invoke('delete_text_file', { filePath: tab.filePath });
         } catch (error) {
             console.error('Failed to delete empty file:', error);
-            updateStatus(window.t('fs.error.deleteEmptyFile'), 'error');
+            updateStatus(t('fs.error.deleteEmptyFile'), 'error');
             return false;
         }
         return true;
@@ -132,14 +133,14 @@ export async function persistTabWithRecovery(tab, contextLabel) {
 
     while (true) {
         try {
-            updateStatus(window.t('fs.status.saving'), 'saving');
+            updateStatus(t('fs.status.saving'), 'saving');
             await saveTabIfDirty(tab);
-            updateStatus(window.t('fs.status.saved'), 'saved');
+            updateStatus(t('fs.status.saved'), 'saved');
             return true;
         } catch (error) {
             console.error(`Save failed (${contextLabel}):`, error);
             const choice = await showSaveErrorDialog(
-                window.t('fs.dialog.saveError', { fileName: tab.fileName, error: window.t(error) })
+                t('fs.dialog.saveError', { fileName: tab.fileName, error: t(error) })
             );
 
             if (choice === 'retry') {
@@ -158,7 +159,7 @@ export async function persistTabWithRecovery(tab, contextLabel) {
                 continue;
             }
 
-            updateStatus(window.t('fs.status.aborted'), 'error');
+            updateStatus(t('fs.status.aborted'), 'error');
             return false;
         }
     }
@@ -187,22 +188,22 @@ export async function autoSave() {
     const isFirstSave = !tab.filePath;
 
     try {
-        updateTabStatus(tab, window.t('fs.status.saving'), 'saving');
+        updateTabStatus(tab, t('fs.status.saving'), 'saving');
 
         const saved = await saveTabIfDirty(tab);
 
         if (saved) {
             if (isFirstSave) {
-                updateStatus(window.t('fs.status.created', { prefix: '', fileName: tab.fileName }), 'saved');
+                updateStatus(t('fs.status.created', { prefix: '', fileName: tab.fileName }), 'saved');
             } else {
-                updateTabStatus(tab, window.t('fs.status.saved'), 'saved');
+                updateTabStatus(tab, t('fs.status.saved'), 'saved');
             }
         } else {
             updateTabStatus(tab);
         }
     } catch (error) {
         console.error('Auto-save failed:', error);
-        updateTabStatus(tab, window.t('fs.status.saveFailed'), 'error');
+        updateTabStatus(tab, t('fs.status.saveFailed'), 'error');
     }
 }
 
@@ -223,7 +224,7 @@ export async function triggerManualSave() {
     const isFirstSave = !tab.filePath;
 
     try {
-        updateTabStatus(tab, window.t('fs.status.saving'), 'saving');
+        updateTabStatus(tab, t('fs.status.saving'), 'saving');
 
         let saved = false;
         if (appState.saveMode === 'manual') {
@@ -252,18 +253,18 @@ export async function triggerManualSave() {
             if (isFirstSave) {
                 let prefix = '';
                 if (appState.saveMode === 'manual') {
-                    prefix = window.t('tabs.status.manualSavePrefix');
+                    prefix = t('tabs.status.manualSavePrefix');
                 }
-                updateStatus(window.t('fs.status.created', { prefix: prefix, fileName: tab.fileName }), 'saved', true);
+                updateStatus(t('fs.status.created', { prefix: prefix, fileName: tab.fileName }), 'saved', true);
             } else {
-                updateTabStatus(tab, window.t('fs.status.saved'), 'saved');
+                updateTabStatus(tab, t('fs.status.saved'), 'saved');
             }
         } else {
             updateTabStatus(tab);
         }
     } catch (error) {
         console.error('Manual save failed:', error);
-        updateTabStatus(tab, window.t('fs.status.saveFailed'), 'error');
+        updateTabStatus(tab, t('fs.status.saveFailed'), 'error');
     }
 }
 
@@ -276,7 +277,7 @@ export async function openExistingFile(filePath) {
     }
 
     try {
-        updateStatus(window.t('fs.status.loading'), 'saving');
+        updateStatus(t('fs.status.loading'), 'saving');
         if (!ensureTauriApi()) return;
         const content = await invoke('read_text_file', { filePath });
         const fileName = getFileNameFromPath(filePath);
@@ -295,10 +296,11 @@ export async function openExistingFile(filePath) {
         appState.tabs.push(tab);
         await switchTab(tab.id);
         renderTabs();
-        updateStatus(window.t('fs.status.opened', { fileName: tab.fileName }), 'saved');
+        updateStatus(t('fs.status.opened', { fileName: tab.fileName }), 'saved');
     } catch (error) {
         console.error('Failed to open file:', error);
-        updateStatus(window.t('fs.status.loadFailed'), 'error');
+        updateStatus(t('fs.status.loadFailed'), 'error');
         await createNewTab();
     }
 }
+
