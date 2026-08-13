@@ -108,49 +108,7 @@ export async function saveSettings() {
 
         await saveApplicationSettings();
 
-        if (previousSaveMode !== saveMode) {
-            if (appState.autosaveTimer) {
-                clearTimeout(appState.autosaveTimer);
-                appState.autosaveTimer = null;
-            }
-        }
-
-        if (previousSaveMode === 'manual' && saveMode === 'auto') {
-            for (const tab of appState.tabs) {
-                if (!tab.filePath) {
-                    if (tab.fileName.startsWith(`[${window.t('tabs.unsaved.label')}`) && tab.fileName.endsWith(']')) {
-                        tab.fileName = tab.fileName.slice(1, -1);
-                    } else if (!tab.fileName.startsWith(window.t('tabs.unsaved.label'))) {
-                        tab.fileName = `${window.t('tabs.unsaved.label')}${tab.unsavedNumber}`;
-                    }
-                    if (tab.content.trim() !== '') {
-                        tab.isDirty = true;
-                    }
-                }
-            }
-            renderTabs();
-            autoSave();
-        } else if (previousSaveMode === 'auto' && saveMode === 'manual') {
-            for (const tab of appState.tabs) {
-                if (shouldDeleteEmptyFile(tab)) {
-                    try {
-                        await invoke('delete_text_file', { filePath: tab.filePath });
-                        tab.filePath = '';
-                    } catch (err) {
-                        console.error('Failed to delete empty file on mode switch:', err);
-                    }
-                }
-
-                if (!tab.filePath) {
-                    if (tab.fileName.startsWith(window.t('tabs.unsaved.label'))) {
-                        tab.fileName = `[${tab.fileName}]`;
-                    } else if (!tab.fileName.startsWith(`[${window.t('tabs.unsaved.label')}`)) {
-                        tab.fileName = `[${window.t('tabs.unsaved.label')}${tab.unsavedNumber}]`;
-                    }
-                }
-            }
-            renderTabs();
-        }
+        await handleSaveModeSwitch(previousSaveMode, saveMode);
         
         updateEditorMetrics();
         if (appState.tabs.length === 0) {
@@ -194,3 +152,48 @@ export function onFontFamilyChange(event) {
     saveSettings();
 }
 
+async function handleSaveModeSwitch(previousSaveMode, saveMode) {
+    if (previousSaveMode === saveMode) return;
+
+    if (appState.autosaveTimer) {
+        clearTimeout(appState.autosaveTimer);
+        appState.autosaveTimer = null;
+    }
+
+    if (previousSaveMode === 'manual' && saveMode === 'auto') {
+        for (const tab of appState.tabs) {
+            if (!tab.filePath) {
+                if (tab.fileName.startsWith(`[${window.t('tabs.unsaved.label')}`) && tab.fileName.endsWith(']')) {
+                    tab.fileName = tab.fileName.slice(1, -1);
+                } else if (!tab.fileName.startsWith(window.t('tabs.unsaved.label'))) {
+                    tab.fileName = `${window.t('tabs.unsaved.label')}${tab.unsavedNumber}`;
+                }
+                if (tab.content.trim() !== '') {
+                    tab.isDirty = true;
+                }
+            }
+        }
+        renderTabs();
+        autoSave();
+    } else if (previousSaveMode === 'auto' && saveMode === 'manual') {
+        for (const tab of appState.tabs) {
+            if (shouldDeleteEmptyFile(tab)) {
+                try {
+                    await invoke('delete_text_file', { filePath: tab.filePath });
+                    tab.filePath = '';
+                } catch (err) {
+                    console.error('Failed to delete empty file on mode switch:', err);
+                }
+            }
+
+            if (!tab.filePath) {
+                if (tab.fileName.startsWith(window.t('tabs.unsaved.label'))) {
+                    tab.fileName = `[${tab.fileName}]`;
+                } else if (!tab.fileName.startsWith(`[${window.t('tabs.unsaved.label')}`)) {
+                    tab.fileName = `[${window.t('tabs.unsaved.label')}${tab.unsavedNumber}]`;
+                }
+            }
+        }
+        renderTabs();
+    }
+}
