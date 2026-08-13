@@ -1,5 +1,5 @@
 import { compareVersions } from '../utils/helpers.js';
-import { appWindow } from './tauri.js';
+import { showUpdateNotice } from '../ui/updaterUI.js';
 
 export async function checkNewVersion(currentVersion) {
     if (!currentVersion) return;
@@ -37,35 +37,7 @@ export async function checkNewVersion(currentVersion) {
         const latestVersion = latestTag.replace(/^v/, '');
 
         if (compareVersions(latestVersion, currentVersion) > 0) {
-            const newTitle = `NoCapEdit [ Ver ${currentVersion} ] (Update: ${latestTag})`;
-            document.title = newTitle;
-            if (appWindow && typeof appWindow.setTitle === 'function') {
-                appWindow.setTitle(newTitle);
-            }
-
-            const noticeContainer = document.getElementById('updateNoticeContainer');
-            const currentVerSpan = document.getElementById('currentVerSpan');
-            const latestVerSpan = document.getElementById('latestVerSpan');
-            const releaseLink = document.getElementById('releaseLink');
-
-            if (noticeContainer && currentVerSpan && latestVerSpan && releaseLink) {
-                currentVerSpan.textContent = currentVersion;
-                latestVerSpan.textContent = latestVersion;
-
-                const releaseUrl = `https://github.com/yasudajs/NoCapEdit/releases/tag/${latestTag}`;
-                releaseLink.href = releaseUrl;
-
-                releaseLink.onclick = (e) => {
-                    e.preventDefault();
-                    if (window.__TAURI__ && window.__TAURI__.shell && window.__TAURI__.shell.open) {
-                        window.__TAURI__.shell.open(releaseUrl);
-                    } else {
-                        window.open(releaseUrl, '_blank');
-                    }
-                };
-
-                noticeContainer.classList.remove('hidden');
-            }
+            showUpdateNotice(currentVersion, latestTag, latestVersion);
         }
     } catch (error) {
         console.warn('Update check failed:', error);

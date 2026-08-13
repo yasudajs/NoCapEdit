@@ -42,3 +42,7 @@ export function generateTimestamp() {
     const ss = String(now.getSeconds()).padStart(2, '0');
     return `${yyyy}${mm}${dd}_${hh}${min}${ss}`;
 }
+
+export function getPathSeparator() {
+    return navigator.userAgent.includes('Windows') ? '\\' : '/';
+}

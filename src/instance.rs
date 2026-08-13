@@ -8,8 +8,7 @@ const SINGLE_INSTANCE_HOST: &str = "127.0.0.1";
 
 pub fn send_to_existing_instance(path: &str) -> bool {
     if let Ok(mut stream) = TcpStream::connect(format!("{}:{}", SINGLE_INSTANCE_HOST, SINGLE_INSTANCE_PORT)) {
-        let _ = stream.write_all(path.as_bytes());
-        true
+        stream.write_all(path.as_bytes()).is_ok()
     } else {
         false
     }

@@ -5,7 +5,7 @@ export const MAX_LINE_HEIGHT = 3.0;
 export const MIN_LINE_HEIGHT = 1.0;
 export const LINE_HEIGHT_STEP = 0.1;
 export const DEFAULT_MONOSPACE_FONTS = "'Fira Code', 'Monaco', 'Menlo', monospace";
-export const AUTO_FILE_REGEX = /^\d{8}_\d{6}(_\d{2})?\.nctx$/;
+
 export const FILE_EXT_NCTX = 'nctx';
 export const FILE_EXT_NCMD = 'ncmd';
 
@@ -51,28 +51,32 @@ export function setAppState(key, value) {
 
 // DOM要素キャッシュ
 export const elements = {
-    app: document.getElementById('app'),
-    tabsContainer: document.getElementById('tabsContainer'),
-    addTabBtn: document.getElementById('addTabBtn'),
-    settingsBtn: document.getElementById('settingsBtn'),
-    fontFamilySelectModal: document.getElementById('fontFamilySelectModal'),
-    tabBehaviorSelectModal: document.getElementById('tabBehaviorSelectModal'),
-    saveModeSelectModal: document.getElementById('saveModeSelectModal'),
-    charCountModeSelectModal: document.getElementById('charCountModeSelectModal'),
-    themeSelectModal: document.getElementById('themeSelectModal'),
-    editor: document.getElementById('editor'),
-    statusText: document.getElementById('statusText'),
-    statusMetrics: document.getElementById('statusMetrics'),
-    settingsDialog: document.getElementById('settingsDialog'),
-    homeFolderInput: document.getElementById('homeFolderInput'),
-    browseFolderBtn: document.getElementById('browseFolderBtn'),
-    confirmSettingsBtn: document.getElementById('confirmSettingsBtn'),
-    errorDialog: document.getElementById('errorDialog'),
-    errorMessage: document.getElementById('errorMessage'),
-    retryBtn: document.getElementById('retryBtn'),
-    saveAsBtn: document.getElementById('saveAsBtn'),
-    cancelExitBtn: document.getElementById('cancelExitBtn'),
-    folderHint: document.getElementById('folderHint'),
+    app: null,
+    tabsContainer: null,
+    addTabBtn: null,
+    settingsBtn: null,
+    fontFamilySelectModal: null,
+    tabBehaviorSelectModal: null,
+    saveModeSelectModal: null,
+    charCountModeSelectModal: null,
+    themeSelectModal: null,
+    editor: null,
+    statusText: null,
+    statusMetrics: null,
+    settingsDialog: null,
+    homeFolderInput: null,
+    browseFolderBtn: null,
+    confirmSettingsBtn: null,
+    errorDialog: null,
+    errorMessage: null,
+    retryBtn: null,
+    saveAsBtn: null,
+    cancelExitBtn: null,
+    folderHint: null,
+    updateNoticeContainer: null,
+    currentVerSpan: null,
+    latestVerSpan: null,
+    releaseLink: null,
 };
 
 // DOM要素のキャッシュを再取得する関数（現状は起動時の一回でOK）

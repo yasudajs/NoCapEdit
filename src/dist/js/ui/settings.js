@@ -1,3 +1,4 @@
+import { t } from '../../i18n.js';
 import { appState, elements, savedEditorCursor, setSavedEditorCursor, DEFAULT_MONOSPACE_FONTS } from '../state.js';
 import { invoke, openDialog, ensureTauriApi, appWindow } from '../core/tauri.js';
 import { updateStatus, renderTabs, createNewTab, getCurrentTab, updateTabStatus } from './tabs.js';
@@ -55,8 +56,8 @@ export function openSettingsDialog(isMissingFolder = false) {
     }
     if (elements.folderHint) {
         elements.folderHint.textContent = isMissingFolder
-            ? window.t('settings.folder.hint.missing')
-            : window.t('settings.folder.hint.default');
+            ? t('settings.folder.hint.missing')
+            : t('settings.folder.hint.default');
     }
     
     if (elements.settingsDialog) {
@@ -96,7 +97,7 @@ export async function saveSettings() {
     const previousSaveMode = appState.saveMode;
 
     if (!homeFolder) {
-        alert(window.t('settings.alert.home.folder.required'));
+        alert(t('settings.alert.home.folder.required'));
         return;
     }
 
@@ -108,49 +109,7 @@ export async function saveSettings() {
 
         await saveApplicationSettings();
 
-        if (previousSaveMode !== saveMode) {
-            if (appState.autosaveTimer) {
-                clearTimeout(appState.autosaveTimer);
-                appState.autosaveTimer = null;
-            }
-        }
-
-        if (previousSaveMode === 'manual' && saveMode === 'auto') {
-            for (const tab of appState.tabs) {
-                if (!tab.filePath) {
-                    if (tab.fileName.startsWith(`[${window.t('tabs.unsaved.label')}`) && tab.fileName.endsWith(']')) {
-                        tab.fileName = tab.fileName.slice(1, -1);
-                    } else if (!tab.fileName.startsWith(window.t('tabs.unsaved.label'))) {
-                        tab.fileName = `${window.t('tabs.unsaved.label')}${tab.unsavedNumber}`;
-                    }
-                    if (tab.content.trim() !== '') {
-                        tab.isDirty = true;
-                    }
-                }
-            }
-            renderTabs();
-            autoSave();
-        } else if (previousSaveMode === 'auto' && saveMode === 'manual') {
-            for (const tab of appState.tabs) {
-                if (shouldDeleteEmptyFile(tab)) {
-                    try {
-                        await invoke('delete_text_file', { filePath: tab.filePath });
-                        tab.filePath = '';
-                    } catch (err) {
-                        console.error('Failed to delete empty file on mode switch:', err);
-                    }
-                }
-
-                if (!tab.filePath) {
-                    if (tab.fileName.startsWith(window.t('tabs.unsaved.label'))) {
-                        tab.fileName = `[${tab.fileName}]`;
-                    } else if (!tab.fileName.startsWith(`[${window.t('tabs.unsaved.label')}`)) {
-                        tab.fileName = `[${window.t('tabs.unsaved.label')}${tab.unsavedNumber}]`;
-                    }
-                }
-            }
-            renderTabs();
-        }
+        await handleSaveModeSwitch(previousSaveMode, saveMode);
         
         updateEditorMetrics();
         if (appState.tabs.length === 0) {
@@ -160,12 +119,12 @@ export async function saveSettings() {
             if (currentTab) {
                 updateTabStatus(currentTab);
             } else {
-                updateStatus(window.t('status.ready'));
+                updateStatus(t('status.ready'));
             }
         }
     } catch (error) {
         console.error('Failed to save settings:', error);
-        updateStatus(window.t('status.error.settings.save'), 'error');
+        updateStatus(t('status.error.settings.save'), 'error');
     }
 }
 
@@ -192,5 +151,51 @@ export function onFontFamilyChange(event) {
     }
     applyFontFamily();
     saveSettings();
+}
+
+async function handleSaveModeSwitch(previousSaveMode, saveMode) {
+    if (previousSaveMode === saveMode) return;
+
+    if (appState.autosaveTimer) {
+        clearTimeout(appState.autosaveTimer);
+        appState.autosaveTimer = null;
+    }
+
+    if (previousSaveMode === 'manual' && saveMode === 'auto') {
+        for (const tab of appState.tabs) {
+            if (!tab.filePath) {
+                if (tab.fileName.startsWith(`[${t('tabs.unsaved.label')}`) && tab.fileName.endsWith(']')) {
+                    tab.fileName = tab.fileName.slice(1, -1);
+                } else if (!tab.fileName.startsWith(t('tabs.unsaved.label'))) {
+                    tab.fileName = `${t('tabs.unsaved.label')}${tab.unsavedNumber}`;
+                }
+                if (tab.content.trim() !== '') {
+                    tab.isDirty = true;
+                }
+            }
+        }
+        renderTabs();
+        autoSave();
+    } else if (previousSaveMode === 'auto' && saveMode === 'manual') {
+        for (const tab of appState.tabs) {
+            if (shouldDeleteEmptyFile(tab)) {
+                try {
+                    await invoke('delete_text_file', { filePath: tab.filePath });
+                    tab.filePath = '';
+                } catch (err) {
+                    console.error('Failed to delete empty file on mode switch:', err);
+                }
+            }
+
+            if (!tab.filePath) {
+                if (tab.fileName.startsWith(t('tabs.unsaved.label'))) {
+                    tab.fileName = `[${tab.fileName}]`;
+                } else if (!tab.fileName.startsWith(`[${t('tabs.unsaved.label')}`)) {
+                    tab.fileName = `[${t('tabs.unsaved.label')}${tab.unsavedNumber}]`;
+                }
+            }
+        }
+        renderTabs();
+    }
 }
 
