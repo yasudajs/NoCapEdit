@@ -1,7 +1,6 @@
 import { increaseLineHeight, decreaseLineHeight, zoomIn, zoomOut } from './editor.js';
 import { triggerManualSave } from '../core/fileSystem.js';
-import { switchTabByOffset } from './tabs.js';
-
+import { switchTabByOffset, createNewTab } from './tabs.js';
 export function setupKeyboardShortcuts() {
     // Ctrl + マウスホイールでフォントサイズ拡大縮小、Ctrl + Shift + マウスホイールで行間調整
     window.addEventListener('wheel', (e) => {
@@ -76,6 +75,11 @@ export function setupKeyboardShortcuts() {
             else if (e.key === 's' || e.key === 'S' || e.code === 'KeyS') {
                 e.preventDefault();
                 triggerManualSave();
+            }
+            // 新規タブ追加: "t" / "T" キー
+            else if (e.key === 't' || e.key === 'T' || e.code === 'KeyT') {
+                e.preventDefault();
+                createNewTab();
             }
         }
     });
