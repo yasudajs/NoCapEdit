@@ -33,6 +33,7 @@ New-Item -ItemType Directory -Force -Path "target/release/bundle"
 Compress-Archive -Path "target/release/NoCapEdit.exe" -DestinationPath "target/release/bundle/NoCapEdit_v0.1.72_x64_portable.zip" -Force
 ```
 
-## 📄 仕様詳細
-仕様の詳細は [spec.md](spec.md) をご参照ください。
+## 📄 仕様詳細と設計情報
+仕様の詳細については [spec.md](spec.md) をご参照ください。
+アーキテクチャ、ディレクトリ構造、各ファイルの役割分担等の内部設計については [ARCHITECTURE.md](ARCHITECTURE.md) をご参照ください。
 過去の作業履歴や実装履歴は Git のコミットログにて管理されています。
