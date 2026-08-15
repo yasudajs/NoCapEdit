@@ -1,6 +1,7 @@
-import { increaseLineHeight, decreaseLineHeight, zoomIn, zoomOut, moveLine, duplicateLine, deleteLine, insertTimestamp } from './editor.js';
+import { increaseLineHeight, decreaseLineHeight, zoomIn, zoomOut, resetZoomAndLineHeight, moveLine, duplicateLine, deleteLine, insertTimestamp } from './editor.js';
 import { triggerManualSave } from '../core/fileSystem.js';
 import { switchTabByOffset, createNewTab, closeTab } from './tabs.js';
+import { toggleSettingsDialog } from './settings.js';
 import { appState } from '../state.js';
 import { appWindow } from '../core/tauri.js';
 
@@ -141,6 +142,16 @@ export function setupKeyboardShortcuts() {
             else if (e.key === '-' || e.key === '_' || e.code === 'NumpadSubtract' || e.code === 'Minus') {
                 e.preventDefault();
                 zoomOut();
+            }
+            // ズーム・行間リセット: "0" キー（メインキーおよびテンキー）
+            else if (e.key === '0' || e.code === 'Digit0' || e.code === 'Numpad0') {
+                e.preventDefault();
+                resetZoomAndLineHeight();
+            }
+            // 設定画面の開閉: "," (カンマ) キー
+            else if (e.key === ',' || e.code === 'Comma') {
+                e.preventDefault();
+                toggleSettingsDialog();
             }
             // 手動保存: "s" / "S" キー
             else if (e.key === 's' || e.key === 'S' || e.code === 'KeyS') {

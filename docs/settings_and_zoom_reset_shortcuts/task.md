@@ -1,27 +1,27 @@
 # タスクリスト: 設定画面開閉（Ctrl+,）およびズームリセット（Ctrl+0）ショートカット追加
 
-- [ ] **1. バージョン番号の更新（4ファイル一括更新）**
-  - [ ] `Cargo.toml`: `0.1.81`
-  - [ ] `tauri.conf.json`: `0.1.81`
-  - [ ] `nsis/installer.nsi`: `0.1.81.0`
-  - [ ] `docs/DEVELOPMENT.md`: `0.1.81`
-- [ ] **2. 仕様書・ドキュメントの更新**
-  - [ ] `docs/spec.md`: Ctrl+, および Ctrl+0 の仕様を明記
-  - [ ] `docs/SHORTCUTS.md`: Ctrl+, および Ctrl+0 を追記
-  - [ ] `docs/USER_GUIDE.md`: 操作説明を追記
-- [ ] **3. ショートカット機能の実装と登録**
-  - [ ] `src/dist/js/ui/editor.js`: `resetZoomAndLineHeight()` の実装
-  - [ ] `src/dist/js/ui/shortcuts.js`: `Ctrl + ,` および `Ctrl + 0` のキーハンドラ追加
-  - [ ] `src/dist/i18n.js`: `help.shortcuts.toggleSettings`, `help.shortcuts.resetZoom` の追加
-  - [ ] `src/dist/help.html`: ヘルプ画面に項目を追加
-- [ ] **4. 検証**
-  - [ ] ビルド確認（`cargo check` / `cargo test`）
-  - [ ] `Ctrl + ,` による設定ドック開閉・フォーカス復元の動作確認
-  - [ ] `Ctrl + 0`（メインキー0およびテンキー0）によるフォントサイズ（20pt）/ 行間（1.5x）リセットの動作確認
-  - [ ] 日本語IME変換中のガード確認
-  - [ ] 設定開閉・ズームリセット後もエディタの Undo/Redo が保持されることの確認
-  - [ ] ヘルプ画面（`F1`）の表示確認
-- [ ] **5. 完了報告ドキュメント作成**
-  - [ ] `docs/settings_and_zoom_reset_shortcuts/walkthrough.md` の作成
-  - [ ] `docs/history.md` に `0.1.81` の変更履歴を追記
-  - [ ] コミット＆プッシュ
+- [x] **1. バージョン番号の更新（4ファイル一括更新）**
+  - [x] `Cargo.toml`: `0.1.81`
+  - [x] `tauri.conf.json`: `0.1.81`
+  - [x] `nsis/installer.nsi`: `0.1.81.0`
+  - [x] `docs/DEVELOPMENT.md`: `0.1.81`
+- [x] **2. 仕様書・ドキュメントの更新**
+  - [x] `docs/spec.md`: Ctrl+, および Ctrl+0 の仕様を明記
+  - [x] `docs/SHORTCUTS.md`: Ctrl+, および Ctrl+0 を追記
+  - [x] `docs/USER_GUIDE.md`: 操作説明を追記
+- [x] **3. ショートカット機能の実装と登録**
+  - [x] `src/dist/js/ui/editor.js`: `resetZoomAndLineHeight()` の実装
+  - [x] `src/dist/js/ui/shortcuts.js`: `Ctrl + ,` および `Ctrl + 0` のキーハンドラ追加
+  - [x] `src/dist/i18n.js`: `help.shortcuts.toggleSettings`, `help.shortcuts.resetZoom` の追加
+  - [x] `src/dist/help.html`: ヘルプ画面に項目を追加
+- [x] **4. 検証**
+  - [x] ビルド確認（`cargo check` / `cargo test`）
+  - [x] `Ctrl + ,` による設定ドック開閉・フォーカス復元の動作確認
+  - [x] `Ctrl + 0`（メインキー0およびテンキー0）によるフォントサイズ（20pt）/ 行間（1.5x）リセットの動作確認
+  - [x] 日本語IME変換中のガード確認
+  - [x] 設定開閉・ズームリセット後もエディタの Undo/Redo が保持されることの確認
+  - [x] ヘルプ画面（`F1`）の表示確認
+- [x] **5. 完了報告ドキュメント作成**
+  - [x] `docs/settings_and_zoom_reset_shortcuts/walkthrough.md` の作成
+  - [x] `docs/history.md` に `0.1.81` の変更履歴を追記
+  - [x] コミット＆プッシュ
