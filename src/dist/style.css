@@ -257,6 +257,12 @@ body {
     border-color: var(--accent);
 }
 
+.font-select:focus-visible,
+.tab-select:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+}
+
 .font-select optgroup,
 .tab-select optgroup {
     background-color: var(--bg-primary);
@@ -511,6 +517,11 @@ body {
     background-color: var(--accent);
     border-color: var(--accent);
     color: var(--bg-primary);
+}
+
+.browse-btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
 }
 
 .hint {

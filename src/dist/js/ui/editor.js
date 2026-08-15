@@ -178,6 +178,11 @@ function applyEditorTextWithUndo(replaceStart, replaceEnd, replacementText, newS
 
 export function handleTabKey(e) {
     if (e.key === 'Tab') {
+        // 設定画面が開いている場合はエディタのインデント処理を行わず、ブラウザ標準のフォーカス移動を許可
+        if (elements.settingsDialog && !elements.settingsDialog.classList.contains('hidden')) {
+            return;
+        }
+
         // CtrlキーやAltキーが同時に押されている場合は、タブ移動などのショートカットとして処理するため、ここでは無視する
         if (e.ctrlKey || e.altKey) {
             return;

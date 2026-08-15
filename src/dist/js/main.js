@@ -4,7 +4,7 @@ import { invoke, appWindow, listen, ensureTauriApi } from './core/tauri.js';
 import { createNewTab, updateStatus, renderTabs } from './ui/tabs.js';
 import { openExistingFile, persistAllTabsBeforeExit } from './core/fileSystem.js';
 import { updateEditorMetrics, onEditorInput, applyFontSize, applyLineHeight, handleTabKey } from './ui/editor.js';
-import { toggleSettingsDialog, closeSettingsDialog, openSettingsDialog, onThemeChange, onFontFamilyChange, saveSettings } from './ui/settings.js';
+import { toggleSettingsDialog, closeSettingsDialog, openSettingsDialog, onThemeChange, onFontFamilyChange, saveSettings, setupSettingsNavigation } from './ui/settings.js';
 import { applyThemeUI, loadSystemFonts, applyFontFamily } from './ui/theme.js';
 import { setupKeyboardShortcuts } from './ui/shortcuts.js';
 import { checkNewVersion } from './core/updater.js';
@@ -216,7 +216,7 @@ function setupUIEventListeners() {
         elements.editor.addEventListener('keyup', updateEditorMetrics);
     }
     registerCloseHandler();
-
+    setupSettingsNavigation();
     setupKeyboardShortcuts();
 
     // シングルインスタンス動作でのファイル通知の購読

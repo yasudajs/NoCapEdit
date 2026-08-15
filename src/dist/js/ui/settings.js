@@ -86,6 +86,59 @@ export function openSettingsDialog(isMissingFolder = false) {
             }
         };
     }
+
+    // 設定ドックを開いた直後に「参照...」ボタンへ初期フォーカスをセット
+    if (elements.browseFolderBtn) {
+        setTimeout(() => {
+            elements.browseFolderBtn.focus();
+        }, 50);
+    }
+}
+
+// 設定ドック内のフォーカストラップおよびキーボードナビゲーション設定
+export function setupSettingsNavigation() {
+    if (!elements.settingsDialog) return;
+
+    elements.settingsDialog.addEventListener('keydown', (e) => {
+        // Esc キーで設定を閉じる
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            e.stopPropagation();
+            closeSettingsDialog();
+            return;
+        }
+
+        // Tab キーによる項目循環移動
+        if (e.key === 'Tab') {
+            const focusableElements = [
+                elements.browseFolderBtn,
+                elements.fontFamilySelectModal,
+                elements.tabBehaviorSelectModal,
+                elements.saveModeSelectModal,
+                elements.charCountModeSelectModal,
+                elements.themeSelectModal
+            ].filter(el => el && !el.disabled && el.offsetParent !== null);
+
+            if (focusableElements.length === 0) return;
+
+            const firstEl = focusableElements[0];
+            const lastEl = focusableElements[focusableElements.length - 1];
+
+            if (e.shiftKey) {
+                // Shift + Tab: 先頭要素で押したら末尾へ
+                if (document.activeElement === firstEl) {
+                    e.preventDefault();
+                    lastEl.focus();
+                }
+            } else {
+                // Tab: 末尾要素で押したら先頭へ
+                if (document.activeElement === lastEl) {
+                    e.preventDefault();
+                    firstEl.focus();
+                }
+            }
+        }
+    });
 }
 
 
