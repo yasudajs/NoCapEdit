@@ -1,7 +1,8 @@
 import { increaseLineHeight, decreaseLineHeight, zoomIn, zoomOut } from './editor.js';
 import { triggerManualSave } from '../core/fileSystem.js';
-import { switchTabByOffset, createNewTab } from './tabs.js';
+import { switchTabByOffset, createNewTab, closeTab } from './tabs.js';
 import { appState } from '../state.js';
+import { appWindow } from '../core/tauri.js';
 
 export function setupKeyboardShortcuts() {
     // Ctrl + マウスホイールでフォントサイズ拡大縮小、Ctrl + Shift + マウスホイールで行間調整
@@ -109,7 +110,21 @@ export function setupKeyboardShortcuts() {
                 e.preventDefault();
                 createNewTab();
             }
-            // エクスプローラーで開く: "e" / "E" キー
+            // タブを閉じる: "w" / "W" キー
+            else if (e.key === 'w' || e.key === 'W' || e.code === 'KeyW') {
+                e.preventDefault();
+                if (appState.currentTab) {
+                    await closeTab(appState.currentTab);
+                }
+            }
+            // アプリケーション終了: "q" / "Q" キー
+            else if (e.key === 'q' || e.key === 'Q' || e.code === 'KeyQ') {
+                e.preventDefault();
+                if (appWindow && typeof appWindow.close === 'function') {
+                    await appWindow.close();
+                }
+            }
+            // エクスプローラーを開く: "e" / "E" キー
             else if (e.key === 'e' || e.key === 'E' || e.code === 'KeyE') {
                 e.preventDefault();
                 if (appState.homeFolder) {
