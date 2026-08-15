@@ -501,7 +501,7 @@ body {
 }
 
 .editor-highlights mark.search-match.current {
-    background-color: rgba(56, 189, 248, 0.45); /* 薄めの水色 */
+    background-color: rgba(56, 189, 248, 0.45); /* 検索中はこの色がそのまま表示される */
     color: transparent;
     border-radius: 2px;
     box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.8);
@@ -535,8 +535,13 @@ body {
 }
 
 .editor::selection {
-    background-color: var(--accent);
-    color: var(--bg-primary);
+    background-color: rgba(56, 189, 248, 0.3); /* 通常のテキスト選択も薄い水色に */
+    color: inherit; /* 文字色は反転させずそのままにする */
+}
+
+/* 検索バーが開いている間は、背面の検索ハイライトを完全に表示するためブラウザの選択表示を透明化 */
+.editor.search-active::selection {
+    background-color: transparent;
 }
 
 .editor::-webkit-scrollbar {

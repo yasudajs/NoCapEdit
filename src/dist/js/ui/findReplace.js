@@ -101,6 +101,10 @@ export function openFind(focusReplace = false) {
         }
     }
 
+    if (elements.editor) {
+        elements.editor.classList.add('search-active');
+    }
+
     updateMatches(true);
 
     if (focusReplace && elements.replaceInput) {
@@ -119,6 +123,7 @@ export function closeFind() {
         elements.editorHighlights.innerHTML = '';
     }
     if (elements.editor) {
+        elements.editor.classList.remove('search-active');
         elements.editor.focus();
     }
 }
