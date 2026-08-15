@@ -109,6 +109,26 @@ const DICT = {
                 saveError: "保存に失敗しました。\n対象: {fileName}\n理由: {error}"
             }
         },
+        help: {
+            title: "ショートカット一覧",
+            categories: {
+                file: "ファイル・タブ操作",
+                view: "表示・ズーム",
+                other: "その他"
+            },
+            shortcuts: {
+                save: "手動保存",
+                newTab: "新規タブ追加",
+                openExplorer: "エクスプローラーで開く",
+                switchTab: "次のタブへ切り替え",
+                switchTabPrev: "前のタブへ切り替え",
+                zoomIn: "ズームイン (拡大)",
+                zoomOut: "ズームアウト (縮小)",
+                lineHeightInc: "行間を広げる",
+                lineHeightDec: "行間を狭める",
+                closeHelp: "ヘルプを閉じる"
+            }
+        },
         ui: {
             tooltip: {
                 addTab: "新規タブを作成",
