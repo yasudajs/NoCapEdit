@@ -120,7 +120,7 @@ const DICT = {
                 save: "手動保存",
                 newTab: "新規タブ追加",
                 closeTab: "タブを閉じる",
-                openExplorer: "エクスプローラーで開く",
+                openExplorer: "エクスプローラーを開く",
                 switchTab: "次のタブへ切り替え",
                 switchTabPrev: "前のタブへ切り替え",
                 zoomIn: "ズームイン (拡大)",

@@ -18,8 +18,9 @@
 ### 2. 多言語テキストおよびヘルプ画面
 - **[i18n.js](file:///c:/work/NoCapEdit/src/dist/i18n.js)**
   - `help.shortcuts.closeTab`（`"タブを閉じる"`）および `help.shortcuts.exitApp`（`"アプリを終了"`）を追加。
+  - `help.shortcuts.openExplorer` の文言を「エクスプローラーを開く」に統一。
 - **[help.html](file:///c:/work/NoCapEdit/src/dist/help.html)**
-  - 「ファイル・タブ操作」に `Ctrl + W`、「その他」に `Ctrl + Q` を追加。
+  - 「ファイル・タブ操作」に `Ctrl + W`、「その他」に `Ctrl + Q` を追加し、エクスプローラーの表示文言を更新。
 
 ### 3. 仕様書および各種ドキュメント
 - **[spec.md](file:///c:/work/NoCapEdit/docs/spec.md)**: 4.3 タブ管理に `Ctrl + W` と `Ctrl + Q` の仕様を追加。

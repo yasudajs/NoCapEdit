@@ -124,7 +124,7 @@ export function setupKeyboardShortcuts() {
                     await appWindow.close();
                 }
             }
-            // エクスプローラーで開く: "e" / "E" キー
+            // エクスプローラーを開く: "e" / "E" キー
             else if (e.key === 'e' || e.key === 'E' || e.code === 'KeyE') {
                 e.preventDefault();
                 if (appState.homeFolder) {
