@@ -1,4 +1,4 @@
-import { increaseLineHeight, decreaseLineHeight, zoomIn, zoomOut, resetZoomAndLineHeight, moveLine, duplicateLine, deleteLine, insertTimestamp } from './editor.js';
+import { increaseLineHeight, decreaseLineHeight, zoomIn, zoomOut, resetZoomAndLineHeight, moveLine, duplicateLine, deleteLine, insertTimestamp, toggleWordWrap } from './editor.js';
 import { triggerManualSave } from '../core/fileSystem.js';
 import { switchTabByOffset, createNewTab, closeTab } from './tabs.js';
 import { toggleSettingsDialog } from './settings.js';
@@ -88,6 +88,12 @@ export function setupKeyboardShortcuts() {
                 } else if (e.key === 'ArrowDown' || e.code === 'ArrowDown') {
                     e.preventDefault();
                     moveLine('down');
+                    return;
+                }
+                // 行の折り返し切り替え: Alt + Z
+                else if (e.key === 'z' || e.key === 'Z' || e.code === 'KeyZ') {
+                    e.preventDefault();
+                    toggleWordWrap();
                     return;
                 }
             }

@@ -31,6 +31,8 @@ pub struct AppSettings {
     pub save_mode: String,
     #[serde(default = "default_char_count_mode")]
     pub char_count_mode: String,
+    #[serde(default = "default_word_wrap")]
+    pub word_wrap: bool,
 }
 
 fn default_theme() -> String {
@@ -61,6 +63,10 @@ fn default_char_count_mode() -> String {
     "with_newline".to_string()
 }
 
+fn default_word_wrap() -> bool {
+    true
+}
+
 #[derive(Debug, Serialize)]
 pub struct SettingsResponse {
     pub home_folder: String,
@@ -71,6 +77,7 @@ pub struct SettingsResponse {
     pub tab_behavior: String,
     pub save_mode: String,
     pub char_count_mode: String,
+    pub word_wrap: bool,
     pub is_first_launch: bool,
     pub home_folder_exists: bool,
     pub app_version: String,
@@ -124,6 +131,7 @@ impl Default for AppSettings {
             tab_behavior: default_tab_behavior(),
             save_mode: default_save_mode(),
             char_count_mode: default_char_count_mode(),
+            word_wrap: default_word_wrap(),
         }
     }
 }

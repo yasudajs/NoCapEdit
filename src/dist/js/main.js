@@ -3,7 +3,7 @@ import { appState, elements, initElements } from './state.js';
 import { invoke, appWindow, listen, ensureTauriApi } from './core/tauri.js';
 import { createNewTab, updateStatus, renderTabs } from './ui/tabs.js';
 import { openExistingFile, persistAllTabsBeforeExit } from './core/fileSystem.js';
-import { updateEditorMetrics, onEditorInput, applyFontSize, applyLineHeight, handleTabKey } from './ui/editor.js';
+import { updateEditorMetrics, onEditorInput, applyFontSize, applyLineHeight, handleTabKey, applyWordWrap } from './ui/editor.js';
 import { toggleSettingsDialog, closeSettingsDialog, openSettingsDialog, onThemeChange, onFontFamilyChange, saveSettings, setupSettingsNavigation } from './ui/settings.js';
 import { applyThemeUI, loadSystemFonts, applyFontFamily } from './ui/theme.js';
 import { setupKeyboardShortcuts } from './ui/shortcuts.js';
@@ -71,6 +71,7 @@ async function init() {
         appState.tabBehavior = settings.tab_behavior || 'tab';
         appState.saveMode = settings.save_mode || 'auto';
         appState.charCountMode = settings.char_count_mode || 'with_newline';
+        appState.wordWrap = settings.word_wrap !== undefined ? settings.word_wrap : true;
 
         if (elements.tabBehaviorSelectModal) {
             elements.tabBehaviorSelectModal.value = appState.tabBehavior;
@@ -80,6 +81,9 @@ async function init() {
         }
         if (elements.charCountModeSelectModal) {
             elements.charCountModeSelectModal.value = appState.charCountMode;
+        }
+        if (elements.wordWrapSelectModal) {
+            elements.wordWrapSelectModal.value = String(appState.wordWrap);
         }
 
         // アプリケーションタイトルの動的設定
@@ -99,10 +103,11 @@ async function init() {
             console.error('Failed to apply theme during init:', themeError);
         }
 
-        // フォント設定を適用
+        // フォント・表示設定を適用
         applyFontSize();
         applyFontFamily();
         applyLineHeight();
+        applyWordWrap(appState.wordWrap);
 
         // 前回の適用フォントが default 以外の場合、一覧をロードする前にモーダルドロップダウンに項目を追加しておく
         if (appState.fontFamily !== 'default' && elements.fontFamilySelectModal) {
@@ -204,6 +209,11 @@ function setupUIEventListeners() {
     }
     if (elements.saveModeSelectModal) {
         elements.saveModeSelectModal.addEventListener('change', async (e) => {
+            await saveSettings();
+        });
+    }
+    if (elements.wordWrapSelectModal) {
+        elements.wordWrapSelectModal.addEventListener('change', async (e) => {
             await saveSettings();
         });
     }

@@ -304,8 +304,15 @@ body {
     outline: none;
     overflow-y: auto;
     overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
     tab-size: 4;
     -moz-tab-size: 4;
+}
+
+.editor.word-wrap-off {
+    white-space: pre;
+    word-break: normal;
 }
 
 .editor::selection {

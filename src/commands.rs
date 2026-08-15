@@ -51,6 +51,7 @@ pub fn get_settings() -> SettingsResponse {
         tab_behavior: settings.tab_behavior,
         save_mode: settings.save_mode,
         char_count_mode: settings.char_count_mode,
+        word_wrap: settings.word_wrap,
         is_first_launch: !AppSettings::exists(),
         home_folder_exists: settings.home_folder.exists(),
         app_version: env!("CARGO_PKG_VERSION").to_string(),

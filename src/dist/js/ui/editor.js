@@ -145,6 +145,25 @@ export function decreaseLineHeight() {
     }
 }
 
+export function applyWordWrap(enable) {
+    if (!elements.editor) return;
+    if (enable) {
+        elements.editor.setAttribute('wrap', 'soft');
+        elements.editor.classList.remove('word-wrap-off');
+    } else {
+        elements.editor.setAttribute('wrap', 'off');
+        elements.editor.classList.add('word-wrap-off');
+    }
+}
+
+export function toggleWordWrap() {
+    if (!appState.currentTab) return;
+    const currentWrap = appState.currentTab.wordWrap !== undefined ? appState.currentTab.wordWrap : appState.wordWrap;
+    const newWrap = !currentWrap;
+    appState.currentTab.wordWrap = newWrap;
+    applyWordWrap(newWrap);
+}
+
 export function getIndentString() {
     switch (appState.tabBehavior) {
         case 'space2': return '  ';
