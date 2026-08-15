@@ -2,6 +2,7 @@ import { increaseLineHeight, decreaseLineHeight, zoomIn, zoomOut, resetZoomAndLi
 import { triggerManualSave } from '../core/fileSystem.js';
 import { switchTabByOffset, createNewTab, closeTab } from './tabs.js';
 import { toggleSettingsDialog } from './settings.js';
+import { openFind, closeFind, isFindWidgetOpen } from './findReplace.js';
 import { appState } from '../state.js';
 import { appWindow } from '../core/tauri.js';
 
@@ -31,6 +32,15 @@ export function setupKeyboardShortcuts() {
         // IME入力・変換中はショートカットを処理しない
         if (e.isComposing) {
             return;
+        }
+
+        // Esc キーで検索バーを閉じる
+        if (e.key === 'Escape' || e.code === 'Escape') {
+            if (isFindWidgetOpen()) {
+                e.preventDefault();
+                closeFind();
+                return;
+            }
         }
 
         // F5 キーで現在日時を挿入（Windowsメモ帳互換）
@@ -159,6 +169,16 @@ export function setupKeyboardShortcuts() {
             else if (e.key === ',' || e.code === 'Comma') {
                 e.preventDefault();
                 toggleSettingsDialog();
+            }
+            // 検索バーを開く: "f" / "F" キー
+            else if (e.key === 'f' || e.key === 'F' || e.code === 'KeyF') {
+                e.preventDefault();
+                openFind(false);
+            }
+            // 置換バーを開く: "h" / "H" キー
+            else if (e.key === 'h' || e.key === 'H' || e.code === 'KeyH') {
+                e.preventDefault();
+                openFind(true);
             }
             // 手動保存: "s" / "S" キー
             else if (e.key === 's' || e.key === 'S' || e.code === 'KeyS') {

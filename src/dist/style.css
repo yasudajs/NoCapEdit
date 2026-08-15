@@ -288,13 +288,232 @@ body {
     flex: 1;
     overflow: hidden;
     background-color: var(--bg-primary);
+    position: relative;
+}
+
+/* 検索・置換ウィジェット */
+.find-replace-widget {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    z-index: 500;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 12px;
+    min-width: 320px;
+}
+
+.find-replace-widget.hidden {
+    display: none;
+}
+
+.find-row,
+.replace-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.replace-row.hidden {
+    display: none;
+}
+
+.input-with-options {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    position: relative;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    transition: border-color 0.2s ease;
+}
+
+.input-with-options:focus-within {
+    border-color: var(--accent);
+}
+
+.find-input,
+.replace-input {
+    flex: 1;
+    padding: 5px 8px;
+    background-color: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 12px;
+    outline: none;
+    min-width: 140px;
+}
+
+.replace-input {
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 5px 8px;
+}
+
+.replace-input:focus {
+    border-color: var(--accent);
+}
+
+.toggle-btn {
+    padding: 2px 6px;
+    margin-right: 4px;
+    background-color: transparent;
+    border: 1px solid transparent;
+    color: var(--text-secondary);
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: bold;
+    line-height: 1;
+    transition: all 0.15s ease;
+}
+
+.toggle-btn:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.toggle-btn.active {
+    background-color: var(--accent);
+    color: var(--bg-primary);
+    border-color: var(--accent);
+}
+
+.match-count {
+    font-size: 11px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    min-width: 44px;
+    text-align: center;
+}
+
+.match-count.no-matches {
+    color: #e06c75;
+}
+
+.icon-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background-color: transparent;
+    border: 1px solid transparent;
+    color: var(--text-secondary);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+}
+
+.icon-btn:hover {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.icon-btn:focus-visible,
+.toggle-btn:focus-visible,
+.action-btn:focus-visible {
+    outline: 2px solid rgb(14, 165, 233);
+    outline-offset: 1px;
+}
+
+.action-btn {
+    padding: 5px 10px;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+}
+
+.action-btn:hover {
+    background-color: var(--accent);
+    border-color: var(--accent);
+    color: var(--bg-primary);
+}
+
+.action-btn.primary-btn {
+    background-color: rgba(56, 189, 248, 0.45); /* ハイライトの内側水色と同じ */
+    border-color: rgba(14, 165, 233, 0.8);      /* ハイライトの枠青と同じ */
+    color: var(--text-primary);                 /* 文字は黒（テーマのデフォルト）のまま */
+}
+
+.action-btn.primary-btn:hover {
+    background-color: rgba(56, 189, 248, 0.65);
+    border-color: rgb(14, 165, 233);
+    color: var(--text-primary);
+}
+
+/* テキストエディタ バックドロップ（検索ハイライト表示用） */
+.editor-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+    pointer-events: none;
+    background-color: transparent;
+    z-index: 1;
+}
+
+.editor-highlights {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    box-sizing: border-box;
+    padding: 16px;
+    font-family: var(--editor-font-family);
+    font-size: var(--editor-font-size);
+    line-height: var(--editor-line-height);
+    white-space: pre-wrap;
+    word-break: break-all;
+    tab-size: 4;
+    -moz-tab-size: 4;
+    color: transparent;
+    pointer-events: none;
+}
+
+.editor-highlights.word-wrap-off {
+    white-space: pre;
+    word-break: normal;
+}
+
+.editor-highlights mark.search-match {
+    background-color: rgba(234, 179, 8, 0.38);
+    color: transparent;
+    border-radius: 2px;
+    box-shadow: 0 0 0 1px rgba(234, 179, 8, 0.6);
+}
+
+.editor-highlights mark.search-match.current {
+    background-color: rgba(56, 189, 248, 0.45); /* 検索中はこの色がそのまま表示される */
+    color: transparent;
+    border-radius: 2px;
+    box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.8);
 }
 
 /* テキストエディタ */
 .editor {
+    position: relative;
+    z-index: 2;
     flex: 1;
     padding: 16px;
-    background-color: var(--bg-primary);
+    background-color: transparent;
     color: var(--text-primary);
     border: none;
     font-family: var(--editor-font-family);
@@ -316,8 +535,13 @@ body {
 }
 
 .editor::selection {
-    background-color: var(--accent);
-    color: var(--bg-primary);
+    background-color: rgba(56, 189, 248, 0.3); /* 通常のテキスト選択も薄い水色に */
+    color: inherit; /* 文字色は反転させずそのままにする */
+}
+
+/* 検索バーが開いている間は、背面の検索ハイライトを完全に表示するためブラウザの選択表示を透明化 */
+.editor.search-active::selection {
+    background-color: transparent;
 }
 
 .editor::-webkit-scrollbar {

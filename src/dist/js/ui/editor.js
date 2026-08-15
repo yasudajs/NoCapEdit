@@ -151,9 +151,15 @@ export function applyWordWrap(enable) {
     if (enable) {
         elements.editor.setAttribute('wrap', 'soft');
         elements.editor.classList.remove('word-wrap-off');
+        if (elements.editorHighlights) {
+            elements.editorHighlights.classList.remove('word-wrap-off');
+        }
     } else {
         elements.editor.setAttribute('wrap', 'off');
         elements.editor.classList.add('word-wrap-off');
+        if (elements.editorHighlights) {
+            elements.editorHighlights.classList.add('word-wrap-off');
+        }
     }
 }
 
@@ -179,7 +185,7 @@ export function getIndentString() {
 }
 
 // Undo/Redoスタックを破壊せずに選択範囲のテキストを置換するヘルパー
-function applyEditorTextWithUndo(replaceStart, replaceEnd, replacementText, newSelectionStart, newSelectionEnd) {
+export function applyEditorTextWithUndo(replaceStart, replaceEnd, replacementText, newSelectionStart, newSelectionEnd) {
     if (!elements.editor) return;
 
     elements.editor.focus();
