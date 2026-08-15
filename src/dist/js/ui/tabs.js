@@ -292,3 +292,16 @@ export async function switchTabByOffset(offset) {
 
     await switchTab(appState.tabs[nextIdx].id);
 }
+
+// タブ領域のマウスホイールによる水平スクロール
+export function setupTabScrollWheel() {
+    const tabsContainer = elements.tabsContainer;
+    if (!tabsContainer) return;
+
+    tabsContainer.addEventListener('wheel', (e) => {
+        if (e.deltaY !== 0) {
+            e.preventDefault();
+            tabsContainer.scrollLeft += e.deltaY;
+        }
+    }, { passive: false });
+}
