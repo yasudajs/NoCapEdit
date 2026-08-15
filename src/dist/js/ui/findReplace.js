@@ -1,7 +1,6 @@
 import { t } from '../../i18n.js';
 import { elements, appState } from '../state.js';
 import { applyEditorTextWithUndo, updateEditorMetrics } from './editor.js';
-import { updateStatus } from './tabs.js';
 
 let isMatchCase = false;
 let matches = [];
@@ -267,7 +266,10 @@ export function replaceAll() {
     applyEditorTextWithUndo(0, fullText.length, newFullText, 0, 0);
     
     const msg = (t('ui.find.replacedCount') || '{count} 件を置換しました').replace('{count}', totalCount);
-    updateStatus(msg);
+    if (elements.statusText) {
+        elements.statusText.textContent = msg;
+        elements.statusText.className = 'status-text';
+    }
     updateMatches(false);
 }
 
@@ -291,6 +293,13 @@ export function setupFindReplaceEvents() {
             }
         });
     }
+
+    // タブ切り替え時のハイライト同期
+    window.addEventListener('tab-switched', () => {
+        if (isFindWidgetOpen()) {
+            updateMatches(false);
+        }
+    });
 
     // 入力監視
     if (elements.findInput) {

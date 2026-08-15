@@ -5,7 +5,6 @@ import { generateTabId, getFileNameFromPath, isAutoCreatedFileName } from '../ut
 import { ensureTauriApi } from '../core/tauri.js';
 import { updateEditorMetrics, applyWordWrap } from './editor.js';
 import { autoSave, shouldDeleteEmptyFile, persistTabWithRecovery, shouldPersistContent } from '../core/fileSystem.js';
-import { isFindWidgetOpen, updateMatches } from './findReplace.js';
 
 export function getCurrentTab() {
     if (!appState.currentTab) {
@@ -188,9 +187,7 @@ export async function switchTab(tabId) {
                 }
             }
 
-            if (isFindWidgetOpen()) {
-                updateMatches(false);
-            }
+            window.dispatchEvent(new CustomEvent('tab-switched'));
         }
     } catch (error) {
         console.error('Failed to switch tab:', error);
