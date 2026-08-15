@@ -1,4 +1,4 @@
-import { increaseLineHeight, decreaseLineHeight, zoomIn, zoomOut, moveLine, duplicateLine, deleteLine } from './editor.js';
+import { increaseLineHeight, decreaseLineHeight, zoomIn, zoomOut, moveLine, duplicateLine, deleteLine, insertTimestamp } from './editor.js';
 import { triggerManualSave } from '../core/fileSystem.js';
 import { switchTabByOffset, createNewTab, closeTab } from './tabs.js';
 import { appState } from '../state.js';
@@ -32,9 +32,10 @@ export function setupKeyboardShortcuts() {
             return;
         }
 
-        // F5 キーによるリロードを禁止
-        if (e.key === 'F5' || e.code === 'F5') {
+        // F5 キーで現在日時を挿入（Windowsメモ帳互換）
+        if ((e.key === 'F5' || e.code === 'F5') && !e.ctrlKey && !e.altKey && !e.metaKey) {
             e.preventDefault();
+            insertTimestamp();
             return;
         }
 

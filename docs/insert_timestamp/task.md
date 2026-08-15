@@ -1,27 +1,27 @@
 # タスクリスト: タイムスタンプ挿入ショートカット（F5）追加
 
-- [ ] **1. バージョン番号の更新（4ファイル一括更新）**
-  - [ ] `Cargo.toml`: `0.1.80`
-  - [ ] `tauri.conf.json`: `0.1.80`
-  - [ ] `nsis/installer.nsi`: `0.1.80.0`
-  - [ ] `docs/DEVELOPMENT.md`: `0.1.80`
-- [ ] **2. 仕様書・ドキュメントの更新**
-  - [ ] `docs/spec.md`: F5 タイムスタンプ挿入仕様を明記
-  - [ ] `docs/SHORTCUTS.md`: F5 を追記
-  - [ ] `docs/USER_GUIDE.md`: F5 を追記
-- [ ] **3. タイムスタンプ挿入ロジックの実装とショートカット登録**
-  - [ ] `src/dist/js/ui/editor.js`: `insertTimestamp()` 関数の実装（`YYYY/MM/DD HH:mm` フォーマット）
-  - [ ] `src/dist/js/ui/shortcuts.js`: `F5` キーハンドラの実装（IMEガード・preventDefault含む）
-  - [ ] `src/dist/i18n.js`: `help.shortcuts.insertTimestamp` の追加
-  - [ ] `src/dist/help.html`: 「テキスト編集」カテゴリに F5 を追加
-- [ ] **4. 検証**
-  - [ ] ビルド確認（`cargo check` / `cargo test`）
-  - [ ] `F5` 押下時のタイムスタンプ挿入（フォーマット・カーソル位置）動作確認
-  - [ ] 範囲選択時の置換動作確認
-  - [ ] `Ctrl + Z`（Undo）および `Ctrl + Y`（Redo）の連動確認
-  - [ ] 日本語IME変換中のガード確認
-  - [ ] ヘルプ画面（`F1`）の表示確認
-- [ ] **5. 完了報告ドキュメント作成**
-  - [ ] `docs/insert_timestamp/walkthrough.md` の作成
-  - [ ] `docs/history.md` に `0.1.80` の変更履歴を追記
-  - [ ] コミット＆プッシュ
+- [x] **1. バージョン番号の更新（4ファイル一括更新）**
+  - [x] `Cargo.toml`: `0.1.80`
+  - [x] `tauri.conf.json`: `0.1.80`
+  - [x] `nsis/installer.nsi`: `0.1.80.0`
+  - [x] `docs/DEVELOPMENT.md`: `0.1.80`
+- [x] **2. 仕様書・ドキュメントの更新**
+  - [x] `docs/spec.md`: F5 タイムスタンプ挿入仕様を明記
+  - [x] `docs/SHORTCUTS.md`: F5 を追記
+  - [x] `docs/USER_GUIDE.md`: F5 を追記
+- [x] **3. タイムスタンプ挿入ロジックの実装とショートカット登録**
+  - [x] `src/dist/js/ui/editor.js`: `insertTimestamp()` 関数の実装（`YYYY/MM/DD HH:mm` フォーマット）
+  - [x] `src/dist/js/ui/shortcuts.js`: `F5` キーハンドラの実装（IMEガード・preventDefault含む）
+  - [x] `src/dist/i18n.js`: `help.shortcuts.insertTimestamp` の追加
+  - [x] `src/dist/help.html`: 「テキスト編集」カテゴリに F5 を追加
+- [x] **4. 検証**
+  - [x] ビルド確認（`cargo check` / `cargo test`）
+  - [x] `F5` 押下時のタイムスタンプ挿入（フォーマット・カーソル位置）動作確認
+  - [x] 範囲選択時の置換動作確認
+  - [x] `Ctrl + Z`（Undo）および `Ctrl + Y`（Redo）の連動確認
+  - [x] 日本語IME変換中のガード確認
+  - [x] ヘルプ画面（`F1`）の表示確認
+- [x] **5. 完了報告ドキュメント作成**
+  - [x] `docs/insert_timestamp/walkthrough.md` の作成
+  - [x] `docs/history.md` に `0.1.80` の変更履歴を追記
+  - [x] コミット＆プッシュ
