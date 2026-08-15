@@ -12,12 +12,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // テーマの適用
+    console.log("[help.js] window.location.href:", window.location.href);
+    console.log("[help.js] window.location.search:", window.location.search);
     const urlParams = new URLSearchParams(window.location.search);
     const theme = urlParams.get('theme');
+    console.log("[help.js] URLから取得したtheme:", theme);
+
     if (theme === 'light') {
         document.body.classList.add('light-theme');
+        console.log("[help.js] light-theme クラスを適用しました");
     } else if (theme === 'soft-dark') {
         document.body.classList.add('soft-dark-theme');
+        console.log("[help.js] soft-dark-theme クラスを適用しました");
+    } else {
+        console.log("[help.js] デフォルトのダークテーマ（クラス付与なし）となります");
     }
 });
 
