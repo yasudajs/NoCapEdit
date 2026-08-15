@@ -1,0 +1,30 @@
+# タスクリスト: 設定画面のキーボード完全操作（フォーカス制御とナビゲーション）
+
+- [ ] **1. バージョン番号の更新（4ファイル一括更新）**
+  - [ ] `Cargo.toml`: `0.1.82`
+  - [ ] `tauri.conf.json`: `0.1.82`
+  - [ ] `nsis/installer.nsi`: `0.1.82.0`
+  - [ ] `docs/DEVELOPMENT.md`: `0.1.82`
+- [ ] **2. 仕様書・ドキュメントの更新**
+  - [ ] `docs/spec.md`: 設定画面のキーボードナビゲーション仕様を明記
+  - [ ] `docs/SHORTCUTS.md`: 操作説明を更新
+  - [ ] `docs/USER_GUIDE.md`: 操作説明を更新
+- [ ] **3. 初期フォーカス・キーナビゲーション・スタイルの実装**
+  - [ ] `src/dist/js/ui/settings.js`:
+    - `openSettingsDialog()` での `elements.browseFolderBtn.focus()` 初期フォーカス実装
+    - 設定ドック内での `Tab` / `Shift + Tab` フォーカストラップ（ループ）制御の実装
+  - [ ] `src/dist/js/ui/editor.js`:
+    - `handleTabKey(e)` で設定ドックオープン時のインデント抑制ガードを追加
+  - [ ] `src/dist/style.css`:
+    - 設定ドック内のコントロールに対する `:focus-visible` スタイル強化
+- [ ] **4. 検証**
+  - [ ] ビルド確認（`cargo check` / `cargo test`）
+  - [ ] `Ctrl + ,` 押下時に [参照...] ボタンに初期フォーカスが当たることの確認
+  - [ ] `Tab` / `Shift + Tab` による設定項目間の順次移動とループの確認
+  - [ ] 方向キー `↑` / `↓` によるセレクトボックス値の変更確認
+  - [ ] `Esc` または `Ctrl + ,` で設定を閉じ、エディタのカーソル位置へフォーカス復帰することの確認
+  - [ ] 設定操作後もテキストの Undo/Redo が維持されることの確認
+- [ ] **5. 完了報告ドキュメント作成**
+  - [ ] `docs/settings_keyboard_navigation/walkthrough.md` の作成
+  - [ ] `docs/history.md` に `0.1.82` の変更履歴を追記
+  - [ ] コミット＆プッシュ
