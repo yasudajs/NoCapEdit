@@ -2,7 +2,7 @@
 
 - [x] 作業用ブランチ `fix/review-v0.1.86-fixes` の作成 <!-- id: 0 -->
 - [x] バージョン番号の更新（0.1.86: 4ファイルセット） <!-- id: 1 -->
-- [ ] **Step 1: `replaceAll` の `$` 特殊文字バグ修正 🔴** (`findReplace.js`) <!-- id: 2 -->
+- [x] **Step 1: `replaceAll` の `$` 特殊文字バグ修正 🔴** (`findReplace.js`) <!-- id: 2 -->
 - [ ] **Step 2: `input` イベント二重発火修正 🔴** (`editor.js`) <!-- id: 3 -->
 - [ ] **Step 3: 到達不能コード（Dead Code）除去 🟡** (`shortcuts.js`) <!-- id: 4 -->
 - [ ] **Step 4: 検索バー入力時のデバウンス導入 🟡** (`findReplace.js`) <!-- id: 5 -->

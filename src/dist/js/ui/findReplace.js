@@ -265,7 +265,7 @@ export function replaceAll() {
         newFullText = fullText.split(query).join(replaceText);
     } else {
         const regex = new RegExp(escapeRegExp(query), 'gi');
-        newFullText = fullText.replace(regex, replaceText);
+        newFullText = fullText.replace(regex, () => replaceText);
     }
 
     applyEditorTextWithUndo(0, fullText.length, newFullText, 0, 0);
