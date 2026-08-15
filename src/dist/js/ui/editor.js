@@ -147,6 +147,7 @@ export function decreaseLineHeight() {
 
 export function applyWordWrap(enable) {
     if (!elements.editor) return;
+    elements.editor.wrap = enable ? 'soft' : 'off';
     if (enable) {
         elements.editor.setAttribute('wrap', 'soft');
         elements.editor.classList.remove('word-wrap-off');
@@ -158,10 +159,13 @@ export function applyWordWrap(enable) {
 
 export function toggleWordWrap() {
     if (!appState.currentTab) return;
-    const currentWrap = appState.currentTab.wordWrap !== undefined ? appState.currentTab.wordWrap : appState.wordWrap;
+    const tab = appState.tabs.find(t => t.id === appState.currentTab);
+    if (!tab) return;
+    const currentWrap = tab.wordWrap !== undefined ? tab.wordWrap : appState.wordWrap;
     const newWrap = !currentWrap;
-    appState.currentTab.wordWrap = newWrap;
+    tab.wordWrap = newWrap;
     applyWordWrap(newWrap);
+    console.log(`[WordWrap] タブ "${tab.fileName}" の折り返しを ${newWrap ? 'ON (折り返す)' : 'OFF (折り返さない)'} に切り替えました`);
 }
 
 export function getIndentString() {

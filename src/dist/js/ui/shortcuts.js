@@ -93,6 +93,7 @@ export function setupKeyboardShortcuts() {
                 // 行の折り返し切り替え: Alt + Z
                 else if (e.key === 'z' || e.key === 'Z' || e.code === 'KeyZ') {
                     e.preventDefault();
+                    console.log("[shortcuts.js] Alt+Z 押下検知 -> toggleWordWrap()");
                     toggleWordWrap();
                     return;
                 }
