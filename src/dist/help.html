@@ -7,10 +7,15 @@
     <link rel="stylesheet" href="style.css">
     <style>
         body {
-            padding: 30px;
+            padding: 30px 30px 40px 30px;
             overflow-y: auto;
             background-color: var(--bg-primary, #1e1e1e);
             color: var(--text-primary, #d4d4d4);
+        }
+        body::after {
+            content: '';
+            display: block;
+            height: 30px;
         }
         h1 {
             font-size: 20px;
