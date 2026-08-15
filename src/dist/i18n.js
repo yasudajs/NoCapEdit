@@ -119,6 +119,7 @@ const DICT = {
             shortcuts: {
                 save: "手動保存",
                 newTab: "新規タブ追加",
+                closeTab: "タブを閉じる",
                 openExplorer: "エクスプローラーで開く",
                 switchTab: "次のタブへ切り替え",
                 switchTabPrev: "前のタブへ切り替え",
@@ -126,6 +127,7 @@ const DICT = {
                 zoomOut: "ズームアウト (縮小)",
                 lineHeightInc: "行間を広げる",
                 lineHeightDec: "行間を狭める",
+                exitApp: "アプリを終了",
                 closeHelp: "ヘルプを閉じる"
             }
         },
