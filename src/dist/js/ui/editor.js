@@ -128,6 +128,16 @@ export function increaseLineHeight() {
     }
 }
 
+export const DEFAULT_FONT_SIZE = 20;
+export const DEFAULT_LINE_HEIGHT = 1.5;
+
+export function resetZoomAndLineHeight() {
+    appState.fontSize = DEFAULT_FONT_SIZE;
+    appState.lineHeight = DEFAULT_LINE_HEIGHT;
+    applyFontSize();
+    applyLineHeight();
+}
+
 export function decreaseLineHeight() {
     if (appState.lineHeight > MIN_LINE_HEIGHT) {
         appState.lineHeight = Math.max(MIN_LINE_HEIGHT, Number((appState.lineHeight - 0.1).toFixed(1)));
