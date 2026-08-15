@@ -32,6 +32,32 @@ export function setupKeyboardShortcuts() {
             return;
         }
 
+        // F1 キーでヘルプ画面（ショートカット一覧）を開く
+        if (e.key === 'F1' || e.code === 'F1') {
+            e.preventDefault();
+            if (window.__TAURI__) {
+                console.log("[shortcuts.js] F1キー押下. appState.theme:", appState.theme);
+                const { WebviewWindow } = window.__TAURI__.window;
+                const existingWindow = WebviewWindow.getByLabel('help_screen');
+                if (existingWindow) {
+                    console.log("[shortcuts.js] 既存のヘルプウィンドウにフォーカスします");
+                    existingWindow.setFocus();
+                } else {
+                    const helpUrl = `help.html?theme=${appState.theme || 'dark'}`;
+                    console.log("[shortcuts.js] 新規ヘルプウィンドウを作成します. URL:", helpUrl);
+                    new WebviewWindow('help_screen', {
+                        url: helpUrl,
+                        title: 'ショートカット一覧',
+                        width: 600,
+                        height: 700,
+                        resizable: true,
+                        center: true
+                    });
+                }
+            }
+            return;
+        }
+
         // Ctrl + Tab / Ctrl + Shift + Tab でタブ切り替え
         if (e.key === 'Tab' && e.ctrlKey) {
             e.preventDefault();

@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "NoCapEdit",
-    "version": "0.1.74"
+    "version": "0.1.75"
   },
   "tauri": {
     "bundle": {
@@ -46,7 +46,10 @@
       },
       "window": {
         "setTitle": true,
-        "show": true
+        "show": true,
+        "create": true,
+        "close": true,
+        "setFocus": true
       }
     },
     "windows": [],
