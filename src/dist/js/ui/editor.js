@@ -238,3 +238,122 @@ export function handleTabKey(e) {
         elements.editor.dispatchEvent(new Event('input'));
     }
 }
+
+// 選択範囲が跨る行全体の境界を取得するヘルパー
+function getSelectionLineBounds() {
+    if (!elements.editor) return null;
+    const value = elements.editor.value;
+    const start = elements.editor.selectionStart;
+    const end = elements.editor.selectionEnd;
+
+    // 選択開始位置が含まれる行の先頭
+    const lineStart = (start === 0) ? 0 : value.lastIndexOf('\n', start - 1) + 1;
+
+    // 選択終了位置が含まれる行の末尾
+    // ※ start !== end かつ end が行頭 (\nの直後) の場合、その行は選択範囲に含めない
+    let effectiveEnd = end;
+    if (start !== end && end > lineStart && value[end - 1] === '\n') {
+        effectiveEnd = end - 1;
+    }
+
+    const nextNewline = value.indexOf('\n', effectiveEnd);
+    const lineEnd = (nextNewline === -1) ? value.length : nextNewline;
+
+    return {
+        start,
+        end,
+        lineStart,
+        lineEnd,
+        linesText: value.substring(lineStart, lineEnd)
+    };
+}
+
+// 行の上下移動
+export function moveLine(direction) {
+    if (!elements.editor) return;
+    const bounds = getSelectionLineBounds();
+    if (!bounds) return;
+
+    const { start, end, lineStart, lineEnd, linesText } = bounds;
+    const value = elements.editor.value;
+
+    if (direction === 'up') {
+        if (lineStart === 0) return; // すでに最上行
+
+        const prevLineStart = (lineStart === 1) ? 0 : value.lastIndexOf('\n', lineStart - 2) + 1;
+        const prevLine = value.substring(prevLineStart, lineStart - 1);
+        const offset = prevLine.length + 1;
+
+        elements.editor.value = value.substring(0, prevLineStart) + linesText + '\n' + prevLine + value.substring(lineEnd);
+        elements.editor.selectionStart = start - offset;
+        elements.editor.selectionEnd = end - offset;
+    } else if (direction === 'down') {
+        if (lineEnd === value.length) return; // すでに最下行
+
+        const nextNewline = value.indexOf('\n', lineEnd + 1);
+        const nextLineEnd = (nextNewline === -1) ? value.length : nextNewline;
+        const nextLine = value.substring(lineEnd + 1, nextLineEnd);
+        const offset = nextLine.length + 1;
+
+        elements.editor.value = value.substring(0, lineStart) + nextLine + '\n' + linesText + value.substring(nextLineEnd);
+        elements.editor.selectionStart = start + offset;
+        elements.editor.selectionEnd = end + offset;
+    }
+
+    elements.editor.dispatchEvent(new Event('input'));
+}
+
+// 行の上下複製
+export function duplicateLine(direction) {
+    if (!elements.editor) return;
+    const bounds = getSelectionLineBounds();
+    if (!bounds) return;
+
+    const { start, end, lineStart, lineEnd, linesText } = bounds;
+    const value = elements.editor.value;
+    const offset = linesText.length + 1;
+
+    if (direction === 'down') {
+        elements.editor.value = value.substring(0, lineEnd) + '\n' + linesText + value.substring(lineEnd);
+        elements.editor.selectionStart = start + offset;
+        elements.editor.selectionEnd = end + offset;
+    } else if (direction === 'up') {
+        elements.editor.value = value.substring(0, lineStart) + linesText + '\n' + value.substring(lineStart);
+        elements.editor.selectionStart = start;
+        elements.editor.selectionEnd = end;
+    }
+
+    elements.editor.dispatchEvent(new Event('input'));
+}
+
+// 行の削除
+export function deleteLine() {
+    if (!elements.editor) return;
+    const bounds = getSelectionLineBounds();
+    if (!bounds) return;
+
+    const { start, lineStart, lineEnd } = bounds;
+    const value = elements.editor.value;
+    const col = start - lineStart;
+
+    let delStart = lineStart;
+    let delEnd = lineEnd;
+
+    if (lineEnd < value.length) {
+        // 後ろに改行がある場合は改行を含めて削除
+        delEnd = lineEnd + 1;
+    } else if (lineStart > 0) {
+        // 最終行で前に改行がある場合は手前の改行を含めて削除
+        delStart = lineStart - 1;
+    }
+
+    elements.editor.value = value.substring(0, delStart) + value.substring(delEnd);
+
+    // 削除後のカーソル位置を調整
+    const newNextNewline = elements.editor.value.indexOf('\n', delStart);
+    const newCurrentLineEnd = (newNextNewline === -1) ? elements.editor.value.length : newNextNewline;
+    const newCursorPos = Math.min(delStart + col, newCurrentLineEnd);
+
+    elements.editor.selectionStart = elements.editor.selectionEnd = newCursorPos;
+    elements.editor.dispatchEvent(new Event('input'));
+}

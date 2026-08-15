@@ -1,4 +1,4 @@
-import { increaseLineHeight, decreaseLineHeight, zoomIn, zoomOut } from './editor.js';
+import { increaseLineHeight, decreaseLineHeight, zoomIn, zoomOut, moveLine, duplicateLine, deleteLine } from './editor.js';
 import { triggerManualSave } from '../core/fileSystem.js';
 import { switchTabByOffset, createNewTab, closeTab } from './tabs.js';
 import { appState } from '../state.js';
@@ -27,6 +27,11 @@ export function setupKeyboardShortcuts() {
 
     // 各種ショートカットキー監視
     window.addEventListener('keydown', async (e) => {
+        // IME入力・変換中はショートカットを処理しない
+        if (e.isComposing) {
+            return;
+        }
+
         // F5 キーによるリロードを禁止
         if (e.key === 'F5' || e.code === 'F5') {
             e.preventDefault();
@@ -57,6 +62,42 @@ export function setupKeyboardShortcuts() {
                 }
             }
             return;
+        }
+
+        // Alt キーを使用したショートカット（行移動・行複製）
+        if (e.altKey && !e.ctrlKey) {
+            if (e.shiftKey) {
+                // 行の上下複製: Alt + Shift + ↑ / ↓
+                if (e.key === 'ArrowUp' || e.code === 'ArrowUp') {
+                    e.preventDefault();
+                    duplicateLine('up');
+                    return;
+                } else if (e.key === 'ArrowDown' || e.code === 'ArrowDown') {
+                    e.preventDefault();
+                    duplicateLine('down');
+                    return;
+                }
+            } else {
+                // 行の上下移動: Alt + ↑ / ↓
+                if (e.key === 'ArrowUp' || e.code === 'ArrowUp') {
+                    e.preventDefault();
+                    moveLine('up');
+                    return;
+                } else if (e.key === 'ArrowDown' || e.code === 'ArrowDown') {
+                    e.preventDefault();
+                    moveLine('down');
+                    return;
+                }
+            }
+        }
+
+        // Ctrl + Shift + K で行削除
+        if (e.ctrlKey && e.shiftKey && !e.altKey) {
+            if (e.key === 'k' || e.key === 'K' || e.code === 'KeyK') {
+                e.preventDefault();
+                deleteLine();
+                return;
+            }
         }
 
         // Ctrl + Tab / Ctrl + Shift + Tab でタブ切り替え
