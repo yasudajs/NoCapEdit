@@ -4,7 +4,8 @@ import { incrementUnsavedTabCounter } from '../state.js';
 import { generateTabId, getFileNameFromPath, isAutoCreatedFileName } from '../utils/helpers.js';
 import { ensureTauriApi } from '../core/tauri.js';
 import { updateEditorMetrics, applyWordWrap } from './editor.js';
-import { persistTabWithRecovery } from '../core/fileSystem.js';
+import { autoSave, shouldDeleteEmptyFile, persistTabWithRecovery, shouldPersistContent } from '../core/fileSystem.js';
+import { isFindWidgetOpen, updateMatches } from './findReplace.js';
 
 export function getCurrentTab() {
     if (!appState.currentTab) {
@@ -185,6 +186,10 @@ export async function switchTab(tabId) {
                     elements.editor.selectionEnd = len;
                     elements.editor.scrollTop = 0;
                 }
+            }
+
+            if (isFindWidgetOpen()) {
+                updateMatches(false);
             }
         }
     } catch (error) {

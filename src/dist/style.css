@@ -445,11 +445,63 @@ body {
     color: var(--bg-primary);
 }
 
+/* テキストエディタ バックドロップ（検索ハイライト表示用） */
+.editor-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+    pointer-events: none;
+    background-color: transparent;
+    z-index: 1;
+}
+
+.editor-highlights {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    box-sizing: border-box;
+    padding: 16px;
+    font-family: var(--editor-font-family);
+    font-size: var(--editor-font-size);
+    line-height: var(--editor-line-height);
+    white-space: pre-wrap;
+    word-break: break-all;
+    tab-size: 4;
+    -moz-tab-size: 4;
+    color: transparent;
+    pointer-events: none;
+}
+
+.editor-highlights.word-wrap-off {
+    white-space: pre;
+    word-break: normal;
+}
+
+.editor-highlights mark.search-match {
+    background-color: rgba(234, 179, 8, 0.38);
+    color: transparent;
+    border-radius: 2px;
+    box-shadow: 0 0 0 1px rgba(234, 179, 8, 0.6);
+}
+
+.editor-highlights mark.search-match.current {
+    background-color: var(--accent);
+    color: transparent;
+    border-radius: 2px;
+    box-shadow: 0 0 0 2px var(--accent);
+}
+
 /* テキストエディタ */
 .editor {
+    position: relative;
+    z-index: 2;
     flex: 1;
     padding: 16px;
-    background-color: var(--bg-primary);
+    background-color: transparent;
     color: var(--text-primary);
     border: none;
     font-family: var(--editor-font-family);

@@ -151,9 +151,15 @@ export function applyWordWrap(enable) {
     if (enable) {
         elements.editor.setAttribute('wrap', 'soft');
         elements.editor.classList.remove('word-wrap-off');
+        if (elements.editorHighlights) {
+            elements.editorHighlights.classList.remove('word-wrap-off');
+        }
     } else {
         elements.editor.setAttribute('wrap', 'off');
         elements.editor.classList.add('word-wrap-off');
+        if (elements.editorHighlights) {
+            elements.editorHighlights.classList.add('word-wrap-off');
+        }
     }
 }
 
