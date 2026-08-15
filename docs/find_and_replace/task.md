@@ -1,0 +1,41 @@
+# タスクリスト: 検索・置換（Find & Replace）機能
+
+- [ ] **1. バージョン番号の更新（4ファイル一括更新）**
+  - [ ] `Cargo.toml`: `0.1.84`
+  - [ ] `tauri.conf.json`: `0.1.84`
+  - [ ] `nsis/installer.nsi`: `0.1.84.0`
+  - [ ] `docs/DEVELOPMENT.md`: `0.1.84`
+- [ ] **2. 仕様書・ドキュメントの更新**
+  - [ ] `docs/spec.md`: 検索・置換機能仕様を明記
+  - [ ] `docs/SHORTCUTS.md`: `Ctrl + F`, `Ctrl + H` を追記
+  - [ ] `docs/USER_GUIDE.md`: 操作説明を追記
+- [ ] **3. UI構造とスタイルの実装**
+  - [ ] `src/dist/index.html`: `#findReplaceWidget`（検索行・置換行）の追加
+  - [ ] `src/dist/style.css`: 右上フロートパネルのスタイル定義（テーマ対応、ボタン、フォーカス）
+  - [ ] `src/dist/i18n.js`: 検索・置換UIテキストおよびショートカット項目の追加
+- [ ] **4. 検索・置換ロジックの実装**
+  - [ ] `src/dist/js/ui/findReplace.js`:
+    - `openFind(focusReplace)`: バー表示、選択テキスト自動入力、フォーカス制御
+    - `closeFind()`: バー非表示、エディタフォーカス復帰
+    - `findNext()` / `findPrev()`: 一致箇所の探索、選択、スクロール、件数表示更新
+    - `replaceOne()`: 現在マッチの置換と次へのジャンプ（Undo連動）
+    - `replaceAll()`: 全マッチの一括置換（Undo連動）
+    - 大文字小文字区別トグル
+    - キーボードナビゲーション（Tab / Shift+Tab / Enter / Shift+Enter / Alt+A / Esc）
+  - [ ] `src/dist/js/state.js`: DOM要素キャッシュの追加
+  - [ ] `src/dist/js/ui/shortcuts.js`: `Ctrl + F`, `Ctrl + H` キーハンドラ
+  - [ ] `src/dist/js/main.js`: イベント初期化
+  - [ ] `src/dist/help.html`: ヘルプ画面に項目追加
+- [ ] **5. 検証**
+  - [ ] ビルド確認（`cargo check` / `cargo test`）
+  - [ ] `Ctrl + F` での検索バー表示・選択テキスト自動入力・検索欄フォーカス
+  - [ ] `Ctrl + H` での置換バー展開・置換欄フォーカス
+  - [ ] 検索語句入力時の一致件数（例: `1 / 5`）表示と Enter / Shift+Enter での移動
+  - [ ] 1件置換およびすべて置換（`Alt + A`）の動作確認
+  - [ ] 置換後の `Ctrl + Z`（Undo）による復元確認
+  - [ ] `Esc` で閉じてエディタの元のカーソル位置へ復帰することの確認
+  - [ ] ヘルプ画面（`F1`）の表示確認
+- [ ] **6. 完了報告ドキュメント作成**
+  - [ ] `docs/find_and_replace/walkthrough.md` の作成
+  - [ ] `docs/history.md` に `0.1.84` の変更履歴を追記
+  - [ ] コミット＆プッシュ
