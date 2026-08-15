@@ -489,10 +489,10 @@ body {
 }
 
 .editor-highlights mark.search-match.current {
-    background-color: var(--accent);
+    background-color: rgba(56, 189, 248, 0.45); /* 薄めの水色 */
     color: transparent;
     border-radius: 2px;
-    box-shadow: 0 0 0 2px var(--accent);
+    box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.8);
 }
 
 /* テキストエディタ */
