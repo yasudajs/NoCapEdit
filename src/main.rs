@@ -42,8 +42,12 @@ fn main() {
             .min_inner_size(WINDOW_MIN_WIDTH, WINDOW_MIN_HEIGHT)
             .resizable(true)
             .fullscreen(false)
-            .visible(false)
+            .visible(true)
             .build()?;
+            
+            // デバッグ用: 起動時にDevToolsを開く
+            #[cfg(debug_assertions)]
+            window.open_devtools();
             
             // 起動時のテーマを適用
             let settings = AppSettings::load();

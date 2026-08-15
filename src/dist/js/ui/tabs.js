@@ -4,7 +4,7 @@ import { incrementUnsavedTabCounter } from '../state.js';
 import { generateTabId, getFileNameFromPath, isAutoCreatedFileName } from '../utils/helpers.js';
 import { ensureTauriApi } from '../core/tauri.js';
 import { updateEditorMetrics, applyWordWrap } from './editor.js';
-import { autoSave, shouldDeleteEmptyFile, persistTabWithRecovery, shouldPersistContent } from '../core/fileSystem.js';
+import { autoSave, shouldDeleteEmptyFile, persistTabWithRecovery } from '../core/fileSystem.js';
 
 export function getCurrentTab() {
     if (!appState.currentTab) {
