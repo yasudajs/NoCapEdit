@@ -1,0 +1,28 @@
+# タスクリスト: エディタ操作（行操作・インデント）のUndo/Redo（Ctrl+Z / Ctrl+Y）対応
+
+- [ ] **1. バージョン番号の更新（4ファイル一括更新）**
+  - [ ] `Cargo.toml`: `0.1.78`
+  - [ ] `tauri.conf.json`: `0.1.78`
+  - [ ] `nsis/installer.nsi`: `0.1.78.0`
+  - [ ] `docs/DEVELOPMENT.md`: `0.1.78`
+- [ ] **2. 仕様書・ドキュメントの更新**
+  - [ ] `docs/spec.md`: Undo/Redo 連動仕様を明記
+- [ ] **3. Undo対応テキスト置換ヘルパーの実装と各操作の改修**
+  - [ ] `src/dist/js/ui/editor.js`:
+    - `applyEditorTextWithUndo` ヘルパーの実装（`document.execCommand` 活用）
+    - `moveLine` の改修
+    - `duplicateLine` の改修
+    - `deleteLine` の改修
+    - `handleTabKey`（インデント・アンインデント）の改修
+- [ ] **4. 検証**
+  - [ ] ビルド確認（`cargo check` / `cargo test`）
+  - [ ] 行削除 (`Ctrl + Shift + K`) 後の `Ctrl + Z` / `Ctrl + Y` 動作確認
+  - [ ] 行移動 (`Alt + ↑ / ↓`) 後の `Ctrl + Z` / `Ctrl + Y` 動作確認
+  - [ ] 行複製 (`Alt + Shift + ↑ / ↓`) 後の `Ctrl + Z` / `Ctrl + Y` 動作確認
+  - [ ] インデント (`Tab` / `Shift + Tab`) 後の `Ctrl + Z` / `Ctrl + Y` 動作確認
+  - [ ] 通常の文字入力と行操作を混在させた連続 Undo/Redo の動作確認
+  - [ ] 複数行選択時の Undo/Redo 動作確認
+- [ ] **5. 完了報告ドキュメント作成**
+  - [ ] `docs/editor_undo_redo_support/walkthrough.md` の作成
+  - [ ] `docs/history.md` に `0.1.78` の変更履歴を追記
+  - [ ] コミット＆プッシュ
