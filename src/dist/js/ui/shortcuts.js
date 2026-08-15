@@ -42,7 +42,7 @@ export function setupKeyboardShortcuts() {
                     existingWindow.setFocus();
                 } else {
                     new WebviewWindow('help_screen', {
-                        url: 'help.html',
+                        url: `help.html?theme=${appState.theme || 'dark'}`,
                         title: 'ショートカット一覧',
                         width: 600,
                         height: 700,

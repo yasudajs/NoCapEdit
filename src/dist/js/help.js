@@ -10,6 +10,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (titleText && window.__TAURI__) {
         window.__TAURI__.window.appWindow.setTitle(titleText).catch(console.error);
     }
+
+    // テーマの適用
+    const urlParams = new URLSearchParams(window.location.search);
+    const theme = urlParams.get('theme');
+    if (theme === 'light') {
+        document.body.classList.add('light-theme');
+    } else if (theme === 'soft-dark') {
+        document.body.classList.add('soft-dark-theme');
+    }
 });
 
 // キーボードイベントの監視
