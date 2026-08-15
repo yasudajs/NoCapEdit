@@ -145,6 +145,27 @@ export function getIndentString() {
     }
 }
 
+// Undo/Redoスタックを破壊せずに選択範囲のテキストを置換するヘルパー
+function applyEditorTextWithUndo(replaceStart, replaceEnd, replacementText, newSelectionStart, newSelectionEnd) {
+    if (!elements.editor) return;
+
+    elements.editor.focus();
+    elements.editor.setSelectionRange(replaceStart, replaceEnd);
+
+    // document.execCommand('insertText') を使用することでブラウザネイティブのUndo/Redoスタックに正常に記録
+    if (!document.execCommand('insertText', false, replacementText)) {
+        // execCommand が失敗した場合のフォールバック
+        elements.editor.setRangeText(replacementText, replaceStart, replaceEnd, 'end');
+    }
+
+    if (newSelectionStart !== undefined && newSelectionEnd !== undefined) {
+        elements.editor.setSelectionRange(newSelectionStart, newSelectionEnd);
+    }
+
+    // 自動保存やステータス表示を連動
+    elements.editor.dispatchEvent(new Event('input'));
+}
+
 export function handleTabKey(e) {
     if (e.key === 'Tab') {
         // CtrlキーやAltキーが同時に押されている場合は、タブ移動などのショートカットとして処理するため、ここでは無視する
@@ -167,8 +188,7 @@ export function handleTabKey(e) {
             // -- 通常の Tab (インデント追加) --
             if (!isMultiLine) {
                 // 単一行: カーソル位置にインデントを挿入
-                elements.editor.value = value.substring(0, start) + indentStr + value.substring(end);
-                elements.editor.selectionStart = elements.editor.selectionEnd = start + indentStr.length;
+                applyEditorTextWithUndo(start, end, indentStr, start + indentStr.length, start + indentStr.length);
             } else {
                 // 複数行: 選択行すべての先頭にインデントを追加
                 const startLinePos = value.substring(0, start).lastIndexOf('\n') + 1;
@@ -180,13 +200,9 @@ export function handleTabKey(e) {
 
                 const newLines = lines.map(line => indentStr + line);
                 const newText = newLines.join('\n');
-
-                elements.editor.value = value.substring(0, startLinePos) + newText + value.substring(actualEndLinePos);
-
-                // 選択範囲を維持
                 const insertedCount = lines.length * indentStr.length;
-                elements.editor.selectionStart = start + indentStr.length;
-                elements.editor.selectionEnd = end + insertedCount;
+
+                applyEditorTextWithUndo(startLinePos, actualEndLinePos, newText, start + indentStr.length, end + insertedCount);
             }
         } else {
             // -- Shift + Tab (インデント削除) --
@@ -227,15 +243,14 @@ export function handleTabKey(e) {
             });
 
             const newText = newLines.join('\n');
-            elements.editor.value = value.substring(0, startLinePos) + newText + value.substring(actualEndLinePos);
-
-            // カーソル選択範囲を調整
-            elements.editor.selectionStart = Math.max(startLinePos, start - firstLineRemovedCount);
-            elements.editor.selectionEnd = Math.max(startLinePos, end - totalRemovedCount);
+            applyEditorTextWithUndo(
+                startLinePos,
+                actualEndLinePos,
+                newText,
+                Math.max(startLinePos, start - firstLineRemovedCount),
+                Math.max(startLinePos, end - totalRemovedCount)
+            );
         }
-
-        // 自動保存等を連動させるための input イベント発火
-        elements.editor.dispatchEvent(new Event('input'));
     }
 }
 
@@ -283,10 +298,9 @@ export function moveLine(direction) {
         const prevLineStart = (lineStart === 1) ? 0 : value.lastIndexOf('\n', lineStart - 2) + 1;
         const prevLine = value.substring(prevLineStart, lineStart - 1);
         const offset = prevLine.length + 1;
+        const newBlockText = linesText + '\n' + prevLine;
 
-        elements.editor.value = value.substring(0, prevLineStart) + linesText + '\n' + prevLine + value.substring(lineEnd);
-        elements.editor.selectionStart = start - offset;
-        elements.editor.selectionEnd = end - offset;
+        applyEditorTextWithUndo(prevLineStart, lineEnd, newBlockText, start - offset, end - offset);
     } else if (direction === 'down') {
         if (lineEnd === value.length) return; // すでに最下行
 
@@ -294,13 +308,10 @@ export function moveLine(direction) {
         const nextLineEnd = (nextNewline === -1) ? value.length : nextNewline;
         const nextLine = value.substring(lineEnd + 1, nextLineEnd);
         const offset = nextLine.length + 1;
+        const newBlockText = nextLine + '\n' + linesText;
 
-        elements.editor.value = value.substring(0, lineStart) + nextLine + '\n' + linesText + value.substring(nextLineEnd);
-        elements.editor.selectionStart = start + offset;
-        elements.editor.selectionEnd = end + offset;
+        applyEditorTextWithUndo(lineStart, nextLineEnd, newBlockText, start + offset, end + offset);
     }
-
-    elements.editor.dispatchEvent(new Event('input'));
 }
 
 // 行の上下複製
@@ -310,20 +321,13 @@ export function duplicateLine(direction) {
     if (!bounds) return;
 
     const { start, end, lineStart, lineEnd, linesText } = bounds;
-    const value = elements.editor.value;
     const offset = linesText.length + 1;
 
     if (direction === 'down') {
-        elements.editor.value = value.substring(0, lineEnd) + '\n' + linesText + value.substring(lineEnd);
-        elements.editor.selectionStart = start + offset;
-        elements.editor.selectionEnd = end + offset;
+        applyEditorTextWithUndo(lineEnd, lineEnd, '\n' + linesText, start + offset, end + offset);
     } else if (direction === 'up') {
-        elements.editor.value = value.substring(0, lineStart) + linesText + '\n' + value.substring(lineStart);
-        elements.editor.selectionStart = start;
-        elements.editor.selectionEnd = end;
+        applyEditorTextWithUndo(lineStart, lineStart, linesText + '\n', start, end);
     }
-
-    elements.editor.dispatchEvent(new Event('input'));
 }
 
 // 行の削除
@@ -347,13 +351,10 @@ export function deleteLine() {
         delStart = lineStart - 1;
     }
 
-    elements.editor.value = value.substring(0, delStart) + value.substring(delEnd);
-
-    // 削除後のカーソル位置を調整
-    const newNextNewline = elements.editor.value.indexOf('\n', delStart);
-    const newCurrentLineEnd = (newNextNewline === -1) ? elements.editor.value.length : newNextNewline;
+    const valueAfterDel = value.substring(0, delStart) + value.substring(delEnd);
+    const newNextNewline = valueAfterDel.indexOf('\n', delStart);
+    const newCurrentLineEnd = (newNextNewline === -1) ? valueAfterDel.length : newNextNewline;
     const newCursorPos = Math.min(delStart + col, newCurrentLineEnd);
 
-    elements.editor.selectionStart = elements.editor.selectionEnd = newCursorPos;
-    elements.editor.dispatchEvent(new Event('input'));
+    applyEditorTextWithUndo(delStart, delEnd, '', newCursorPos, newCursorPos);
 }
