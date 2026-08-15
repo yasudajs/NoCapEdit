@@ -1,0 +1,27 @@
+# タスクリスト: タブを閉じる（Ctrl+W）およびアプリ終了（Ctrl+Q）ショートカット追加
+
+- [ ] **1. バージョン番号の更新（4ファイル一括更新）**
+  - [ ] `Cargo.toml`: `0.1.76`
+  - [ ] `src-tauri/tauri.conf.json`: `0.1.76`
+  - [ ] `nsis/installer.nsi`: `0.1.76.0`
+  - [ ] `docs/DEVELOPMENT.md`: `0.1.76`
+- [ ] **2. 仕様書・ドキュメントの更新**
+  - [ ] `docs/spec.md`: ショートカット仕様に `Ctrl + W` と `Ctrl + Q` を追加
+  - [ ] `docs/SHORTCUTS.md`: キーボード操作一覧を更新
+  - [ ] `docs/USER_GUIDE.md`: ユーザーガイドを更新
+- [ ] **3. ショートカット機能の実装**
+  - [ ] `src/dist/js/ui/shortcuts.js`:
+    - `closeTab` のインポートと `Ctrl + W` ハンドラの実装
+    - `appWindow` のインポートと `Ctrl + Q` ハンドラの実装
+- [ ] **4. ヘルプ画面および多言語定義の更新**
+  - [ ] `src/dist/i18n.js`: `help.shortcuts.closeTab` / `help.shortcuts.exitApp` の定義追加
+  - [ ] `src/dist/help.html`: ショートカット一覧に項目追加
+- [ ] **5. 検証**
+  - [ ] ビルド確認（`cargo check` / `cargo build`）
+  - [ ] `Ctrl + W` 動作確認（複数タブ時・単一タブ時）
+  - [ ] `Ctrl + Q` 動作確認（安全な終了・データ保存復元）
+  - [ ] ヘルプ画面（`F1`）の表示確認
+- [ ] **6. 完了報告ドキュメント作成**
+  - [ ] `docs/close_tab_and_exit_shortcuts/walkthrough.md` の作成
+  - [ ] `docs/history.md` に `0.1.76` の変更履歴を追記
+  - [ ] コミット＆プッシュ
