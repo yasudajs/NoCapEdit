@@ -112,11 +112,17 @@ const DICT = {
         help: {
             title: "ショートカット一覧",
             categories: {
+                edit: "テキスト編集",
                 file: "ファイル・タブ操作",
                 view: "表示・ズーム",
                 other: "その他"
             },
             shortcuts: {
+                moveLine: "行の上下移動",
+                duplicateLine: "行の上下複製",
+                deleteLine: "行の削除",
+                indent: "インデント挿入",
+                unindent: "インデント削除",
                 save: "手動保存",
                 newTab: "新規タブ追加",
                 closeTab: "タブを閉じる",
