@@ -179,7 +179,7 @@ export function getIndentString() {
 }
 
 // Undo/Redoスタックを破壊せずに選択範囲のテキストを置換するヘルパー
-function applyEditorTextWithUndo(replaceStart, replaceEnd, replacementText, newSelectionStart, newSelectionEnd) {
+export function applyEditorTextWithUndo(replaceStart, replaceEnd, replacementText, newSelectionStart, newSelectionEnd) {
     if (!elements.editor) return;
 
     elements.editor.focus();

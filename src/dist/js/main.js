@@ -7,6 +7,7 @@ import { updateEditorMetrics, onEditorInput, applyFontSize, applyLineHeight, han
 import { toggleSettingsDialog, closeSettingsDialog, openSettingsDialog, onThemeChange, onFontFamilyChange, saveSettings, setupSettingsNavigation } from './ui/settings.js';
 import { applyThemeUI, loadSystemFonts, applyFontFamily } from './ui/theme.js';
 import { setupKeyboardShortcuts } from './ui/shortcuts.js';
+import { setupFindReplaceEvents } from './ui/findReplace.js';
 import { checkNewVersion } from './core/updater.js';
 
 function registerCloseHandler() {
@@ -228,6 +229,7 @@ function setupUIEventListeners() {
     registerCloseHandler();
     setupSettingsNavigation();
     setupKeyboardShortcuts();
+    setupFindReplaceEvents();
 
     // シングルインスタンス動作でのファイル通知の購読
     if (listen) {

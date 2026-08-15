@@ -122,6 +122,8 @@ const DICT = {
                 duplicateLine: "行の上下複製",
                 deleteLine: "行の削除",
                 insertTimestamp: "現在日時の挿入",
+                find: "検索",
+                replace: "置換",
                 indent: "インデント挿入",
                 unindent: "インデント削除",
                 save: "手動保存",
@@ -142,6 +144,19 @@ const DICT = {
             }
         },
         ui: {
+            find: {
+                placeholder: "検索",
+                replacePlaceholder: "置換",
+                matchCase: "大文字/小文字を区別 (Alt+C)",
+                prev: "前を検索 (Shift+Enter)",
+                next: "次を検索 (Enter)",
+                close: "閉じる (Esc)",
+                replace: "置換",
+                replaceAll: "すべて置換",
+                noMatches: "一致なし",
+                matchCount: "{current} / {total}",
+                replacedCount: "{count} 件を置換しました"
+            },
             tooltip: {
                 addTab: "新規タブを作成",
                 settings: "設定",
