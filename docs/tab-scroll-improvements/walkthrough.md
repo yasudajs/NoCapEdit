@@ -15,9 +15,9 @@
 
 ### 1. スタイル定義 (`src/dist/style.css`)
 - 各テーマにスクロールバー用CSS変数を追加:
-  - **Dark**: `--tab-scrollbar-thumb: rgba(90, 159, 212, 0.45);`, `--tab-scrollbar-thumb-hover: rgba(90, 159, 212, 0.75);`, `--tab-scrollbar-track: rgba(255, 255, 255, 0.03);`
-  - **Soft Dark**: `--tab-scrollbar-thumb: rgba(90, 159, 212, 0.45);`, `--tab-scrollbar-thumb-hover: rgba(90, 159, 212, 0.75);`, `--tab-scrollbar-track: rgba(255, 255, 255, 0.03);`
-  - **Light**: `--tab-scrollbar-thumb: rgba(0, 102, 204, 0.35);`, `--tab-scrollbar-thumb-hover: rgba(0, 102, 204, 0.65);`, `--tab-scrollbar-track: rgba(0, 0, 0, 0.03);`
+  - **Dark**: `--tab-scrollbar-thumb: rgba(140, 190, 230, 0.18);`, `--tab-scrollbar-thumb-hover: rgba(140, 190, 230, 0.40);`, `--tab-scrollbar-track: transparent;`
+  - **Soft Dark**: `--tab-scrollbar-thumb: rgba(140, 190, 230, 0.18);`, `--tab-scrollbar-thumb-hover: rgba(140, 190, 230, 0.40);`, `--tab-scrollbar-track: transparent;`
+  - **Light**: `--tab-scrollbar-thumb: rgba(70, 130, 180, 0.18);`, `--tab-scrollbar-thumb-hover: rgba(70, 130, 180, 0.38);`, `--tab-scrollbar-track: transparent;`
 - `.tabs-container::-webkit-scrollbar` に上記変数をバインドし、ホバー時のトランジション効果を追加。
 
 ### 2. スクロールイベント処理 (`src/dist/js/ui/tabs.js`, `src/dist/js/main.js`)
