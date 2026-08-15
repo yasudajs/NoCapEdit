@@ -1,7 +1,7 @@
 import { t, applyI18nToDOM } from '../i18n.js';
 import { appState, elements, initElements } from './state.js';
 import { invoke, appWindow, listen, ensureTauriApi } from './core/tauri.js';
-import { createNewTab, updateStatus, renderTabs } from './ui/tabs.js';
+import { createNewTab, updateStatus, renderTabs, setupTabScrollWheel } from './ui/tabs.js';
 import { openExistingFile, persistAllTabsBeforeExit } from './core/fileSystem.js';
 import { updateEditorMetrics, onEditorInput, applyFontSize, applyLineHeight, handleTabKey, applyWordWrap } from './ui/editor.js';
 import { toggleSettingsDialog, closeSettingsDialog, openSettingsDialog, onThemeChange, onFontFamilyChange, saveSettings, setupSettingsNavigation } from './ui/settings.js';
@@ -227,6 +227,7 @@ function setupUIEventListeners() {
         elements.editor.addEventListener('keyup', updateEditorMetrics);
     }
     registerCloseHandler();
+    setupTabScrollWheel();
     setupSettingsNavigation();
     setupKeyboardShortcuts();
     setupFindReplaceEvents();

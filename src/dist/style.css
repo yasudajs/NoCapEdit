@@ -17,6 +17,9 @@
     --border: #222222;
     --status-success: #4ec9b0;
     --status-error: #f48771;
+    --tab-scrollbar-thumb: rgba(90, 159, 212, 0.45);
+    --tab-scrollbar-thumb-hover: rgba(90, 159, 212, 0.75);
+    --tab-scrollbar-track: rgba(255, 255, 255, 0.03);
     
     /* エディタ設定 */
     --editor-font-family: 'Fira Code', 'Monaco', 'Menlo', monospace;
@@ -36,6 +39,9 @@ body.light-theme {
     --border: #dcdcdc;
     --status-success: #107c41;
     --status-error: #a80000;
+    --tab-scrollbar-thumb: rgba(0, 102, 204, 0.35);
+    --tab-scrollbar-thumb-hover: rgba(0, 102, 204, 0.65);
+    --tab-scrollbar-track: rgba(0, 0, 0, 0.03);
 }
 
 body.soft-dark-theme {
@@ -50,6 +56,9 @@ body.soft-dark-theme {
     --border: #3a3a3a;
     --status-success: #4ec9b0;
     --status-error: #f48771;
+    --tab-scrollbar-thumb: rgba(90, 159, 212, 0.45);
+    --tab-scrollbar-thumb-hover: rgba(90, 159, 212, 0.75);
+    --tab-scrollbar-track: rgba(255, 255, 255, 0.03);
 }
 
 body {
@@ -102,12 +111,17 @@ body {
 }
 
 .tabs-container::-webkit-scrollbar-track {
-    background: var(--bg-secondary);
+    background: var(--tab-scrollbar-track);
 }
 
 .tabs-container::-webkit-scrollbar-thumb {
-    background: var(--bg-tertiary);
+    background: var(--tab-scrollbar-thumb);
     border-radius: 3px;
+    transition: background-color 0.2s ease;
+}
+
+.tabs-container::-webkit-scrollbar-thumb:hover {
+    background: var(--tab-scrollbar-thumb-hover);
 }
 
 /* タブスタイル */
