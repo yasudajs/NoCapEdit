@@ -1,0 +1,23 @@
+# タスク一覧: タブスクロールバー配色改善およびマウスホイール横スクロール機能
+
+- [x] ドキュメント移動・バージョン更新・spec.md更新 <!-- id: 0 -->
+    - [x] 作業ブランチ作成 (`feature/tab-scroll-improvements`) <!-- id: 1 -->
+    - [x] ドキュメント移動 (`docs/wip/` -> `docs/tab-scroll-improvements/`) <!-- id: 2 -->
+    - [x] バージョン番号更新 (0.1.84 -> 0.1.85: Cargo.toml, tauri.conf.json, installer.nsi, DEVELOPMENT.md) <!-- id: 3 -->
+    - [x] spec.md 更新 <!-- id: 4 -->
+    - [x] 初期コミット＆プッシュ <!-- id: 5 -->
+- [ ] スタイル修正 (`src/dist/style.css`) <!-- id: 6 -->
+    - [ ] 各テーマへのスクロールバー用CSS変数の追加 <!-- id: 7 -->
+    - [ ] `.tabs-container` スクロールバースタイルの更新（薄い水色、ホバー効果） <!-- id: 8 -->
+- [ ] タブ領域のホイールスクロール実装 (`src/dist/js/ui/tabs.js` / `main.js`) <!-- id: 9 -->
+    - [ ] タブコンテナへの `wheel` イベントリスナー追加 <!-- id: 10 -->
+    - [ ] 垂直スクロール量（deltaY）の水平スクロール（scrollLeft）変換処理 <!-- id: 11 -->
+- [ ] 検証 <!-- id: 12 -->
+    - [ ] ビルド確認 (`cargo build` / `cargo check`) <!-- id: 13 -->
+    - [ ] スクロールバー配色とホバー表示確認（各テーマ） <!-- id: 14 -->
+    - [ ] マウスホイールスクロール動作確認 <!-- id: 15 -->
+    - [ ] タブ基本操作の動作確認 <!-- id: 16 -->
+- [ ] 完了処理 <!-- id: 17 -->
+    - [ ] `docs/tab-scroll-improvements/walkthrough.md` 作成 <!-- id: 18 -->
+    - [ ] `docs/history.md` に 0.1.85 の変更履歴を最上部に追記 <!-- id: 19 -->
+    - [ ] コミット＆プッシュ <!-- id: 20 -->
