@@ -358,3 +358,23 @@ export function deleteLine() {
 
     applyEditorTextWithUndo(delStart, delEnd, '', newCursorPos, newCursorPos);
 }
+
+// 現在日時の挿入 (YYYY/MM/DD HH:mm)
+export function insertTimestamp() {
+    if (!elements.editor) return;
+
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const timestamp = `${year}/${month}/${day} ${hours}:${minutes}`;
+
+    const start = elements.editor.selectionStart;
+    const end = elements.editor.selectionEnd;
+    const newPos = start + timestamp.length;
+
+    applyEditorTextWithUndo(start, end, timestamp, newPos, newPos);
+}
+

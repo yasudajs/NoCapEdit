@@ -121,6 +121,7 @@ const DICT = {
                 moveLine: "行の上下移動",
                 duplicateLine: "行の上下複製",
                 deleteLine: "行の削除",
+                insertTimestamp: "現在日時の挿入",
                 indent: "インデント挿入",
                 unindent: "インデント削除",
                 save: "手動保存",
