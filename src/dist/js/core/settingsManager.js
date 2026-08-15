@@ -17,7 +17,8 @@ export async function saveApplicationSettings() {
                 line_height: appState.lineHeight,
                 tab_behavior: appState.tabBehavior,
                 save_mode: appState.saveMode,
-                char_count_mode: appState.charCountMode
+                char_count_mode: appState.charCountMode,
+                word_wrap: appState.wordWrap
             }
         });
     } catch (error) {

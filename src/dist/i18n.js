@@ -134,6 +134,7 @@ const DICT = {
                 zoomIn: "ズームイン (拡大)",
                 zoomOut: "ズームアウト (縮小)",
                 resetZoom: "ズーム・行間のリセット",
+                toggleWordWrap: "行の折り返し切り替え",
                 lineHeightInc: "行間を広げる",
                 lineHeightDec: "行間を狭める",
                 exitApp: "アプリを終了",
@@ -148,6 +149,7 @@ const DICT = {
                 tabBehavior: "Tabキーの挙動を変更",
                 saveMode: "保存モードを変更",
                 charCount: "文字数カウント方法を変更",
+                wordWrap: "行の折り返しを変更",
                 theme: "テーマを変更"
             },
             dialog: {
@@ -180,6 +182,11 @@ const DICT = {
                         label: "文字数カウント:",
                         withNewline: "改行を含む（デフォルト）",
                         noNewline: "文字数のみ（改行を除く）"
+                    },
+                    wordWrap: {
+                        label: "行の折り返し:",
+                        on: "有効（折り返す）",
+                        off: "無効（折り返さない）"
                     },
                     theme: {
                         label: "テーマ:",
