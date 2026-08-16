@@ -1,6 +1,6 @@
 import { t } from '../../i18n.js';
 import { appState, elements, savedEditorCursor, setSavedEditorCursor, DEFAULT_MONOSPACE_FONTS } from '../state.js';
-import { invoke, openDialog, ensureTauriApi, appWindow } from '../core/tauri.js';
+import { invoke, openDialog, ensureTauriApi, appWindow, emit } from '../core/tauri.js';
 import { updateStatus, renderTabs, createNewTab, getCurrentTab, updateTabStatus } from './tabs.js';
 import { updateEditorMetrics, applyWordWrap, applyFontSize, applyLineHeight } from './editor.js';
 import { autoSave, shouldDeleteEmptyFile } from '../core/fileSystem.js';
@@ -221,6 +221,14 @@ export async function onThemeChange(newTheme) {
         await invoke('apply_theme', { theme: newTheme });
     } catch (error) {
         console.error('Failed to apply theme to window:', error);
+    }
+
+    if (emit) {
+        try {
+            await emit('theme-changed', { theme: newTheme });
+        } catch (eventError) {
+            console.error('Failed to emit theme-changed event:', eventError);
+        }
     }
 
     await saveApplicationSettings();
