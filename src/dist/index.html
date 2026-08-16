@@ -68,9 +68,9 @@
     </div>
 
     <!-- 設定ダイアログ -->
-    <div id="settingsDialog" class="dialog-overlay hidden">
+    <div id="settingsDialog" class="dialog-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="settingsDialogTitle">
         <div class="dialog-box">
-            <h2 data-i18n="ui.dialog.settings.title">NoCapEdit - 設定</h2>
+            <h2 id="settingsDialogTitle" data-i18n="ui.dialog.settings.title">NoCapEdit - 設定</h2>
             <div class="dialog-content">
                 <div id="updateNoticeContainer" class="update-notice hidden">
                     <p><span data-i18n="ui.dialog.settings.update.available">アップデート可能です:</span><br>Ver. <span id="currentVerSpan"></span> → Ver. <span id="latestVerSpan"></span></p>
