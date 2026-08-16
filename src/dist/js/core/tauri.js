@@ -5,6 +5,7 @@ export const openDialog = tauriApi?.dialog?.open || null;
 export const saveDialog = tauriApi?.dialog?.save || null;
 export const appWindow = tauriApi?.window?.appWindow || null;
 export const listen = tauriApi?.event?.listen || null;
+export const emit = tauriApi?.event?.emit || null;
 
 /**
  * [WARNING] 循環参照の防止 (Circular Dependency Prevention)

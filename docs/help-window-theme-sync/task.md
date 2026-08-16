@@ -9,10 +9,10 @@
     - [x] ドキュメントを `docs/wip/help-window-theme-sync/` から `docs/help-window-theme-sync/` へ移動・コミット <!-- id: 6 -->
     - [x] バージョン番号の更新（4ファイル: 0.1.91 -> 0.1.92） <!-- id: 7 -->
     - [x] `spec.md` の更新 <!-- id: 8 -->
-    - [ ] フロントエンド実装 <!-- id: 9 -->
-        - [ ] `src/dist/js/core/tauri.js` に `emit` API を追加 <!-- id: 10 -->
-        - [ ] `src/dist/js/ui/settings.js` の `onThemeChange` で `theme-changed` イベントをブロードキャスト <!-- id: 11 -->
-        - [ ] `src/dist/js/help.js` で `apply_theme` コマンド呼び出しと `theme-changed` イベント受信・リアルタイム同期を実装 <!-- id: 12 -->
+    - [x] フロントエンド実装 <!-- id: 9 -->
+        - [x] `src/dist/js/core/tauri.js` に `emit` API を追加 <!-- id: 10 -->
+        - [x] `src/dist/js/ui/settings.js` の `onThemeChange` で `theme-changed` イベントをブロードキャスト <!-- id: 11 -->
+        - [x] `src/dist/js/help.js` で `apply_theme` コマンド呼び出しと `theme-changed` イベント受信・リアルタイム同期を実装 <!-- id: 12 -->
     - [ ] 動作確認・ビルド検証 <!-- id: 13 -->
     - [ ] `docs/help-window-theme-sync/walkthrough.md` の作成 <!-- id: 14 -->
     - [ ] `docs/history.md` に変更履歴（Ver 0.1.92）を追記・コミット＆プッシュ <!-- id: 15 -->
