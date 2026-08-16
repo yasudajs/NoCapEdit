@@ -1,6 +1,8 @@
 use serde::Serialize;
 use std::fs;
+use std::io::Write;
 use std::path::{Path, PathBuf};
+use tempfile::NamedTempFile;
 
 use crate::settings::{AppSettings, SettingsResponse};
 use crate::FILE_EXTENSION;
@@ -80,9 +82,9 @@ pub fn create_and_save_file(
 
     // 内容を正規化してアトミック書き込み
     let normalized = normalize_crlf(&content);
-    let tmp_path = file_path.with_extension("tmp");
-    fs::write(&tmp_path, &normalized).map_err(|e| e.to_string())?;
-    fs::rename(&tmp_path, &file_path).map_err(|e| e.to_string())?;
+    let mut tmp = NamedTempFile::new_in(&home_folder).map_err(|e| e.to_string())?;
+    tmp.write_all(normalized.as_bytes()).map_err(|e| e.to_string())?;
+    tmp.persist(&file_path).map_err(|e| e.to_string())?;
 
     Ok(FileInfo {
         file_name,
@@ -99,19 +101,13 @@ pub fn read_text_file(file_path: PathBuf) -> Result<String, String> {
 pub fn save_text_file(file_path: PathBuf, content: String) -> Result<(), String> {
     let parent = file_path
         .parent()
-        .ok_or_else(|| "fs.error.invalidPath".to_string())?
-        .to_path_buf();
+        .ok_or_else(|| "fs.error.invalidPath".to_string())?;
     fs::create_dir_all(parent).map_err(|e| e.to_string())?;
 
     let normalized = normalize_crlf(&content);
-    let tmp_path = file_path.with_extension("tmp");
-
-    fs::write(&tmp_path, normalized).map_err(|e| e.to_string())?;
-
-    if file_path.exists() {
-        fs::remove_file(&file_path).map_err(|e| e.to_string())?;
-    }
-    fs::rename(&tmp_path, &file_path).map_err(|e| e.to_string())?;
+    let mut tmp = NamedTempFile::new_in(parent).map_err(|e| e.to_string())?;
+    tmp.write_all(normalized.as_bytes()).map_err(|e| e.to_string())?;
+    tmp.persist(&file_path).map_err(|e| e.to_string())?;
 
     Ok(())
 }
@@ -203,6 +199,22 @@ mod tests {
         // 4. 10回目重複（上限超過） -> エラー
         let err = next_available_file_path(temp_path, ts).unwrap_err();
         assert_eq!(err, "fs.error.maxLimitReached");
+    }
+
+    #[test]
+    fn test_save_text_file_atomic_overwrite() {
+        let temp_dir = TempDir::new().unwrap();
+        let file_path = temp_dir.path().join("test.nctx");
+
+        // 1. 初回保存
+        save_text_file(file_path.clone(), "Hello\nWorld".to_string()).unwrap();
+        let content1 = fs::read_to_string(&file_path).unwrap();
+        assert_eq!(content1, "Hello\r\nWorld");
+
+        // 2. 上書き保存
+        save_text_file(file_path.clone(), "Updated\r\nContent".to_string()).unwrap();
+        let content2 = fs::read_to_string(&file_path).unwrap();
+        assert_eq!(content2, "Updated\r\nContent");
     }
 }
 
