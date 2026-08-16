@@ -16,7 +16,7 @@
 - [x] `docs/spec.md` および `docs/USER_GUIDE.md` の更新
 - [x] コード実装
   - [x] `src/dist/js/ui/shortcuts.js` の修正
-  - [x] `src/dist/help.html` の修正
+  - [x] `src/dist/help.html` の修正（Alt+Shift+Kへの変更、およびAlt+Zのテキスト編集最上段への配置移動）
 - [x] 動作確認・検証
 - [x] `docs/shortcut_delete_line/walkthrough.md` の作成
 - [x] `docs/history.md` に v0.1.87 の変更履歴を追記
