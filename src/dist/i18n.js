@@ -193,10 +193,12 @@ const DICT = {
                         default: "デフォルト (Monospace)"
                     },
                     fontSize: {
-                        label: "フォントサイズ:"
+                        label: "フォントサイズ:",
+                        defaultOption: "20 pt (デフォルト)"
                     },
                     lineHeight: {
-                        label: "行間:"
+                        label: "行間:",
+                        defaultOption: "1.5 (デフォルト)"
                     },
                     tabBehavior: {
                         label: "Tabキーの挙動:",
