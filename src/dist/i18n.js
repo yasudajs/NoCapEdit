@@ -190,8 +190,7 @@ const DICT = {
                     },
                     font: {
                         label: "フォント:",
-                        default: "デフォルト (Monospace)",
-                        loading: "フォント読み込み中..."
+                        default: "デフォルト (Monospace)"
                     },
                     fontSize: {
                         label: "フォントサイズ:"

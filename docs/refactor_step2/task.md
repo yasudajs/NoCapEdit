@@ -8,10 +8,10 @@
 - [x] `docs/wip/refactor_step2/` を `docs/refactor_step2/` に移動・コミット <!-- id: 4 -->
 
 ## フェーズ 3: 実装作業 <!-- id: 5 -->
-- [ ] `src/dist/i18n.js` から未使用キー `ui.dialog.settings.font.loading` を削除 <!-- id: 6 -->
+- [x] `src/dist/i18n.js` から未使用キー `ui.dialog.settings.font.loading` を削除 <!-- id: 6 -->
 
 ## フェーズ 4: 検証・報告 <!-- id: 7 -->
-- [ ] `npm run tauri dev` で起動し、フォント読み込みプレースホルダー表示およびコンソールエラーなしを確認 <!-- id: 8 -->
-- [ ] `docs/refactor_step2/walkthrough.md` の作成 <!-- id: 9 -->
-- [ ] `docs/history.md` への変更履歴追記 <!-- id: 10 -->
-- [ ] コミット＆プッシュおよびユーザー確認 <!-- id: 11 -->
+- [x] `npm run tauri dev` で起動し、フォント読み込みプレースホルダー表示およびコンソールエラーなしを確認 <!-- id: 8 -->
+- [x] `docs/refactor_step2/walkthrough.md` の作成 <!-- id: 9 -->
+- [x] `docs/history.md` への変更履歴追記 <!-- id: 10 -->
+- [x] コミット＆プッシュおよびユーザー確認 <!-- id: 11 -->
