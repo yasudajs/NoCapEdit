@@ -672,6 +672,19 @@ body {
     flex: 1;
     overflow-y: auto;
     padding-right: 8px;
+    margin-bottom: 0;
+}
+
+#settingsDialog .settings-footer {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-align: center;
+    line-height: 1.5;
+    flex-shrink: 0;
+    user-select: none;
 }
 
 /* アニメーション対応のため #settingsDialog の .hidden 挙動を変更 */
