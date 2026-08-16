@@ -6,11 +6,12 @@ NoCapEdit のバージョンアップおよび仕様変更の履歴です。
 ## 改定履歴一覧
 
 ### Ver 0.1.93 | 2026-08-16 | yasudajs
-- リファクタリング（マスタープラン Step 1〜3）
+- リファクタリング（マスタープラン Step 1〜4）
   - **重複CSS変数の削除 (Step 1)**: `:root` で共通定義されているハイライト・選択色・フォーカス枠・スクロールバー等のCSS変数が `body.light-theme` および `body.soft-dark-theme` で重複再定義されていた記述を削除し、共通変数として継承するように整理
   - **設定ドック border 記述の簡素化 (Step 1)**: 設定ドック（`#settingsDialog .dialog-box`）の冗長な border プロパティ指定を `border: none; border-left: 1px solid var(--border);` に簡素化
   - **未使用 i18n キーの削除 (Step 2)**: `i18n.js` 内で参照箇所が0件となっていた重複定義キー `ui.dialog.settings.font.loading` を削除し、辞書構造を整理
   - **デフォルト設定表記の i18n 化 (Step 3)**: `index.html` 内のフォントサイズ（`20 pt (デフォルト)`）および行間（`1.5 (デフォルト)`）の option 要素に `data-i18n` 属性を付与し、`i18n.js` の辞書から動的にローカライズテキストを適用するよう改善
+  - **設定画面 select クラス名の整理 (Step 4)**: 設定ダイアログ内のセレクトボックスで使用されていた汎用クラス `tab-select` を、用途に合わせた `settings-select` にリネーム（HTMLおよびCSS）
   - 仕様書 (`spec.md`) を更新
 
 ---
