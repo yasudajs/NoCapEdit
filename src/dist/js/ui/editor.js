@@ -192,17 +192,17 @@ export function applyEditorTextWithUndo(replaceStart, replaceEnd, replacementTex
     elements.editor.setSelectionRange(replaceStart, replaceEnd);
 
     // document.execCommand('insertText') を使用することでブラウザネイティブのUndo/Redoスタックに正常に記録
-    if (!document.execCommand('insertText', false, replacementText)) {
-        // execCommand が失敗した場合のフォールバック
+    // 成功時はブラウザが自動的に input イベントを発火する
+    const success = document.execCommand('insertText', false, replacementText);
+    if (!success) {
+        // execCommand が失敗した場合のフォールバック（ブラウザが input イベントを発火しないため手動発火）
         elements.editor.setRangeText(replacementText, replaceStart, replaceEnd, 'end');
+        elements.editor.dispatchEvent(new Event('input'));
     }
 
     if (newSelectionStart !== undefined && newSelectionEnd !== undefined) {
         elements.editor.setSelectionRange(newSelectionStart, newSelectionEnd);
     }
-
-    // 自動保存やステータス表示を連動
-    elements.editor.dispatchEvent(new Event('input'));
 }
 
 export function handleTabKey(e) {
