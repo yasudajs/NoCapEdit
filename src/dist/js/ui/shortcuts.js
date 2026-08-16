@@ -76,7 +76,7 @@ export function setupKeyboardShortcuts() {
             return;
         }
 
-        // Alt キーを使用したショートカット（行移動・行複製）
+        // Alt キーを使用したショートカット（行移動・行複製・行削除）
         if (e.altKey && !e.ctrlKey) {
             if (e.shiftKey) {
                 // 行の上下複製: Alt + Shift + ↑ / ↓
@@ -87,6 +87,12 @@ export function setupKeyboardShortcuts() {
                 } else if (e.key === 'ArrowDown' || e.code === 'ArrowDown') {
                     e.preventDefault();
                     duplicateLine('down');
+                    return;
+                }
+                // 行の削除: Alt + Shift + K
+                else if (e.key === 'k' || e.key === 'K' || e.code === 'KeyK') {
+                    e.preventDefault();
+                    deleteLine();
                     return;
                 }
             } else {
@@ -107,15 +113,6 @@ export function setupKeyboardShortcuts() {
                     toggleWordWrap();
                     return;
                 }
-            }
-        }
-
-        // Ctrl + Shift + K で行削除
-        if (e.ctrlKey && e.shiftKey && !e.altKey) {
-            if (e.key === 'k' || e.key === 'K' || e.code === 'KeyK') {
-                e.preventDefault();
-                deleteLine();
-                return;
             }
         }
 
