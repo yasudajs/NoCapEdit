@@ -83,22 +83,15 @@ export async function loadSystemFonts() {
         // 読み込み完了後にドロップダウンを展開
         if (shouldOpenPickerAfterLoad) {
             shouldOpenPickerAfterLoad = false;
-            console.log('[FontDebug] shouldOpenPickerAfterLoad is true, attempting showPicker in 50ms. activeElement:', document.activeElement);
             setTimeout(() => {
                 try {
-                    console.log('[FontDebug] Executing showPicker. typeof showPicker:', typeof elements.fontFamilySelectModal.showPicker, 'activeElement:', document.activeElement);
                     if (typeof elements.fontFamilySelectModal.showPicker === 'function') {
                         elements.fontFamilySelectModal.showPicker();
-                        console.log('[FontDebug] showPicker() executed successfully.');
-                    } else {
-                        console.warn('[FontDebug] showPicker is not a function on this element.');
                     }
                 } catch (err) {
-                    console.error('[FontDebug] showPicker failed with error:', err.name, err.message, err);
+                    console.warn('Could not open select picker automatically:', err);
                 }
             }, 50);
-        } else {
-            console.log('[FontDebug] shouldOpenPickerAfterLoad is false, skipping showPicker.');
         }
     } catch (error) {
         console.error('Failed to load system fonts:', error);

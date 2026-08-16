@@ -196,7 +196,6 @@ function setupUIEventListeners() {
     if (elements.fontFamilySelectModal) {
         elements.fontFamilySelectModal.addEventListener('change', onFontFamilyChange);
         elements.fontFamilySelectModal.addEventListener('mousedown', (e) => {
-            console.log('[FontDebug] fontFamilySelectModal mousedown event triggered');
             if (!appState.fontsLoaded) {
                 e.preventDefault();
                 setShouldOpenFontPicker(true);
@@ -205,20 +204,12 @@ function setupUIEventListeners() {
                 }
             }
         });
-        elements.fontFamilySelectModal.addEventListener('mouseup', (e) => {
-            console.log('[FontDebug] fontFamilySelectModal mouseup event triggered');
-        });
-        elements.fontFamilySelectModal.addEventListener('click', (e) => {
-            console.log('[FontDebug] fontFamilySelectModal click event triggered');
-        });
-        elements.fontFamilySelectModal.addEventListener('focus', (e) => {
-            console.log('[FontDebug] fontFamilySelectModal focus event triggered');
+        elements.fontFamilySelectModal.addEventListener('focus', () => {
             if (!appState.fontsLoaded && !appState.fontsLoading) {
                 loadSystemFonts();
             }
         });
         elements.fontFamilySelectModal.addEventListener('keydown', (e) => {
-            console.log('[FontDebug] fontFamilySelectModal keydown event:', e.key);
             if (!appState.fontsLoaded && (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
                 e.preventDefault();
                 setShouldOpenFontPicker(true);
