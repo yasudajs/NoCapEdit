@@ -13,9 +13,9 @@
         - [x] `src/dist/js/core/tauri.js` に `emit` API を追加 <!-- id: 10 -->
         - [x] `src/dist/js/ui/settings.js` の `onThemeChange` で `theme-changed` イベントをブロードキャスト <!-- id: 11 -->
         - [x] `src/dist/js/help.js` で `apply_theme` コマンド呼び出しと `theme-changed` イベント受信・リアルタイム同期を実装 <!-- id: 12 -->
-    - [ ] 動作確認・ビルド検証 <!-- id: 13 -->
-    - [ ] `docs/help-window-theme-sync/walkthrough.md` の作成 <!-- id: 14 -->
-    - [ ] `docs/history.md` に変更履歴（Ver 0.1.92）を追記・コミット＆プッシュ <!-- id: 15 -->
+    - [x] 動作確認・ビルド検証 <!-- id: 13 -->
+    - [x] `docs/help-window-theme-sync/walkthrough.md` の作成 <!-- id: 14 -->
+    - [x] `docs/history.md` に変更履歴（Ver 0.1.92）を追記・コミット＆プッシュ <!-- id: 15 -->
 - [ ] フェーズ3: クリーンアップ・マージ <!-- id: 16 -->
     - [ ] ユーザー承認の受領 <!-- id: 17 -->
     - [ ] 作業ドキュメントフォルダ削除 <!-- id: 18 -->
