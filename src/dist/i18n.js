@@ -35,6 +35,7 @@ const DICT = {
                 }
             },
             font: {
+                loading: "フォント読み込み中...",
                 group: {
                     monospace: "等幅フォント",
                     other: "その他のフォント"
@@ -189,7 +190,8 @@ const DICT = {
                     },
                     font: {
                         label: "フォント:",
-                        default: "デフォルト (Monospace)"
+                        default: "デフォルト (Monospace)",
+                        loading: "フォント読み込み中..."
                     },
                     fontSize: {
                         label: "フォントサイズ:"

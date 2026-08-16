@@ -5,7 +5,7 @@ import { createNewTab, updateStatus, renderTabs, setupTabScrollWheel } from './u
 import { openExistingFile, persistAllTabsBeforeExit } from './core/fileSystem.js';
 import { updateEditorMetrics, onEditorInput, applyFontSize, applyLineHeight, handleTabKey, applyWordWrap } from './ui/editor.js';
 import { toggleSettingsDialog, closeSettingsDialog, openSettingsDialog, onThemeChange, onFontFamilyChange, saveSettings, setupSettingsNavigation } from './ui/settings.js';
-import { applyThemeUI, loadSystemFonts, applyFontFamily } from './ui/theme.js';
+import { applyThemeUI, loadSystemFonts, applyFontFamily, setShouldOpenFontPicker } from './ui/theme.js';
 import { setupKeyboardShortcuts } from './ui/shortcuts.js';
 import { setupFindReplaceEvents } from './ui/findReplace.js';
 import { checkNewVersion } from './core/updater.js';
@@ -195,13 +195,29 @@ function setupUIEventListeners() {
     }
     if (elements.fontFamilySelectModal) {
         elements.fontFamilySelectModal.addEventListener('change', onFontFamilyChange);
-        const triggerLoadModal = async () => {
-            if (!appState.fontsLoaded && !appState.fontsLoading) {
-                await loadSystemFonts();
+        elements.fontFamilySelectModal.addEventListener('mousedown', (e) => {
+            if (!appState.fontsLoaded) {
+                e.preventDefault();
+                setShouldOpenFontPicker(true);
+                if (!appState.fontsLoading) {
+                    loadSystemFonts();
+                }
             }
-        };
-        elements.fontFamilySelectModal.addEventListener('mousedown', triggerLoadModal);
-        elements.fontFamilySelectModal.addEventListener('focus', triggerLoadModal);
+        });
+        elements.fontFamilySelectModal.addEventListener('focus', () => {
+            if (!appState.fontsLoaded && !appState.fontsLoading) {
+                loadSystemFonts();
+            }
+        });
+        elements.fontFamilySelectModal.addEventListener('keydown', (e) => {
+            if (!appState.fontsLoaded && (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+                e.preventDefault();
+                setShouldOpenFontPicker(true);
+                if (!appState.fontsLoading) {
+                    loadSystemFonts();
+                }
+            }
+        });
     }
     if (elements.fontSizeSelectModal) {
         elements.fontSizeSelectModal.addEventListener('change', async () => {

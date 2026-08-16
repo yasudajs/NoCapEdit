@@ -301,6 +301,12 @@ body {
     outline-offset: 1px;
 }
 
+.font-select.loading {
+    cursor: wait;
+    pointer-events: none;
+    color: var(--text-secondary);
+}
+
 .font-select optgroup,
 .tab-select optgroup {
     background-color: var(--bg-primary);
