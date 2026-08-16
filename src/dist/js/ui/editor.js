@@ -145,6 +145,11 @@ export function decreaseLineHeight() {
     }
 }
 
+/**
+ * エディタの折り返し設定（soft / off）を適用する
+ * ※ 全タブ閉鎖時など elements.editor が存在しない場合は安全に早期リターンする
+ * @param {boolean} enable - 折り返しを有効にするかどうか
+ */
 export function applyWordWrap(enable) {
     if (!elements.editor) return;
     elements.editor.wrap = enable ? 'soft' : 'off';
