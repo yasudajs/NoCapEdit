@@ -15,7 +15,7 @@ export function applyThemeUI(theme) {
     }
 }
 
-export async function loadSystemFonts() {
+export async function loadSystemFonts(openPicker = false) {
     if (!elements.fontFamilySelectModal) return;
     if (appState.fontsLoaded || appState.fontsLoading) return;
 
@@ -73,6 +73,19 @@ export async function loadSystemFonts() {
         elements.fontFamilySelectModal.value = previousFontFamily || 'default';
         appState.fontsLoaded = true;
         updateStatus(t('status.ready'));
+
+        // 読み込み完了後にドロップダウンを展開
+        if (openPicker) {
+            setTimeout(() => {
+                try {
+                    if (typeof elements.fontFamilySelectModal.showPicker === 'function') {
+                        elements.fontFamilySelectModal.showPicker();
+                    }
+                } catch (err) {
+                    console.warn('Could not open select picker automatically:', err);
+                }
+            }, 50);
+        }
     } catch (error) {
         console.error('Failed to load system fonts:', error);
         updateStatus(t('status.error.font.load'), 'error');

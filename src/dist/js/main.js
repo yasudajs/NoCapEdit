@@ -195,20 +195,22 @@ function setupUIEventListeners() {
     }
     if (elements.fontFamilySelectModal) {
         elements.fontFamilySelectModal.addEventListener('change', onFontFamilyChange);
-        const triggerLoadModal = async (e) => {
+        const triggerLoadModal = async (e, shouldOpen = false) => {
             if (!appState.fontsLoaded && !appState.fontsLoading) {
                 if (e && e.type === 'mousedown') {
                     e.preventDefault();
                     elements.fontFamilySelectModal.focus();
+                } else if (e && e.type === 'keydown') {
+                    e.preventDefault();
                 }
-                await loadSystemFonts();
+                await loadSystemFonts(shouldOpen);
             }
         };
-        elements.fontFamilySelectModal.addEventListener('mousedown', triggerLoadModal);
-        elements.fontFamilySelectModal.addEventListener('focus', triggerLoadModal);
+        elements.fontFamilySelectModal.addEventListener('mousedown', (e) => triggerLoadModal(e, true));
+        elements.fontFamilySelectModal.addEventListener('focus', (e) => triggerLoadModal(e, false));
         elements.fontFamilySelectModal.addEventListener('keydown', (e) => {
             if (!appState.fontsLoaded && (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
-                triggerLoadModal(e);
+                triggerLoadModal(e, true);
             }
         });
     }
