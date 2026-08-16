@@ -5,7 +5,7 @@ import { createNewTab, updateStatus, renderTabs, setupTabScrollWheel } from './u
 import { openExistingFile, persistAllTabsBeforeExit } from './core/fileSystem.js';
 import { updateEditorMetrics, onEditorInput, applyFontSize, applyLineHeight, handleTabKey, applyWordWrap } from './ui/editor.js';
 import { toggleSettingsDialog, closeSettingsDialog, openSettingsDialog, onThemeChange, onFontFamilyChange, saveSettings, setupSettingsNavigation } from './ui/settings.js';
-import { applyThemeUI, loadSystemFonts, applyFontFamily } from './ui/theme.js';
+import { applyThemeUI, loadSystemFonts, applyFontFamily, setShouldOpenFontPicker } from './ui/theme.js';
 import { setupKeyboardShortcuts } from './ui/shortcuts.js';
 import { setupFindReplaceEvents } from './ui/findReplace.js';
 import { checkNewVersion } from './core/updater.js';
@@ -195,21 +195,15 @@ function setupUIEventListeners() {
     }
     if (elements.fontFamilySelectModal) {
         elements.fontFamilySelectModal.addEventListener('change', onFontFamilyChange);
-        const triggerLoadModal = async (e, shouldOpen = false) => {
-            console.log('[FontDebug] triggerLoadModal called. event:', e ? e.type : 'none', 'shouldOpen:', shouldOpen, 'fontsLoaded:', appState.fontsLoaded, 'fontsLoading:', appState.fontsLoading);
-            if (!appState.fontsLoaded && !appState.fontsLoading) {
-                if (e && e.type === 'mousedown') {
-                    e.preventDefault();
-                    elements.fontFamilySelectModal.focus();
-                } else if (e && e.type === 'keydown') {
-                    e.preventDefault();
-                }
-                await loadSystemFonts(shouldOpen);
-            }
-        };
         elements.fontFamilySelectModal.addEventListener('mousedown', (e) => {
             console.log('[FontDebug] fontFamilySelectModal mousedown event triggered');
-            triggerLoadModal(e, true);
+            if (!appState.fontsLoaded) {
+                e.preventDefault();
+                setShouldOpenFontPicker(true);
+                if (!appState.fontsLoading) {
+                    loadSystemFonts();
+                }
+            }
         });
         elements.fontFamilySelectModal.addEventListener('mouseup', (e) => {
             console.log('[FontDebug] fontFamilySelectModal mouseup event triggered');
@@ -219,12 +213,18 @@ function setupUIEventListeners() {
         });
         elements.fontFamilySelectModal.addEventListener('focus', (e) => {
             console.log('[FontDebug] fontFamilySelectModal focus event triggered');
-            triggerLoadModal(e, false);
+            if (!appState.fontsLoaded && !appState.fontsLoading) {
+                loadSystemFonts();
+            }
         });
         elements.fontFamilySelectModal.addEventListener('keydown', (e) => {
             console.log('[FontDebug] fontFamilySelectModal keydown event:', e.key);
             if (!appState.fontsLoaded && (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
-                triggerLoadModal(e, true);
+                e.preventDefault();
+                setShouldOpenFontPicker(true);
+                if (!appState.fontsLoading) {
+                    loadSystemFonts();
+                }
             }
         });
     }

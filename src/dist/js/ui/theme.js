@@ -15,7 +15,13 @@ export function applyThemeUI(theme) {
     }
 }
 
-export async function loadSystemFonts(openPicker = false) {
+let shouldOpenPickerAfterLoad = false;
+
+export function setShouldOpenFontPicker(value) {
+    shouldOpenPickerAfterLoad = value;
+}
+
+export async function loadSystemFonts() {
     if (!elements.fontFamilySelectModal) return;
     if (appState.fontsLoaded || appState.fontsLoading) return;
 
@@ -75,8 +81,9 @@ export async function loadSystemFonts(openPicker = false) {
         updateStatus(t('status.ready'));
 
         // 読み込み完了後にドロップダウンを展開
-        if (openPicker) {
-            console.log('[FontDebug] openPicker is true, attempting showPicker in 50ms. activeElement:', document.activeElement);
+        if (shouldOpenPickerAfterLoad) {
+            shouldOpenPickerAfterLoad = false;
+            console.log('[FontDebug] shouldOpenPickerAfterLoad is true, attempting showPicker in 50ms. activeElement:', document.activeElement);
             setTimeout(() => {
                 try {
                     console.log('[FontDebug] Executing showPicker. typeof showPicker:', typeof elements.fontFamilySelectModal.showPicker, 'activeElement:', document.activeElement);
@@ -91,7 +98,7 @@ export async function loadSystemFonts(openPicker = false) {
                 }
             }, 50);
         } else {
-            console.log('[FontDebug] openPicker is false, skipping showPicker.');
+            console.log('[FontDebug] shouldOpenPickerAfterLoad is false, skipping showPicker.');
         }
     } catch (error) {
         console.error('Failed to load system fonts:', error);
