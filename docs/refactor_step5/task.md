@@ -8,11 +8,11 @@
 - [x] `docs/wip/refactor_step5/` を `docs/refactor_step5/` に移動・コミット <!-- id: 4 -->
 
 ## フェーズ 3: 実装作業 <!-- id: 5 -->
-- [ ] `src/dist/help.html` 内の5箇所の `<div class="category">` を `<h2 class="category">` に変更 <!-- id: 6 -->
-- [ ] `src/dist/help.html` 内の `<style>` で `.category` のスタイル定義（マージン等）を確認・調整 <!-- id: 7 -->
+- [x] `src/dist/help.html` 内の5箇所の `<div class="category">` を `<h2 class="category">` に変更 <!-- id: 6 -->
+- [x] `src/dist/help.html` 内の `<style>` で `.category` のスタイル定義（マージン等）を確認・調整 <!-- id: 7 -->
 
 ## フェーズ 4: 検証・報告 <!-- id: 8 -->
-- [ ] `npm run tauri dev` → `F1` でヘルプ画面を開き、各テーマで見出しのスタイル・配置・テキストが崩れていないことを確認 <!-- id: 9 -->
-- [ ] `docs/refactor_step5/walkthrough.md` の作成 <!-- id: 10 -->
-- [ ] `docs/history.md` への変更履歴追記 <!-- id: 11 -->
-- [ ] コミット＆プッシュおよびユーザー確認 <!-- id: 12 -->
+- [x] `npm run tauri dev` → `F1` でヘルプ画面を開き、各テーマで見出しのスタイル・配置・テキストが崩れていないことを確認 <!-- id: 9 -->
+- [x] `docs/refactor_step5/walkthrough.md` の作成 <!-- id: 10 -->
+- [x] `docs/history.md` への変更履歴追記 <!-- id: 11 -->
+- [x] コミット＆プッシュおよびユーザー確認 <!-- id: 12 -->
