@@ -189,7 +189,20 @@ export function getIndentString() {
     }
 }
 
-// Undo/Redoスタックを破壊せずに選択範囲のテキストを置換するヘルパー
+/**
+ * Undo/Redoスタックを破壊せずに選択範囲のテキストを置換するヘルパー
+ * 
+ * ※ 注意: document.execCommand('insertText') は W3C 仕様上 deprecated ですが、
+ *   textarea においてブラウザネイティブの Undo/Redo スタックを維持する事実上唯一の手法です。
+ *   Tauri v1 (WebView2 / Chromium) 環境では安定動作します。
+ *   失敗時は setRangeText + 手動 input イベント発火にフォールバックします。
+ * 
+ * @param {number} replaceStart - 置換開始インデックス
+ * @param {number} replaceEnd - 置換終了インデックス
+ * @param {string} replacementText - 挿入する置換テキスト
+ * @param {number} [newSelectionStart] - 置換後の新しい選択開始位置
+ * @param {number} [newSelectionEnd] - 置換後の新しい選択終了位置
+ */
 export function applyEditorTextWithUndo(replaceStart, replaceEnd, replacementText, newSelectionStart, newSelectionEnd) {
     if (!elements.editor) return;
 
