@@ -19,6 +19,7 @@
 | Step | 対象 | ファイル | 内容 | 重要度 |
 |------|------|----------|------|--------|
 | 1 | C-1 | `findReplace.js` | `replaceAll` の `$` 特殊文字バグ修正 | 🔴 |
+| 1.5 | UI | `index.html`, `style.css` | [置換] ボタンの常時薄青解除・ホバー時のみ薄青に | 🟡 |
 | 2 | C-2 | `editor.js` | `input` イベント二重発火修正 | 🔴 |
 | 3 | W-1 | `shortcuts.js` | 到達不能コード（Dead Code）除去 | 🟡 |
 | 4 | W-2 | `findReplace.js` | 検索バー入力時のデバウンス導入 | 🟡 |
@@ -49,6 +50,23 @@
 1. 検索文字列: `abc`、置換文字列: `$&test` で「すべて置換」 → `$&test` がそのまま挿入されることを確認
 2. 通常の置換（特殊文字なし）が従来通り動作することを確認
 3. 大文字小文字区別あり（`split/join` パス）の動作が影響を受けていないことを確認
+
+---
+
+### Step 1.5: [置換] ボタンの常時薄青解除・ホバー時のみ薄青に 🟡
+
+**対象ファイル**: [`index.html`](file:///c:/work/NoCapEdit/src/dist/index.html#L55), [`style.css`](file:///c:/work/NoCapEdit/src/dist/style.css#L462-L472)
+
+**問題**: [置換] ボタンに `primary-btn` クラスが付与されており、通常時から常に薄青色の背景で表示されている。[すべて置換] ボタンと同様に通常時は標準背景とし、マウスホバー時のみ薄青（アクセント色）にする。
+
+**修正内容**:
+1. `index.html`: `replaceOneBtn` の `primary-btn` クラスを削除し、`class="action-btn"` に統一
+2. `style.css`: 不要となる `.action-btn.primary-btn` の個別スタイルを削除
+
+**動作確認**:
+1. 検索・置換バー（Ctrl+H）を開き、[置換] ボタンが通常時は薄グレー背景、マウスホバー時のみ薄青になることを確認
+2. 3テーマすべてで外観を確認
+3. 置換機能が従来通り正常動作することを確認
 
 ---
 
@@ -233,14 +251,15 @@
 
 ```mermaid
 graph TD
-    S1["Step 1: replaceAll $バグ修正"] --> S4["Step 4: 検索デバウンス"]
+    S1["Step 1: replaceAll $バグ修正"] --> S1_5["Step 1.5: 置換ボタンスタイル修正"]
+    S1_5 --> S4["Step 4: 検索デバウンス"]
     S2["Step 2: input二重発火修正"] --> S5["Step 5: Shift+Tabカーソル修正"]
     S2 --> S6["Step 6: applyWordWrapコメント"]
     S2 --> S8["Step 8: execCommandコメント"]
     S3["Step 3: Dead Code除去"]
-    S7["Step 7: CSS変数化"]
+    S1_5 --> S7["Step 7: CSS変数化"]
     S9["Step 9: テーマホワイトリスト"]
-    S1 & S2 & S3 & S4 & S5 & S6 & S7 & S8 & S9 --> S10["Step 10: バージョン・ドキュメント更新"]
+    S1 & S1_5 & S2 & S3 & S4 & S5 & S6 & S7 & S8 & S9 --> S10["Step 10: バージョン・ドキュメント更新"]
 ```
 
 - **Step 1 → Step 4**: 同一ファイル (`findReplace.js`) のため順序を固定
