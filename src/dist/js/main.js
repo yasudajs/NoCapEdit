@@ -196,6 +196,7 @@ function setupUIEventListeners() {
     if (elements.fontFamilySelectModal) {
         elements.fontFamilySelectModal.addEventListener('change', onFontFamilyChange);
         const triggerLoadModal = async (e, shouldOpen = false) => {
+            console.log('[FontDebug] triggerLoadModal called. event:', e ? e.type : 'none', 'shouldOpen:', shouldOpen, 'fontsLoaded:', appState.fontsLoaded, 'fontsLoading:', appState.fontsLoading);
             if (!appState.fontsLoaded && !appState.fontsLoading) {
                 if (e && e.type === 'mousedown') {
                     e.preventDefault();
@@ -206,9 +207,22 @@ function setupUIEventListeners() {
                 await loadSystemFonts(shouldOpen);
             }
         };
-        elements.fontFamilySelectModal.addEventListener('mousedown', (e) => triggerLoadModal(e, true));
-        elements.fontFamilySelectModal.addEventListener('focus', (e) => triggerLoadModal(e, false));
+        elements.fontFamilySelectModal.addEventListener('mousedown', (e) => {
+            console.log('[FontDebug] fontFamilySelectModal mousedown event triggered');
+            triggerLoadModal(e, true);
+        });
+        elements.fontFamilySelectModal.addEventListener('mouseup', (e) => {
+            console.log('[FontDebug] fontFamilySelectModal mouseup event triggered');
+        });
+        elements.fontFamilySelectModal.addEventListener('click', (e) => {
+            console.log('[FontDebug] fontFamilySelectModal click event triggered');
+        });
+        elements.fontFamilySelectModal.addEventListener('focus', (e) => {
+            console.log('[FontDebug] fontFamilySelectModal focus event triggered');
+            triggerLoadModal(e, false);
+        });
         elements.fontFamilySelectModal.addEventListener('keydown', (e) => {
+            console.log('[FontDebug] fontFamilySelectModal keydown event:', e.key);
             if (!appState.fontsLoaded && (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
                 triggerLoadModal(e, true);
             }
