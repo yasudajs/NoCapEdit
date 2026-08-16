@@ -7,8 +7,8 @@
 - [/] フェーズ2: 実装作業 <!-- id: 4 -->
     - [x] 作業ブランチ `feature/help-window-theme-sync` の作成 <!-- id: 5 -->
     - [x] ドキュメントを `docs/wip/help-window-theme-sync/` から `docs/help-window-theme-sync/` へ移動・コミット <!-- id: 6 -->
-    - [ ] バージョン番号の更新（4ファイル: 0.1.91 -> 0.1.92） <!-- id: 7 -->
-    - [ ] `spec.md` の更新 <!-- id: 8 -->
+    - [x] バージョン番号の更新（4ファイル: 0.1.91 -> 0.1.92） <!-- id: 7 -->
+    - [x] `spec.md` の更新 <!-- id: 8 -->
     - [ ] フロントエンド実装 <!-- id: 9 -->
         - [ ] `src/dist/js/core/tauri.js` に `emit` API を追加 <!-- id: 10 -->
         - [ ] `src/dist/js/ui/settings.js` の `onThemeChange` で `theme-changed` イベントをブロードキャスト <!-- id: 11 -->
