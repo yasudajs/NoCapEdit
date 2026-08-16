@@ -12,9 +12,9 @@ export async function saveApplicationSettings() {
             settings: {
                 home_folder: appState.homeFolder,
                 theme: appState.theme,
-                font_size: appState.fontSize,
+                font_size: appState.savedFontSize || appState.fontSize,
                 font_family: appState.fontFamily,
-                line_height: appState.lineHeight,
+                line_height: appState.savedLineHeight || appState.lineHeight,
                 tab_behavior: appState.tabBehavior,
                 save_mode: appState.saveMode,
                 char_count_mode: appState.charCountMode,

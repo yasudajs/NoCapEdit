@@ -2,7 +2,7 @@ import { t } from '../../i18n.js';
 import { appState, elements, savedEditorCursor, setSavedEditorCursor, DEFAULT_MONOSPACE_FONTS } from '../state.js';
 import { invoke, openDialog, ensureTauriApi, appWindow } from '../core/tauri.js';
 import { updateStatus, renderTabs, createNewTab, getCurrentTab, updateTabStatus } from './tabs.js';
-import { updateEditorMetrics, applyWordWrap } from './editor.js';
+import { updateEditorMetrics, applyWordWrap, applyFontSize, applyLineHeight } from './editor.js';
 import { autoSave, shouldDeleteEmptyFile } from '../core/fileSystem.js';
 import { applyThemeUI, applyFontFamily, loadSystemFonts } from './theme.js';
 
@@ -44,6 +44,12 @@ export function openSettingsDialog(isMissingFolder = false) {
 
     if (elements.homeFolderInput) {
         elements.homeFolderInput.value = appState.homeFolder || '';
+    }
+    if (elements.fontSizeSelectModal) {
+        elements.fontSizeSelectModal.value = String(appState.savedFontSize || appState.fontSize || 20);
+    }
+    if (elements.lineHeightSelectModal) {
+        elements.lineHeightSelectModal.value = Number(appState.savedLineHeight || appState.lineHeight || 1.5).toFixed(1);
     }
     if (elements.tabBehaviorSelectModal) {
         elements.tabBehaviorSelectModal.value = appState.tabBehavior;
@@ -116,6 +122,8 @@ export function setupSettingsNavigation() {
             const focusableElements = [
                 elements.browseFolderBtn,
                 elements.fontFamilySelectModal,
+                elements.fontSizeSelectModal,
+                elements.lineHeightSelectModal,
                 elements.tabBehaviorSelectModal,
                 elements.saveModeSelectModal,
                 elements.charCountModeSelectModal,
@@ -148,6 +156,8 @@ export function setupSettingsNavigation() {
 
 export async function saveSettings() {
     const homeFolder = elements.homeFolderInput ? elements.homeFolderInput.value : appState.homeFolder;
+    const fontSize = elements.fontSizeSelectModal ? parseInt(elements.fontSizeSelectModal.value, 10) : (appState.savedFontSize || appState.fontSize || 20);
+    const lineHeight = elements.lineHeightSelectModal ? parseFloat(elements.lineHeightSelectModal.value) : (appState.savedLineHeight || appState.lineHeight || 1.5);
     const tabBehavior = elements.tabBehaviorSelectModal ? elements.tabBehaviorSelectModal.value : appState.tabBehavior;
     const saveMode = elements.saveModeSelectModal ? elements.saveModeSelectModal.value : appState.saveMode;
     const charCountMode = elements.charCountModeSelectModal ? elements.charCountModeSelectModal.value : appState.charCountMode;
@@ -161,6 +171,10 @@ export async function saveSettings() {
 
     try {
         appState.homeFolder = homeFolder;
+        appState.savedFontSize = fontSize;
+        appState.fontSize = fontSize;
+        appState.savedLineHeight = lineHeight;
+        appState.lineHeight = lineHeight;
         appState.tabBehavior = tabBehavior;
         appState.saveMode = saveMode;
         appState.charCountMode = charCountMode;
@@ -174,6 +188,8 @@ export async function saveSettings() {
             }
         }
         applyWordWrap(wordWrap);
+        applyFontSize();
+        applyLineHeight();
 
         await saveApplicationSettings();
 

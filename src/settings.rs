@@ -4,7 +4,7 @@ use std::path::PathBuf;
 
 // デフォルト設定
 const DEFAULT_THEME: &str = "dark";
-const DEFAULT_FONT_SIZE: u32 = 13;
+const DEFAULT_FONT_SIZE: u32 = 20;
 const DEFAULT_FONT_FAMILY: &str = "default";
 const DEFAULT_LINE_HEIGHT: f32 = 1.5;
 const DEFAULT_TAB_BEHAVIOR: &str = "tab";
