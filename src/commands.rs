@@ -1,6 +1,8 @@
 use serde::Serialize;
 use std::fs;
-use std::path::PathBuf;
+use std::io::Write;
+use std::path::{Path, PathBuf};
+use tempfile::NamedTempFile;
 
 use crate::settings::{AppSettings, SettingsResponse};
 use crate::FILE_EXTENSION;
@@ -16,7 +18,7 @@ fn normalize_crlf(content: &str) -> String {
     lf.replace('\n', "\r\n")
 }
 
-fn next_available_file_path(home_folder: &PathBuf, timestamp: &str) -> Result<(String, PathBuf), String> {
+fn next_available_file_path(home_folder: &Path, timestamp: &str) -> Result<(String, PathBuf), String> {
     let base = timestamp.to_string();
     let mut index = 0u32;
 
@@ -80,9 +82,9 @@ pub fn create_and_save_file(
 
     // 内容を正規化してアトミック書き込み
     let normalized = normalize_crlf(&content);
-    let tmp_path = file_path.with_extension("tmp");
-    fs::write(&tmp_path, &normalized).map_err(|e| e.to_string())?;
-    fs::rename(&tmp_path, &file_path).map_err(|e| e.to_string())?;
+    let mut tmp = NamedTempFile::new_in(&home_folder).map_err(|e| e.to_string())?;
+    tmp.write_all(normalized.as_bytes()).map_err(|e| e.to_string())?;
+    tmp.persist(&file_path).map_err(|e| e.to_string())?;
 
     Ok(FileInfo {
         file_name,
@@ -99,19 +101,13 @@ pub fn read_text_file(file_path: PathBuf) -> Result<String, String> {
 pub fn save_text_file(file_path: PathBuf, content: String) -> Result<(), String> {
     let parent = file_path
         .parent()
-        .ok_or_else(|| "fs.error.invalidPath".to_string())?
-        .to_path_buf();
+        .ok_or_else(|| "fs.error.invalidPath".to_string())?;
     fs::create_dir_all(parent).map_err(|e| e.to_string())?;
 
     let normalized = normalize_crlf(&content);
-    let tmp_path = file_path.with_extension("tmp");
-
-    fs::write(&tmp_path, normalized).map_err(|e| e.to_string())?;
-
-    if file_path.exists() {
-        fs::remove_file(&file_path).map_err(|e| e.to_string())?;
-    }
-    fs::rename(&tmp_path, &file_path).map_err(|e| e.to_string())?;
+    let mut tmp = NamedTempFile::new_in(parent).map_err(|e| e.to_string())?;
+    tmp.write_all(normalized.as_bytes()).map_err(|e| e.to_string())?;
+    tmp.persist(&file_path).map_err(|e| e.to_string())?;
 
     Ok(())
 }
@@ -174,37 +170,51 @@ pub fn is_debug() -> bool {
 mod tests {
     use super::*;
     use std::fs::File;
+    use tempfile::TempDir;
 
     #[test]
     fn test_next_available_file_path_single_digit_sequence() {
-        let temp_dir = std::env::temp_dir().join(format!("nocapedit_test_{}", uuid::Uuid::new_v4()));
-        fs::create_dir_all(&temp_dir).unwrap();
+        let temp_dir = TempDir::new().unwrap();
+        let temp_path = temp_dir.path();
 
         let ts = "20260816_120000";
 
         // 1. 重複なし
-        let (name0, path0) = next_available_file_path(&temp_dir, ts).unwrap();
+        let (name0, path0) = next_available_file_path(temp_path, ts).unwrap();
         assert_eq!(name0, format!("{}.nctx", ts));
         File::create(&path0).unwrap();
 
         // 2. 1回目重複 -> _1
-        let (name1, path1) = next_available_file_path(&temp_dir, ts).unwrap();
+        let (name1, path1) = next_available_file_path(temp_path, ts).unwrap();
         assert_eq!(name1, format!("{}_1.nctx", ts));
         File::create(&path1).unwrap();
 
         // 3. 2〜9回目重複 -> _2 .. _9
         for i in 2..=9 {
-            let (name, path) = next_available_file_path(&temp_dir, ts).unwrap();
+            let (name, path) = next_available_file_path(temp_path, ts).unwrap();
             assert_eq!(name, format!("{}_{}.nctx", ts, i));
             File::create(&path).unwrap();
         }
 
         // 4. 10回目重複（上限超過） -> エラー
-        let err = next_available_file_path(&temp_dir, ts).unwrap_err();
+        let err = next_available_file_path(temp_path, ts).unwrap_err();
         assert_eq!(err, "fs.error.maxLimitReached");
+    }
 
-        // 後始末
-        let _ = fs::remove_dir_all(&temp_dir);
+    #[test]
+    fn test_save_text_file_atomic_overwrite() {
+        let temp_dir = TempDir::new().unwrap();
+        let file_path = temp_dir.path().join("test.nctx");
+
+        // 1. 初回保存
+        save_text_file(file_path.clone(), "Hello\nWorld".to_string()).unwrap();
+        let content1 = fs::read_to_string(&file_path).unwrap();
+        assert_eq!(content1, "Hello\r\nWorld");
+
+        // 2. 上書き保存
+        save_text_file(file_path.clone(), "Updated\r\nContent".to_string()).unwrap();
+        let content2 = fs::read_to_string(&file_path).unwrap();
+        assert_eq!(content2, "Updated\r\nContent");
     }
 }
 

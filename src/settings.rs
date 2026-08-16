@@ -90,12 +90,21 @@ impl AppSettings {
     }
 
     pub fn load() -> Self {
-        if let Ok(content) = fs::read_to_string(Self::config_path()) {
-            if let Ok(settings) = serde_json::from_str(&content) {
-                return settings;
+        let mut settings = if let Ok(content) = fs::read_to_string(Self::config_path()) {
+            if let Ok(s) = serde_json::from_str(&content) {
+                s
+            } else {
+                Self::default()
             }
-        }
-        Self::default()
+        } else {
+            Self::default()
+        };
+
+        // 異常値防止: フロントエンドの選択可能範囲と一致させてサニタイズ
+        settings.font_size = settings.font_size.clamp(8, 72);
+        settings.line_height = settings.line_height.clamp(1.0, 3.0);
+
+        settings
     }
 
     pub fn save(&self) -> Result<(), Box<dyn std::error::Error>> {
@@ -133,5 +142,31 @@ impl Default for AppSettings {
             char_count_mode: default_char_count_mode(),
             word_wrap: default_word_wrap(),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_settings_clamp_ranges() {
+        let mut s = AppSettings::default();
+
+        // 下限超過テスト
+        s.font_size = 0;
+        s.line_height = 0.5;
+        s.font_size = s.font_size.clamp(8, 72);
+        s.line_height = s.line_height.clamp(1.0, 3.0);
+        assert_eq!(s.font_size, 8);
+        assert_eq!(s.line_height, 1.0);
+
+        // 上限超過テスト
+        s.font_size = 999;
+        s.line_height = 10.0;
+        s.font_size = s.font_size.clamp(8, 72);
+        s.line_height = s.line_height.clamp(1.0, 3.0);
+        assert_eq!(s.font_size, 72);
+        assert_eq!(s.line_height, 3.0);
     }
 }

@@ -68,9 +68,9 @@
     </div>
 
     <!-- 設定ダイアログ -->
-    <div id="settingsDialog" class="dialog-overlay hidden">
+    <div id="settingsDialog" class="dialog-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="settingsDialogTitle">
         <div class="dialog-box">
-            <h2 data-i18n="ui.dialog.settings.title">NoCapEdit - 設定</h2>
+            <h2 id="settingsDialogTitle" data-i18n="ui.dialog.settings.title">NoCapEdit - 設定</h2>
             <div class="dialog-content">
                 <div id="updateNoticeContainer" class="update-notice hidden">
                     <p><span data-i18n="ui.dialog.settings.update.available">アップデート可能です:</span><br>Ver. <span id="currentVerSpan"></span> → Ver. <span id="latestVerSpan"></span></p>
@@ -90,7 +90,7 @@
                 </select>
 
                 <label for="fontSizeSelectModal" data-i18n="ui.dialog.settings.fontSize.label">フォントサイズ:</label>
-                <select id="fontSizeSelectModal" class="tab-select" title="フォントサイズを変更" data-i18n-title="ui.tooltip.fontSize">
+                <select id="fontSizeSelectModal" class="settings-select" title="フォントサイズを変更" data-i18n-title="ui.tooltip.fontSize">
                     <option value="8">8 pt</option>
                     <option value="9">9 pt</option>
                     <option value="10">10 pt</option>
@@ -103,7 +103,7 @@
                     <option value="17">17 pt</option>
                     <option value="18">18 pt</option>
                     <option value="19">19 pt</option>
-                    <option value="20" selected>20 pt (デフォルト)</option>
+                    <option value="20" selected data-i18n="ui.dialog.settings.fontSize.defaultOption">20 pt (デフォルト)</option>
                     <option value="21">21 pt</option>
                     <option value="22">22 pt</option>
                     <option value="24">24 pt</option>
@@ -119,13 +119,13 @@
                 </select>
 
                 <label for="lineHeightSelectModal" data-i18n="ui.dialog.settings.lineHeight.label">行間:</label>
-                <select id="lineHeightSelectModal" class="tab-select" title="行間を変更" data-i18n-title="ui.tooltip.lineHeight">
+                <select id="lineHeightSelectModal" class="settings-select" title="行間を変更" data-i18n-title="ui.tooltip.lineHeight">
                     <option value="1.0">1.0</option>
                     <option value="1.1">1.1</option>
                     <option value="1.2">1.2</option>
                     <option value="1.3">1.3</option>
                     <option value="1.4">1.4</option>
-                    <option value="1.5" selected>1.5 (デフォルト)</option>
+                    <option value="1.5" selected data-i18n="ui.dialog.settings.lineHeight.defaultOption">1.5 (デフォルト)</option>
                     <option value="1.6">1.6</option>
                     <option value="1.7">1.7</option>
                     <option value="1.8">1.8</option>
@@ -138,32 +138,32 @@
                 </select>
 
                 <label for="tabBehaviorSelectModal" data-i18n="ui.dialog.settings.tabBehavior.label">Tabキーの挙動:</label>
-                <select id="tabBehaviorSelectModal" class="tab-select" title="Tabキーの挙動を変更" data-i18n-title="ui.tooltip.tabBehavior">
+                <select id="tabBehaviorSelectModal" class="settings-select" title="Tabキーの挙動を変更" data-i18n-title="ui.tooltip.tabBehavior">
                     <option value="tab" data-i18n="ui.dialog.settings.tabBehavior.tab">タブ文字 (\t)</option>
                     <option value="space2" data-i18n="ui.dialog.settings.tabBehavior.space2">スペース 2文字</option>
                     <option value="space4" data-i18n="ui.dialog.settings.tabBehavior.space4">スペース 4文字</option>
                 </select>
 
                 <label for="saveModeSelectModal" data-i18n="ui.dialog.settings.saveMode.label">保存モード:</label>
-                <select id="saveModeSelectModal" class="tab-select" title="保存モードを変更" data-i18n-title="ui.tooltip.saveMode">
+                <select id="saveModeSelectModal" class="settings-select" title="保存モードを変更" data-i18n-title="ui.tooltip.saveMode">
                     <option value="auto" data-i18n="ui.dialog.settings.saveMode.auto">自動保存（推奨）</option>
                     <option value="manual" data-i18n="ui.dialog.settings.saveMode.manual">手動保存(Ctrl+Sで保存)</option>
                 </select>
 
                 <label for="charCountModeSelectModal" data-i18n="ui.dialog.settings.charCount.label">文字数カウント:</label>
-                <select id="charCountModeSelectModal" class="tab-select" title="文字数カウント方法を変更" data-i18n-title="ui.tooltip.charCount">
+                <select id="charCountModeSelectModal" class="settings-select" title="文字数カウント方法を変更" data-i18n-title="ui.tooltip.charCount">
                     <option value="with_newline" data-i18n="ui.dialog.settings.charCount.withNewline">改行を含む（デフォルト）</option>
                     <option value="no_newline" data-i18n="ui.dialog.settings.charCount.noNewline">文字数のみ（改行を除く）</option>
                 </select>
 
                 <label for="wordWrapSelectModal" data-i18n="ui.dialog.settings.wordWrap.label">行の折り返し:</label>
-                <select id="wordWrapSelectModal" class="tab-select" title="行の折り返しを変更" data-i18n-title="ui.tooltip.wordWrap">
+                <select id="wordWrapSelectModal" class="settings-select" title="行の折り返しを変更" data-i18n-title="ui.tooltip.wordWrap">
                     <option value="true" data-i18n="ui.dialog.settings.wordWrap.on">有効（折り返す）</option>
                     <option value="false" data-i18n="ui.dialog.settings.wordWrap.off">無効（折り返さない）</option>
                 </select>
 
                 <label for="themeSelectModal" data-i18n="ui.dialog.settings.theme.label">テーマ:</label>
-                <select id="themeSelectModal" class="tab-select" title="テーマを変更" data-i18n-title="ui.tooltip.theme">
+                <select id="themeSelectModal" class="settings-select" title="テーマを変更" data-i18n-title="ui.tooltip.theme">
                     <option value="dark" data-i18n="ui.dialog.settings.theme.dark">ダーク</option>
                     <option value="soft-dark" data-i18n="ui.dialog.settings.theme.softDark">ソフトダーク</option>
                     <option value="light" data-i18n="ui.dialog.settings.theme.light">ライト</option>

@@ -5,6 +5,23 @@ NoCapEdit のバージョンアップおよび仕様変更の履歴です。
 
 ## 改定履歴一覧
 
+### Ver 0.1.93 | 2026-08-16 | yasudajs
+- リファクタリング（マスタープラン Step 1〜10）
+  - **重複CSS変数の削除 (Step 1)**: `:root` で共通定義されているハイライト・選択色・フォーカス枠・スクロールバー等のCSS変数が `body.light-theme` および `body.soft-dark-theme` で重複再定義されていた記述を削除し、共通変数として継承するように整理
+  - **設定ドック border 記述の簡素化 (Step 1)**: 設定ドック（`#settingsDialog .dialog-box`）の冗長な border プロパティ指定を `border: none; border-left: 1px solid var(--border);` に簡素化
+  - **未使用 i18n キーの削除 (Step 2)**: `i18n.js` 内で参照箇所が0件となっていた重複定義キー `ui.dialog.settings.font.loading` を削除し、辞書構造を整理
+  - **デフォルト設定表記の i18n 化 (Step 3)**: `index.html` 内のフォントサイズ（`20 pt (デフォルト)`）および行間（`1.5 (デフォルト)`）の option 要素に `data-i18n` 属性を付与し、`i18n.js` の辞書から動的にローカライズテキストを適用するよう改善
+  - **設定画面 select クラス名の整理 (Step 4)**: 設定ダイアログ内のセレクトボックスで使用されていた汎用クラス `tab-select` を、用途に合わせた `settings-select` にリネーム（HTMLおよびCSS）
+  - **ヘルプ画面カテゴリ見出しのセマンティクス改善 (Step 5)**: `help.html` 内のショートカットカテゴリ見出しを `<div class="category">` から文書構造に適した `<h2 class="category">` に変更し、スタイルを整理
+  - **設定ドック WAI-ARIA 属性の付与 (Step 6)**: `index.html` の設定ダイアログに `role="dialog"`, `aria-modal="true"`, `aria-labelledby="settingsDialogTitle"` を付与し、アクセシビリティ標準に準拠
+  - **ファイルパス引数型の慣用化 (Step 7)**: `commands.rs` 内の `next_available_file_path` 関数の引数型を `&PathBuf` から Rust 慣用型の `&Path` に変更
+  - **テストのRAIIパターン化 (Step 8)**: `tempfile` クレートを導入し、テスト内の一時ディレクトリ作成・削除を手動処理から `TempDir` によるスコープ終了時自動クリーンアップに改修
+  - **設定値のバリデーション強化 (Step 9)**: `settings.rs` の `AppSettings::load()` 時に `font_size`（8〜72）および `line_height`（1.0〜3.0）をフロントエンド入力範囲内に制限（`clamp`）するサニタイズ処理と単体テストを追加
+  - **ファイル保存のアトミック性改善 (Step 10)**: `commands.rs` のファイル保存処理（`save_text_file` および `create_and_save_file`）を `NamedTempFile` の `persist` によるアトミック保存に改修し、データ消失リスクを排除するとともに上書き単体テストを追加
+  - 仕様書 (`spec.md`) を更新
+
+---
+
 ### Ver 0.1.92 | 2026-08-16 | yasudajs
 - ヘルプ画面のテーマ連動およびリアルタイム同期を実装
   - **ヘルプウィンドウ起動時のタイトルバー色適用**: ヘルプ画面（`F1`）の初期化処理において Rust 側の `apply_theme` コマンドを呼び出すよう対応し、Windows DWM API によるダーク/ライトタイトルバーが起動時から正しく適用されるよう修正
