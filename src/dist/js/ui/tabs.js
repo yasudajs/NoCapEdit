@@ -19,27 +19,33 @@ export function formatTabDisplayName(fileName) {
     if (unsavedRegex.test(fileName)) {
         return fileName;
     }
+
+    let displayName = '';
     if (isAutoCreatedFileName(fileName)) {
-        const match = fileName.match(/^(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})(?:_(\d{2}))?\.nctx$/);
+        const match = fileName.match(/^(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})(?:_(\d+))?\.nctx$/);
         if (match) {
             const [_, year, month, day, hour, min, sec, index] = match;
-            let formatted = `${year}/${month}/${day} ${hour}:${min}:${sec}`;
+            displayName = `${year}/${month}/${day} ${hour}:${min}:${sec}`;
             if (index) {
                 const numIdx = parseInt(index, 10);
-                formatted += `-${numIdx}`;
+                displayName += `-${numIdx}`;
             }
-            if (appState.saveMode === 'manual') {
-                formatted = `[${formatted}]`;
-            }
-            return formatted;
+        } else {
+            displayName = fileName;
+        }
+    } else {
+        const lastDotIdx = fileName.lastIndexOf('.');
+        if (lastDotIdx <= 0) {
+            displayName = fileName;
+        } else {
+            displayName = fileName.substring(0, lastDotIdx);
         }
     }
 
-    const lastDotIdx = fileName.lastIndexOf('.');
-    if (lastDotIdx <= 0) {
-        return fileName;
+    if (appState.saveMode === 'manual') {
+        return `[${displayName}]`;
     }
-    return fileName.substring(0, lastDotIdx);
+    return displayName;
 }
 
 export function updateStatus(message, status = 'normal', bypassPrefix = false) {
