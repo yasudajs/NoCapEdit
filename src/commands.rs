@@ -1,6 +1,6 @@
 use serde::Serialize;
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use crate::settings::{AppSettings, SettingsResponse};
 use crate::FILE_EXTENSION;
@@ -16,7 +16,7 @@ fn normalize_crlf(content: &str) -> String {
     lf.replace('\n', "\r\n")
 }
 
-fn next_available_file_path(home_folder: &PathBuf, timestamp: &str) -> Result<(String, PathBuf), String> {
+fn next_available_file_path(home_folder: &Path, timestamp: &str) -> Result<(String, PathBuf), String> {
     let base = timestamp.to_string();
     let mut index = 0u32;
 

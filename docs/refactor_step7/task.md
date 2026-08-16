@@ -8,11 +8,11 @@
 - [x] `docs/wip/refactor_step7/` を `docs/refactor_step7/` に移動・コミット <!-- id: 4 -->
 
 ## フェーズ 3: 実装作業 <!-- id: 5 -->
-- [ ] `src/commands.rs` で `std::path::Path` をインポート <!-- id: 6 -->
-- [ ] `next_available_file_path` の引数型を `&PathBuf` から `&Path` に変更 <!-- id: 7 -->
+- [x] `src/commands.rs` で `std::path::Path` をインポート <!-- id: 6 -->
+- [x] `next_available_file_path` の引数型を `&PathBuf` から `&Path` に変更 <!-- id: 7 -->
 
 ## フェーズ 4: 検証・報告 <!-- id: 8 -->
-- [ ] `cargo check` および `cargo test` によるコンパイル・テスト検証 <!-- id: 9 -->
-- [ ] `docs/refactor_step7/walkthrough.md` の作成 <!-- id: 10 -->
-- [ ] `docs/history.md` への変更履歴追記 <!-- id: 11 -->
-- [ ] コミット＆プッシュおよびユーザー確認 <!-- id: 12 -->
+- [x] `cargo check` および `cargo test` によるコンパイル・テスト検証 <!-- id: 9 -->
+- [x] `docs/refactor_step7/walkthrough.md` の作成 <!-- id: 10 -->
+- [x] `docs/history.md` への変更履歴追記 <!-- id: 11 -->
+- [x] コミット＆プッシュおよびユーザー確認 <!-- id: 12 -->
