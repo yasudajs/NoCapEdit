@@ -3,6 +3,7 @@
 ## 実装概要
 設定画面に「フォントサイズ」および「行間」の選択項目を追加し、設定画面からの変更を永続化（`config.json` に保存）できるようにしました。
 また、ショートカットキーによる拡大・縮小や行間調整は一時変更とし、設定ファイルへの不要な自動保存を排除するとともに、リセットショートカット（Ctrl+0）で設定画面の保存値に復元できるように改善しました。
+さらに、設定画面下部の操作案内フッターの文字色を薄いグレーから通常文字色に変更し、視認性を向上させました。
 
 ---
 
@@ -12,7 +13,9 @@
 - [`src/settings.rs`](file:///c:/work/NoCapEdit/src/settings.rs): `DEFAULT_FONT_SIZE` を `13` から `20` に変更し、全体の初期設定値と統一。
 
 ### 2. UI / HTML / CSS / 多言語化
-- [`src/dist/style.css`](file:///c:/work/NoCapEdit/src/dist/style.css): `--editor-font-size` の初期値を `20px` に統一。
+- [`src/dist/style.css`](file:///c:/work/NoCapEdit/src/dist/style.css):
+  - `--editor-font-size` の初期値を `20px` に統一。
+  - `#settingsDialog .settings-footer` の文字色を `var(--text-secondary)`（薄いグレー）から `var(--text-primary)`（通常文字色）に変更し視認性を改善。
 - [`src/dist/index.html`](file:///c:/work/NoCapEdit/src/dist/index.html):
   - 設定ダイアログの「フォント」直下に、フォントサイズ（8〜72pt）および行間（1.0〜3.0）の `<select>` 要素を追加。
 - [`src/dist/i18n.js`](file:///c:/work/NoCapEdit/src/dist/i18n.js):
@@ -49,3 +52,4 @@
 - [x] **ショートカットによる一時変更**: ショートカットやホイール操作で変更した値は一時的にエディタへ反映され、設定ファイルへの自動保存は行われないことを確認。
 - [x] **リセット動作**: 一時変更後に `Ctrl + 0` を押下すると、設定画面で設定した基準値に正しく復元されることを確認。
 - [x] **キーボードナビゲーション**: 設定ダイアログ内で `Tab` / `Shift + Tab` により新設項目間をスムーズにフォーカス移動し、上下矢印キーで値が変更できることを確認。
+- [x] **フッター視認性**: 設定ダイアログ最下部の操作案内テキストが通常文字色（`--text-primary`）になり、はっきりと読みやすくなったことを確認。
