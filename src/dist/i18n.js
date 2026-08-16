@@ -168,6 +168,8 @@ const DICT = {
                 addTab: "新規タブを作成",
                 settings: "設定",
                 fontSelect: "フォントを変更",
+                fontSize: "フォントサイズを変更",
+                lineHeight: "行間を変更",
                 tabBehavior: "Tabキーの挙動を変更",
                 saveMode: "保存モードを変更",
                 charCount: "文字数カウント方法を変更",
@@ -188,6 +190,12 @@ const DICT = {
                     font: {
                         label: "フォント:",
                         default: "デフォルト (Monospace)"
+                    },
+                    fontSize: {
+                        label: "フォントサイズ:"
+                    },
+                    lineHeight: {
+                        label: "行間:"
                     },
                     tabBehavior: {
                         label: "Tabキーの挙動:",

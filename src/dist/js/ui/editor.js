@@ -3,7 +3,6 @@ import { appState, elements } from '../state.js';
 import { MAX_FONT_SIZE, MIN_FONT_SIZE, MAX_LINE_HEIGHT, MIN_LINE_HEIGHT, LINE_HEIGHT_STEP, AUTOSAVE_DELAY_MS } from '../state.js';
 import { renderTabs, updateTabStatus } from './tabs.js';
 import { autoSave } from '../core/fileSystem.js';
-import { saveSettingsDelay } from '../core/settingsManager.js';
 
 export function syncCurrentEditorToState() {
     if (!appState.currentTab) {
@@ -59,7 +58,7 @@ export function updateEditorMetrics() {
     const col = (lines[lines.length - 1] || '').length + 1;
 
     const lh = appState.lineHeight || 1.5;
-    const fs = appState.fontSize || 13;
+    const fs = appState.fontSize || 20;
     
     const positionStr = t('editor.metrics.position', { line, col });
     const fontStr = t('editor.metrics.font', { size: fs });
@@ -110,7 +109,6 @@ export function applyFontSize() {
         document.documentElement.style.setProperty('--editor-font-size', `${appState.fontSize}px`);
     }
     updateEditorMetrics();
-    saveSettingsDelay();
 }
 
 export function applyLineHeight() {
@@ -118,7 +116,6 @@ export function applyLineHeight() {
         document.documentElement.style.setProperty('--editor-line-height', appState.lineHeight);
     }
     updateEditorMetrics();
-    saveSettingsDelay();
 }
 
 export function increaseLineHeight() {
@@ -132,8 +129,8 @@ export const DEFAULT_FONT_SIZE = 20;
 export const DEFAULT_LINE_HEIGHT = 1.5;
 
 export function resetZoomAndLineHeight() {
-    appState.fontSize = DEFAULT_FONT_SIZE;
-    appState.lineHeight = DEFAULT_LINE_HEIGHT;
+    appState.fontSize = appState.savedFontSize || DEFAULT_FONT_SIZE;
+    appState.lineHeight = appState.savedLineHeight || DEFAULT_LINE_HEIGHT;
     applyFontSize();
     applyLineHeight();
 }

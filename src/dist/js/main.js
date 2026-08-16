@@ -66,14 +66,22 @@ async function init() {
 
         appState.homeFolder = settings.home_folder;
         appState.theme = settings.theme || 'dark';
-        appState.fontSize = settings.font_size || 13;
+        appState.savedFontSize = settings.font_size || 20;
+        appState.fontSize = appState.savedFontSize;
         appState.fontFamily = settings.font_family || 'default';
-        appState.lineHeight = settings.line_height || 1.5;
+        appState.savedLineHeight = settings.line_height || 1.5;
+        appState.lineHeight = appState.savedLineHeight;
         appState.tabBehavior = settings.tab_behavior || 'tab';
         appState.saveMode = settings.save_mode || 'auto';
         appState.charCountMode = settings.char_count_mode || 'with_newline';
         appState.wordWrap = settings.word_wrap !== undefined ? settings.word_wrap : true;
 
+        if (elements.fontSizeSelectModal) {
+            elements.fontSizeSelectModal.value = String(appState.fontSize);
+        }
+        if (elements.lineHeightSelectModal) {
+            elements.lineHeightSelectModal.value = Number(appState.lineHeight).toFixed(1);
+        }
         if (elements.tabBehaviorSelectModal) {
             elements.tabBehaviorSelectModal.value = appState.tabBehavior;
         }
@@ -194,6 +202,16 @@ function setupUIEventListeners() {
         };
         elements.fontFamilySelectModal.addEventListener('mousedown', triggerLoadModal);
         elements.fontFamilySelectModal.addEventListener('focus', triggerLoadModal);
+    }
+    if (elements.fontSizeSelectModal) {
+        elements.fontSizeSelectModal.addEventListener('change', async () => {
+            await saveSettings();
+        });
+    }
+    if (elements.lineHeightSelectModal) {
+        elements.lineHeightSelectModal.addEventListener('change', async () => {
+            await saveSettings();
+        });
     }
     if (elements.tabBehaviorSelectModal) {
         elements.tabBehaviorSelectModal.addEventListener('change', async (e) => {
