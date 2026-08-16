@@ -145,6 +145,11 @@ export function decreaseLineHeight() {
     }
 }
 
+/**
+ * エディタの折り返し設定（soft / off）を適用する
+ * ※ 全タブ閉鎖時など elements.editor が存在しない場合は安全に早期リターンする
+ * @param {boolean} enable - 折り返しを有効にするかどうか
+ */
 export function applyWordWrap(enable) {
     if (!elements.editor) return;
     elements.editor.wrap = enable ? 'soft' : 'off';
@@ -184,7 +189,20 @@ export function getIndentString() {
     }
 }
 
-// Undo/Redoスタックを破壊せずに選択範囲のテキストを置換するヘルパー
+/**
+ * Undo/Redoスタックを破壊せずに選択範囲のテキストを置換するヘルパー
+ * 
+ * ※ 注意: document.execCommand('insertText') は W3C 仕様上 deprecated ですが、
+ *   textarea においてブラウザネイティブの Undo/Redo スタックを維持する事実上唯一の手法です。
+ *   Tauri v1 (WebView2 / Chromium) 環境では安定動作します。
+ *   失敗時は setRangeText + 手動 input イベント発火にフォールバックします。
+ * 
+ * @param {number} replaceStart - 置換開始インデックス
+ * @param {number} replaceEnd - 置換終了インデックス
+ * @param {string} replacementText - 挿入する置換テキスト
+ * @param {number} [newSelectionStart] - 置換後の新しい選択開始位置
+ * @param {number} [newSelectionEnd] - 置換後の新しい選択終了位置
+ */
 export function applyEditorTextWithUndo(replaceStart, replaceEnd, replacementText, newSelectionStart, newSelectionEnd) {
     if (!elements.editor) return;
 
@@ -192,17 +210,17 @@ export function applyEditorTextWithUndo(replaceStart, replaceEnd, replacementTex
     elements.editor.setSelectionRange(replaceStart, replaceEnd);
 
     // document.execCommand('insertText') を使用することでブラウザネイティブのUndo/Redoスタックに正常に記録
-    if (!document.execCommand('insertText', false, replacementText)) {
-        // execCommand が失敗した場合のフォールバック
+    // 成功時はブラウザが自動的に input イベントを発火する
+    const success = document.execCommand('insertText', false, replacementText);
+    if (!success) {
+        // execCommand が失敗した場合のフォールバック（ブラウザが input イベントを発火しないため手動発火）
         elements.editor.setRangeText(replacementText, replaceStart, replaceEnd, 'end');
+        elements.editor.dispatchEvent(new Event('input'));
     }
 
     if (newSelectionStart !== undefined && newSelectionEnd !== undefined) {
         elements.editor.setSelectionRange(newSelectionStart, newSelectionEnd);
     }
-
-    // 自動保存やステータス表示を連動
-    elements.editor.dispatchEvent(new Event('input'));
 }
 
 export function handleTabKey(e) {
@@ -257,42 +275,58 @@ export function handleTabKey(e) {
             const targetText = value.substring(startLinePos, actualEndLinePos);
             const lines = targetText.split('\n');
 
-            let firstLineRemovedCount = 0;
-            let totalRemovedCount = 0;
-
-            const newLines = lines.map((line, idx) => {
-                let removed = 0;
+            const newLines = lines.map(line => {
                 let newLine = line;
 
                 if (line.startsWith(indentStr)) {
                     newLine = line.substring(indentStr.length);
-                    removed = indentStr.length;
                 } else if (line.startsWith('\t')) {
                     newLine = line.substring(1);
-                    removed = 1;
                 } else if (line.startsWith(' ')) {
                     const spaceMatch = line.match(/^ +/);
                     if (spaceMatch) {
                         const count = Math.min(spaceMatch[0].length, indentStr.length);
                         newLine = line.substring(count);
-                        removed = count;
                     }
                 }
-
-                if (idx === 0) {
-                    firstLineRemovedCount = removed;
-                }
-                totalRemovedCount += removed;
                 return newLine;
             });
+
+            // 各行ごとの削除文字数を反映して正確な新カーソル・選択範囲位置を計算
+            let newSelStart = startLinePos;
+            let newSelEnd = startLinePos;
+            let currentOldPos = startLinePos;
+            let currentNewPos = startLinePos;
+
+            for (let i = 0; i < lines.length; i++) {
+                const oldLineLen = lines[i].length;
+                const newLineLen = newLines[i].length;
+                const removed = oldLineLen - newLineLen;
+                const nextOldPos = currentOldPos + oldLineLen;
+
+                if (start >= currentOldPos && start <= nextOldPos) {
+                    const offsetInLine = start - currentOldPos;
+                    const newOffsetInLine = Math.max(0, offsetInLine - removed);
+                    newSelStart = currentNewPos + newOffsetInLine;
+                }
+
+                if (end >= currentOldPos && end <= nextOldPos) {
+                    const offsetInLine = end - currentOldPos;
+                    const newOffsetInLine = Math.max(0, offsetInLine - removed);
+                    newSelEnd = currentNewPos + newOffsetInLine;
+                }
+
+                currentOldPos = nextOldPos + 1;
+                currentNewPos += newLineLen + 1;
+            }
 
             const newText = newLines.join('\n');
             applyEditorTextWithUndo(
                 startLinePos,
                 actualEndLinePos,
                 newText,
-                Math.max(startLinePos, start - firstLineRemovedCount),
-                Math.max(startLinePos, end - totalRemovedCount)
+                newSelStart,
+                newSelEnd
             );
         }
     }

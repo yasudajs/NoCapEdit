@@ -5,6 +5,7 @@ import { applyEditorTextWithUndo, updateEditorMetrics } from './editor.js';
 let isMatchCase = false;
 let matches = [];
 let currentMatchIndex = -1;
+let findEditorDebounceTimer = null;
 
 function escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -118,6 +119,10 @@ export function openFind(focusReplace = false) {
 
 export function closeFind() {
     if (!elements.findReplaceWidget) return;
+    if (findEditorDebounceTimer) {
+        clearTimeout(findEditorDebounceTimer);
+        findEditorDebounceTimer = null;
+    }
     elements.findReplaceWidget.classList.add('hidden');
     if (elements.editorHighlights) {
         elements.editorHighlights.innerHTML = '';
@@ -265,7 +270,7 @@ export function replaceAll() {
         newFullText = fullText.split(query).join(replaceText);
     } else {
         const regex = new RegExp(escapeRegExp(query), 'gi');
-        newFullText = fullText.replace(regex, replaceText);
+        newFullText = fullText.replace(regex, () => replaceText);
     }
 
     applyEditorTextWithUndo(0, fullText.length, newFullText, 0, 0);
@@ -294,7 +299,13 @@ export function setupFindReplaceEvents() {
         elements.editor.addEventListener('scroll', syncBackdropScroll);
         elements.editor.addEventListener('input', () => {
             if (isFindWidgetOpen()) {
-                updateMatches(false);
+                if (findEditorDebounceTimer) {
+                    clearTimeout(findEditorDebounceTimer);
+                }
+                findEditorDebounceTimer = setTimeout(() => {
+                    updateMatches(false);
+                    findEditorDebounceTimer = null;
+                }, 200);
             }
         });
     }

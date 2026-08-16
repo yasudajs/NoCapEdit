@@ -151,7 +151,7 @@ export function setupKeyboardShortcuts() {
             }
 
             // 拡大条件
-            if (e.key === '+' || e.key === '=' || e.key === ';' || e.code === 'NumpadAdd' || e.code === 'Equal' || (e.code === 'Semicolon' && e.shiftKey)) {
+            if (e.key === '+' || e.key === '=' || e.key === ';' || e.code === 'NumpadAdd' || e.code === 'Equal') {
                 e.preventDefault();
                 zoomIn();
             }

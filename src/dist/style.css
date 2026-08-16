@@ -21,6 +21,14 @@
     --tab-scrollbar-thumb-hover: rgba(140, 190, 230, 0.40);
     --tab-scrollbar-track: transparent;
     
+    /* ハイライト・選択色・フォーカス */
+    --search-match-bg: rgba(234, 179, 8, 0.38);
+    --search-match-border: rgba(234, 179, 8, 0.6);
+    --search-current-bg: rgba(56, 189, 248, 0.45);
+    --search-current-border: rgba(14, 165, 233, 0.8);
+    --editor-selection-bg: rgba(56, 189, 248, 0.3);
+    --focus-outline: #0ea5e9;
+    
     /* エディタ設定 */
     --editor-font-family: 'Fira Code', 'Monaco', 'Menlo', monospace;
     --editor-font-size: 13px;
@@ -42,6 +50,14 @@ body.light-theme {
     --tab-scrollbar-thumb: rgba(70, 130, 180, 0.18);
     --tab-scrollbar-thumb-hover: rgba(70, 130, 180, 0.38);
     --tab-scrollbar-track: transparent;
+    
+    /* ハイライト・選択色・フォーカス */
+    --search-match-bg: rgba(234, 179, 8, 0.38);
+    --search-match-border: rgba(234, 179, 8, 0.6);
+    --search-current-bg: rgba(56, 189, 248, 0.45);
+    --search-current-border: rgba(14, 165, 233, 0.8);
+    --editor-selection-bg: rgba(56, 189, 248, 0.3);
+    --focus-outline: #0ea5e9;
 }
 
 body.soft-dark-theme {
@@ -59,6 +75,14 @@ body.soft-dark-theme {
     --tab-scrollbar-thumb: rgba(140, 190, 230, 0.18);
     --tab-scrollbar-thumb-hover: rgba(140, 190, 230, 0.40);
     --tab-scrollbar-track: transparent;
+    
+    /* ハイライト・選択色・フォーカス */
+    --search-match-bg: rgba(234, 179, 8, 0.38);
+    --search-match-border: rgba(234, 179, 8, 0.6);
+    --search-current-bg: rgba(56, 189, 248, 0.45);
+    --search-current-border: rgba(14, 165, 233, 0.8);
+    --editor-selection-bg: rgba(56, 189, 248, 0.3);
+    --focus-outline: #0ea5e9;
 }
 
 body {
@@ -437,7 +461,7 @@ body {
 .icon-btn:focus-visible,
 .toggle-btn:focus-visible,
 .action-btn:focus-visible {
-    outline: 2px solid rgb(14, 165, 233);
+    outline: 2px solid var(--focus-outline);
     outline-offset: 1px;
 }
 
@@ -457,18 +481,6 @@ body {
     background-color: var(--accent);
     border-color: var(--accent);
     color: var(--bg-primary);
-}
-
-.action-btn.primary-btn {
-    background-color: rgba(56, 189, 248, 0.45); /* ハイライトの内側水色と同じ */
-    border-color: rgba(14, 165, 233, 0.8);      /* ハイライトの枠青と同じ */
-    color: var(--text-primary);                 /* 文字は黒（テーマのデフォルト）のまま */
-}
-
-.action-btn.primary-btn:hover {
-    background-color: rgba(56, 189, 248, 0.65);
-    border-color: rgb(14, 165, 233);
-    color: var(--text-primary);
 }
 
 /* テキストエディタ バックドロップ（検索ハイライト表示用） */
@@ -508,17 +520,17 @@ body {
 }
 
 .editor-highlights mark.search-match {
-    background-color: rgba(234, 179, 8, 0.38);
+    background-color: var(--search-match-bg);
     color: transparent;
     border-radius: 2px;
-    box-shadow: 0 0 0 1px rgba(234, 179, 8, 0.6);
+    box-shadow: 0 0 0 1px var(--search-match-border);
 }
 
 .editor-highlights mark.search-match.current {
-    background-color: rgba(56, 189, 248, 0.45); /* 検索中はこの色がそのまま表示される */
+    background-color: var(--search-current-bg); /* 検索中はこの色がそのまま表示される */
     color: transparent;
     border-radius: 2px;
-    box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.8);
+    box-shadow: 0 0 0 2px var(--search-current-border);
 }
 
 /* テキストエディタ */
@@ -549,7 +561,7 @@ body {
 }
 
 .editor::selection {
-    background-color: rgba(56, 189, 248, 0.3); /* 通常のテキスト選択も薄い水色に */
+    background-color: var(--editor-selection-bg); /* 通常のテキスト選択も薄い水色に */
     color: inherit; /* 文字色は反転させずそのままにする */
 }
 
