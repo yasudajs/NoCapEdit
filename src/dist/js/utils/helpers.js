@@ -1,4 +1,4 @@
-export const AUTO_FILE_REGEX = /^\d{8}_\d{6}(_\d{2})?\.nctx$/;
+export const AUTO_FILE_REGEX = /^\d{8}_\d{6}(?:_\d+)?\.nctx$/;
 
 export function generateTabId() {
     if (window.crypto && typeof window.crypto.randomUUID === 'function') {
