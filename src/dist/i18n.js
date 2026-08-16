@@ -115,6 +115,7 @@ const DICT = {
                 edit: "テキスト編集",
                 file: "ファイル・タブ操作",
                 view: "表示・ズーム",
+                settings: "設定画面の操作",
                 other: "その他"
             },
             shortcuts: {
@@ -131,6 +132,11 @@ const DICT = {
                 closeTab: "タブを閉じる",
                 openExplorer: "エクスプローラーを開く",
                 toggleSettings: "設定画面の開閉",
+                settingsFocusNext: "設定項目の移動 (次へ)",
+                settingsFocusPrev: "設定項目の移動 (前へ)",
+                settingsSelect: "設定値の選択・変更",
+                settingsBrowse: "フォルダ選択ダイアログを開く",
+                settingsClose: "設定を閉じてエディタに戻る",
                 switchTab: "次のタブへ切り替え",
                 switchTabPrev: "前のタブへ切り替え",
                 zoomIn: "ズームイン (拡大)",
@@ -139,6 +145,7 @@ const DICT = {
                 toggleWordWrap: "行の折り返し切り替え",
                 lineHeightInc: "行間を広げる",
                 lineHeightDec: "行間を狭める",
+                openHelp: "ヘルプ画面を開く",
                 exitApp: "アプリを終了",
                 closeHelp: "ヘルプを閉じる"
             }
@@ -208,7 +215,8 @@ const DICT = {
                         dark: "ダーク",
                         softDark: "ソフトダーク",
                         light: "ライト"
-                    }
+                    },
+                    footerHint: "💡 Tab: 項目移動 │ ↑↓: 選択 │ Space: 実行 │ Esc: 閉じる"
                 },
                 error: {
                     title: "エラー",
