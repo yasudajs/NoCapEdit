@@ -6,7 +6,8 @@
 - Rust 1.70 以上
 - Visual Studio Build Tools (Windows)
 - Node.js (フロントエンドのビルドおよびパッケージ管理)
-- Tauri CLI (`cargo install tauri-cli`)
+- Tauri CLI v1系 (`cargo install tauri-cli --version "^1.5"`)
+  - ※本プロジェクトはTauri v1を使用しています。Tauri v2 CLI (2.x) がグローバルにインストールされていると設定ファイルのパースエラーが発生するため、必ずv1系を使用してください。
 
 ### 開発・起動手順
 ターミナル（PowerShell等）でプロジェクトルートディレクトリを開き、以下のコマンドを実行します。
