@@ -174,37 +174,35 @@ pub fn is_debug() -> bool {
 mod tests {
     use super::*;
     use std::fs::File;
+    use tempfile::TempDir;
 
     #[test]
     fn test_next_available_file_path_single_digit_sequence() {
-        let temp_dir = std::env::temp_dir().join(format!("nocapedit_test_{}", uuid::Uuid::new_v4()));
-        fs::create_dir_all(&temp_dir).unwrap();
+        let temp_dir = TempDir::new().unwrap();
+        let temp_path = temp_dir.path();
 
         let ts = "20260816_120000";
 
         // 1. 重複なし
-        let (name0, path0) = next_available_file_path(&temp_dir, ts).unwrap();
+        let (name0, path0) = next_available_file_path(temp_path, ts).unwrap();
         assert_eq!(name0, format!("{}.nctx", ts));
         File::create(&path0).unwrap();
 
         // 2. 1回目重複 -> _1
-        let (name1, path1) = next_available_file_path(&temp_dir, ts).unwrap();
+        let (name1, path1) = next_available_file_path(temp_path, ts).unwrap();
         assert_eq!(name1, format!("{}_1.nctx", ts));
         File::create(&path1).unwrap();
 
         // 3. 2〜9回目重複 -> _2 .. _9
         for i in 2..=9 {
-            let (name, path) = next_available_file_path(&temp_dir, ts).unwrap();
+            let (name, path) = next_available_file_path(temp_path, ts).unwrap();
             assert_eq!(name, format!("{}_{}.nctx", ts, i));
             File::create(&path).unwrap();
         }
 
         // 4. 10回目重複（上限超過） -> エラー
-        let err = next_available_file_path(&temp_dir, ts).unwrap_err();
+        let err = next_available_file_path(temp_path, ts).unwrap_err();
         assert_eq!(err, "fs.error.maxLimitReached");
-
-        // 後始末
-        let _ = fs::remove_dir_all(&temp_dir);
     }
 }
 

@@ -8,11 +8,11 @@
 - [x] `docs/wip/refactor_step8/` を `docs/refactor_step8/` に移動・コミット <!-- id: 4 -->
 
 ## フェーズ 3: 実装作業 <!-- id: 5 -->
-- [ ] `Cargo.toml` の `[dependencies]` に `tempfile = "3"` を追加 <!-- id: 6 -->
-- [ ] `src/commands.rs` のユニットテストで `tempfile::TempDir` を利用し、手動削除を廃止（RAII自動クリーンアップ化） <!-- id: 7 -->
+- [x] `Cargo.toml` の `[dependencies]` に `tempfile = "3"` を追加 <!-- id: 6 -->
+- [x] `src/commands.rs` のユニットテストで `tempfile::TempDir` を利用し、手動削除を廃止（RAII自動クリーンアップ化） <!-- id: 7 -->
 
 ## フェーズ 4: 検証・報告 <!-- id: 8 -->
-- [ ] `cargo check` および `cargo test` によるコンパイル・テスト検証 <!-- id: 9 -->
-- [ ] `docs/refactor_step8/walkthrough.md` の作成 <!-- id: 10 -->
-- [ ] `docs/history.md` への変更履歴追記 <!-- id: 11 -->
-- [ ] コミット＆プッシュおよびユーザー確認 <!-- id: 12 -->
+- [x] `cargo check` および `cargo test` によるコンパイル・テスト検証 <!-- id: 9 -->
+- [x] `docs/refactor_step8/walkthrough.md` の作成 <!-- id: 10 -->
+- [x] `docs/history.md` への変更履歴追記 <!-- id: 11 -->
+- [x] コミット＆プッシュおよびユーザー確認 <!-- id: 12 -->
