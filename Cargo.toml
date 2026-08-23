@@ -22,4 +22,5 @@ windows-sys = { version = "0.52", features = ["Win32_Graphics_Dwm", "Win32_Found
 tauri-build = { version = "1.5", features = [] }
 
 [features]
+default = ["custom-protocol"]
 custom-protocol = ["tauri/custom-protocol"]
