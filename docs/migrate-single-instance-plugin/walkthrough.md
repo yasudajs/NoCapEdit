@@ -18,8 +18,9 @@
 ### 3. 旧自前 TCP 実装の完全廃止・削除 ([instance.rs](file:///c:/work/NoCapEdit/src/instance.rs))
 - 固定 TCP ポート（49423）をリッスンしていた旧コードを削除し、ポート競合リスクとセキュリティ警告を完全排除。
 
-### 4. アーキテクチャ設計書の更新 ([ARCHITECTURE.md](file:///c:/work/NoCapEdit/docs/ARCHITECTURE.md), [spec.md](file:///c:/work/NoCapEdit/docs/spec.md))
+### 4. アーキテクチャ設計書および README の更新 ([ARCHITECTURE.md](file:///c:/work/NoCapEdit/docs/ARCHITECTURE.md), [spec.md](file:///c:/work/NoCapEdit/docs/spec.md), [README.md](file:///c:/work/NoCapEdit/README.md))
 - バックエンドの設計記述をプラグインベースのネイティブ IPC アーキテクチャに更新。
+- `README.md` に初回起動時の Microsoft Defender クラウドスキャン通知に関するユーザー向け案内を追記。
 
 ---
 

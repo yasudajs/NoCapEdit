@@ -14,7 +14,7 @@ NoCapEdit v0.2系のバージョンアップおよび仕様変更の履歴です
 - **公式 single-instance プラグインへの移行（セキュリティ警告解消とマルチOS対応）**
   - **tauri-plugin-single-instance の導入**: 自前の TCP ソケット通信（`127.0.0.1:49423`）を廃止し、Tauri 公式のシングルインスタンスプラグインへ移行
   - **セキュリティ確認ポップアップの解消**: ネットワーク通信を行わず OS ネイティブの名前付きパイプ（Windows）および UNIX ドメインソケット（macOS / Linux）を使用することで、起動時のファイアウォール確認やポート競合を完全解消
-  - **旧コードの削除と設計書更新**: `src/instance.rs` を削除し、`ARCHITECTURE.md` および `spec.md` を最新アーキテクチャに更新
+  - **旧コードの削除とドキュメント更新**: `src/instance.rs` を削除し、`ARCHITECTURE.md`, `spec.md` を更新。また `README.md` に初回起動時の Microsoft Defender スキャン通知に関する案内を追記
 
 ---
 
