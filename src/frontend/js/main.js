@@ -132,6 +132,8 @@ async function init() {
         if (elements.editor) {
             initCodeMirror(elements.editor, {
                 placeholder: t('editor.placeholder'),
+                wordWrap: appState.wordWrap,
+                tabBehavior: appState.tabBehavior,
                 onDocChange: () => onEditorInput(),
                 onSelectionChange: () => updateEditorMetrics(),
             });

@@ -10,6 +10,15 @@ NoCapEdit v0.2系のバージョンアップおよび仕様変更の履歴です
 
 ## 改定履歴一覧
 
+### Ver 0.2.4 | 2026-08-23 | yasudajs
+- **CodeMirror移行 Step 4: 外観設定の連携（テーマ・フォント・行間・折り返し・ズーム）**
+  - **Compartment による動的設定制御**: `codemirror.js` に `wrapCompartment`, `indentCompartment`, `themeCompartment` を導入し、エディタを再構築することなく折り返し（Word Wrap）やインデント幅を瞬時に動的再設定できる構造を構築
+  - **タブごとの折り返し状態の完全連動**: `tabs.js` のタブ切り替え処理と `applyWordWrap` を連動させ、タブ固有の折り返し設定（`Alt + Z` による切り替え含む）がタブ切り替え時に即座に反映されるよう改善
+  - **CSS変数とCodeMirrorテーマの統合**: `style.css` の CSS 変数（フォントサイズ、行間、フォントファミリー、テーマ配色、選択ハイライト色）と CodeMirror のテーマ拡張を統合し、テーマ切り替えやズーム操作（`Ctrl + +/-`）が滑らかに連動
+  - **設定画面との連携**: `settings.js` でのインデント設定・折り返し設定の変更が即座に CodeMirror に反映されるよう更新
+
+---
+
 ### Ver 0.2.3 | 2026-08-23 | yasudajs
 - **CodeMirror移行 Step 3: タブ管理（EditorState ごとの分離と独立 Undo）**
   - **タブごとの EditorState 保持**: 各タブオブジェクトに CodeMirror の `EditorState` を直接保持させ、タブ切り替え時に `setEditorState()` で状態（ドキュメント内容、選択範囲、カーソル位置、Undo/Redo履歴）を丸ごと復元する設計に刷新

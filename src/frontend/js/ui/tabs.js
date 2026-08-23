@@ -121,7 +121,7 @@ export async function createNewTab() {
             fileName: fileName,
             filePath: filePath,
             content: '',
-            editorState: createTabState(''),
+            editorState: createTabState('', { wordWrap: appState.wordWrap, tabBehavior: appState.tabBehavior }),
             isDirty: false,
             isSaving: false,
             savePromise: null,

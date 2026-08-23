@@ -285,7 +285,7 @@ export async function openExistingFile(filePath) {
             fileName: fileName,
             filePath: filePath,
             content: content,
-            editorState: createTabState(content),
+            editorState: createTabState(content, { wordWrap: appState.wordWrap, tabBehavior: appState.tabBehavior }),
             isDirty: false,
             isSaving: false,
             savePromise: null,

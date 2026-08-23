@@ -3,7 +3,7 @@ import { appState, elements, savedEditorCursor, setSavedEditorCursor, DEFAULT_MO
 import { invoke, openDialog, ensureTauriApi, appWindow, emit } from '../core/tauri.js';
 import { updateStatus, renderTabs, createNewTab, getCurrentTab, updateTabStatus } from './tabs.js';
 import { updateEditorMetrics, applyWordWrap, applyFontSize, applyLineHeight } from './editor.js';
-import { getSelection, setSelection, focusEditor } from './codemirror.js';
+import { getSelection, setSelection, focusEditor, updateIndent } from './codemirror.js';
 import { autoSave, shouldDeleteEmptyFile } from '../core/fileSystem.js';
 import { applyThemeUI, applyFontFamily, loadSystemFonts } from './theme.js';
 
@@ -187,6 +187,7 @@ export async function saveSettings() {
         applyWordWrap(wordWrap);
         applyFontSize();
         applyLineHeight();
+        updateIndent(tabBehavior);
 
         await saveApplicationSettings();
 

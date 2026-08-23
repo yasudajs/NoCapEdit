@@ -3,7 +3,7 @@ import { appState, elements } from '../state.js';
 import { MAX_FONT_SIZE, MIN_FONT_SIZE, MAX_LINE_HEIGHT, MIN_LINE_HEIGHT, LINE_HEIGHT_STEP, AUTOSAVE_DELAY_MS } from '../state.js';
 import { renderTabs, updateTabStatus } from './tabs.js';
 import { autoSave } from '../core/fileSystem.js';
-import { getContent, setContent, getCursorMetrics, getSelection, setSelection, replaceRange, focusEditor, getEditorState } from './codemirror.js';
+import { getContent, setContent, getCursorMetrics, getSelection, setSelection, replaceRange, focusEditor, getEditorState, updateWrap } from './codemirror.js';
 
 export function syncCurrentEditorToState() {
     if (!appState.currentTab) {
@@ -133,7 +133,7 @@ export function decreaseLineHeight() {
  * @param {boolean} enable - 折り返しを有効にするかどうか
  */
 export function applyWordWrap(enable) {
-    // Step 4 で Compartment を通じた動的制御に完全移行
+    updateWrap(enable);
 }
 
 export function toggleWordWrap() {

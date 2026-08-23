@@ -1,26 +1,93 @@
 import { EditorView, keymap, placeholder as cmPlaceholder, drawSelection, dropCursor } from '@codemirror/view';
-import { EditorState } from '@codemirror/state';
+import { EditorState, Compartment } from '@codemirror/state';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
+import { indentUnit } from '@codemirror/language';
 
 let editorView = null;
 let currentPlaceholder = '';
 let changeListeners = [];
 let selectionListeners = [];
 
+// 動的設定変更用 Compartments
+export const wrapCompartment = new Compartment();
+export const indentCompartment = new Compartment();
+export const themeCompartment = new Compartment();
+
+/**
+ * 基本テーマ（CSS変数連動）
+ */
+export const baseTheme = EditorView.theme({
+    "&": {
+        height: "100%",
+        backgroundColor: "transparent",
+        color: "var(--text-primary)",
+        fontFamily: "var(--editor-font-family)",
+        fontSize: "var(--editor-font-size)",
+        lineHeight: "var(--editor-line-height)",
+    },
+    ".cm-scroller": {
+        fontFamily: "inherit",
+        lineHeight: "inherit",
+        overflow: "auto",
+    },
+    ".cm-content": {
+        padding: "16px",
+        caretColor: "var(--accent)",
+    },
+    ".cm-line": {
+        padding: "0",
+    },
+    ".cm-cursor, .cm-dropCursor": {
+        borderLeftColor: "var(--accent, #4daafc)",
+        borderLeftWidth: "2px",
+    },
+    "&.cm-focused .cm-selectionBackground, ::selection": {
+        backgroundColor: "var(--editor-selection-bg) !important",
+    },
+    ".cm-placeholder": {
+        color: "var(--text-secondary)",
+        opacity: "0.6",
+        fontStyle: "normal",
+    }
+});
+
+/**
+ * インデント拡張を取得
+ * @param {string} tabBehavior - 'tab' | 'space2' | 'space4'
+ * @returns {import('@codemirror/state').Extension}
+ */
+export function getIndentExtension(tabBehavior = 'tab') {
+    switch (tabBehavior) {
+        case 'space2': return indentUnit.of('  ');
+        case 'space4': return indentUnit.of('    ');
+        case 'tab':
+        default:
+            return indentUnit.of('\t');
+    }
+}
+
 /**
  * 共通の拡張機能（Extensions）を取得
+ * @param {Object} [options]
+ * @param {boolean} [options.wordWrap=true]
+ * @param {string} [options.tabBehavior='tab']
  * @returns {Array}
  */
-export function getDefaultExtensions() {
+export function getDefaultExtensions(options = {}) {
+    const wrap = options.wordWrap !== undefined ? options.wordWrap : true;
+    const tabBehavior = options.tabBehavior || 'tab';
+
     const extensions = [
         history(),
         drawSelection(),
         dropCursor(),
+        themeCompartment.of(baseTheme),
+        wrapCompartment.of(wrap ? EditorView.lineWrapping : []),
+        indentCompartment.of(getIndentExtension(tabBehavior)),
         keymap.of([
             ...defaultKeymap,
             ...historyKeymap,
         ]),
-        EditorView.lineWrapping,
         EditorView.updateListener.of((update) => {
             if (update.docChanged) {
                 changeListeners.forEach(listener => listener(update));
@@ -41,12 +108,13 @@ export function getDefaultExtensions() {
 /**
  * 新規タブ用の EditorState を生成
  * @param {string} [initialContent=''] - 初期テキスト
+ * @param {Object} [options={}] - オプション (wordWrap, tabBehavior 等)
  * @returns {EditorState}
  */
-export function createTabState(initialContent = '') {
+export function createTabState(initialContent = '', options = {}) {
     return EditorState.create({
         doc: initialContent,
-        extensions: getDefaultExtensions(),
+        extensions: getDefaultExtensions(options),
     });
 }
 
@@ -56,6 +124,8 @@ export function createTabState(initialContent = '') {
  * @param {Object} options - 初期化オプション
  * @param {string} [options.initialContent=''] - 初期テキスト
  * @param {string} [options.placeholder=''] - プレースホルダー文字列
+ * @param {boolean} [options.wordWrap=true] - 折り返し初期状態
+ * @param {string} [options.tabBehavior='tab'] - インデント挙動
  * @param {EditorState} [options.state] - 初期 EditorState
  * @param {Function} [options.onDocChange] - ドキュメント変更時コールバック
  * @param {Function} [options.onSelectionChange] - 選択範囲・カーソル変更時コールバック
@@ -77,7 +147,10 @@ export function initCodeMirror(parentEl, options = {}) {
         currentPlaceholder = options.placeholder;
     }
 
-    const state = options.state || createTabState(options.initialContent || '');
+    const state = options.state || createTabState(options.initialContent || '', {
+        wordWrap: options.wordWrap,
+        tabBehavior: options.tabBehavior,
+    });
 
     editorView = new EditorView({
         state,
@@ -85,6 +158,28 @@ export function initCodeMirror(parentEl, options = {}) {
     });
 
     return editorView;
+}
+
+/**
+ * 折り返し（Line Wrapping）の動的更新
+ * @param {boolean} enable
+ */
+export function updateWrap(enable) {
+    if (!editorView) return;
+    editorView.dispatch({
+        effects: wrapCompartment.reconfigure(enable ? EditorView.lineWrapping : [])
+    });
+}
+
+/**
+ * インデント設定の動的更新
+ * @param {string} tabBehavior - 'tab' | 'space2' | 'space4'
+ */
+export function updateIndent(tabBehavior) {
+    if (!editorView) return;
+    editorView.dispatch({
+        effects: indentCompartment.reconfigure(getIndentExtension(tabBehavior))
+    });
 }
 
 /**
