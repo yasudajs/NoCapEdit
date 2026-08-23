@@ -3,6 +3,7 @@ import { appState, elements, savedEditorCursor, setSavedEditorCursor, DEFAULT_MO
 import { invoke, openDialog, ensureTauriApi, appWindow, emit } from '../core/tauri.js';
 import { updateStatus, renderTabs, createNewTab, getCurrentTab, updateTabStatus } from './tabs.js';
 import { updateEditorMetrics, applyWordWrap, applyFontSize, applyLineHeight } from './editor.js';
+import { getSelection, setSelection, focusEditor } from './codemirror.js';
 import { autoSave, shouldDeleteEmptyFile } from '../core/fileSystem.js';
 import { applyThemeUI, applyFontFamily, loadSystemFonts } from './theme.js';
 
@@ -24,23 +25,19 @@ export function closeSettingsDialog() {
         elements.settingsBtn.classList.remove('open');
     }
 
-    if (savedEditorCursor !== null && elements.editor) {
-        elements.editor.focus();
-        elements.editor.selectionStart = savedEditorCursor.selectionStart;
-        elements.editor.selectionEnd = savedEditorCursor.selectionEnd;
-        elements.editor.scrollTop = savedEditorCursor.scrollTop;
+    focusEditor();
+    if (savedEditorCursor !== null) {
+        setSelection(savedEditorCursor.selectionStart, savedEditorCursor.selectionEnd);
         setSavedEditorCursor(null);
     }
 }
 
 export function openSettingsDialog(isMissingFolder = false) {
-    if (elements.editor) {
-        setSavedEditorCursor({
-            selectionStart: elements.editor.selectionStart || 0,
-            selectionEnd: elements.editor.selectionEnd || 0,
-            scrollTop: elements.editor.scrollTop || 0,
-        });
-    }
+    const sel = getSelection();
+    setSavedEditorCursor({
+        selectionStart: sel.from,
+        selectionEnd: sel.to,
+    });
 
     if (elements.homeFolderInput) {
         elements.homeFolderInput.value = appState.homeFolder || '';

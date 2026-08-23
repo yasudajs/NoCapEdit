@@ -67,8 +67,6 @@ export const elements = {
     wordWrapSelectModal: null,
     themeSelectModal: null,
     editor: null,
-    editorBackdrop: null,
-    editorHighlights: null,
     findReplaceWidget: null,
     findInput: null,
     matchCaseBtn: null,

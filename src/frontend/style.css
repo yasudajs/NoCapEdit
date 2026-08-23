@@ -519,58 +519,79 @@ body {
     box-shadow: 0 0 0 2px var(--search-current-border);
 }
 
-/* テキストエディタ */
+/* テキストエディタコンテナ */
 .editor {
     position: relative;
-    z-index: 2;
     flex: 1;
-    padding: 16px;
+    width: 100%;
+    height: 100%;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    overflow: hidden;
+    display: flex;
+}
+
+.editor .cm-editor {
+    width: 100%;
+    height: 100%;
     background-color: transparent;
     color: var(--text-primary);
-    border: none;
     font-family: var(--editor-font-family);
     font-size: var(--editor-font-size);
     line-height: var(--editor-line-height);
-    resize: none;
+}
+
+.editor .cm-editor.cm-focused {
     outline: none;
-    overflow-y: auto;
-    overflow-x: auto;
-    white-space: pre-wrap;
-    word-break: break-all;
-    tab-size: 4;
-    -moz-tab-size: 4;
 }
 
-.editor.word-wrap-off {
-    white-space: pre;
-    word-break: normal;
+.editor .cm-scroller {
+    font-family: inherit;
+    line-height: inherit;
+    overflow: auto;
 }
 
-.editor::selection {
-    background-color: var(--editor-selection-bg); /* 通常のテキスト選択も薄い水色に */
-    color: inherit; /* 文字色は反転させずそのままにする */
+.editor .cm-content {
+    padding: 16px;
+    caret-color: var(--accent);
 }
 
-/* 検索バーが開いている間は、背面の検索ハイライトを完全に表示するためブラウザの選択表示を透明化 */
-.editor.search-active::selection {
-    background-color: transparent;
+.editor .cm-line {
+    padding: 0;
 }
 
-.editor::-webkit-scrollbar {
+.editor .cm-cursor {
+    border-left-color: var(--accent, #4daafc);
+    border-left-width: 2px;
+}
+
+.editor .cm-selectionBackground,
+.editor .cm-editor ::selection {
+    background-color: var(--editor-selection-bg) !important;
+}
+
+.editor .cm-placeholder {
+    color: var(--text-secondary);
+    opacity: 0.6;
+    font-style: normal;
+}
+
+.editor .cm-scroller::-webkit-scrollbar {
     width: 8px;
     height: 8px;
 }
 
-.editor::-webkit-scrollbar-track {
+.editor .cm-scroller::-webkit-scrollbar-track {
     background: var(--bg-primary);
 }
 
-.editor::-webkit-scrollbar-thumb {
+.editor .cm-scroller::-webkit-scrollbar-thumb {
     background: var(--bg-tertiary);
     border-radius: 4px;
 }
 
-.editor::-webkit-scrollbar-thumb:hover {
+.editor .cm-scroller::-webkit-scrollbar-thumb:hover {
     background: var(--border);
 }
 

@@ -3,7 +3,8 @@ import { appState, elements, initElements } from './state.js';
 import { invoke, appWindow, listen, ensureTauriApi } from './core/tauri.js';
 import { createNewTab, updateStatus, renderTabs, setupTabScrollWheel } from './ui/tabs.js';
 import { openExistingFile, persistAllTabsBeforeExit } from './core/fileSystem.js';
-import { updateEditorMetrics, onEditorInput, applyFontSize, applyLineHeight, handleTabKey, applyWordWrap } from './ui/editor.js';
+import { updateEditorMetrics, onEditorInput, applyFontSize, applyLineHeight, applyWordWrap } from './ui/editor.js';
+import { initCodeMirror } from './ui/codemirror.js';
 import { toggleSettingsDialog, closeSettingsDialog, openSettingsDialog, onThemeChange, onFontFamilyChange, saveSettings, setupSettingsNavigation } from './ui/settings.js';
 import { applyThemeUI, loadSystemFonts, applyFontFamily, setShouldOpenFontPicker } from './ui/theme.js';
 import { setupKeyboardShortcuts } from './ui/shortcuts.js';
@@ -127,12 +128,17 @@ async function init() {
             elements.fontFamilySelectModal.appendChild(option);
         }
 
+        // CodeMirror エディタの初期化
+        if (elements.editor) {
+            initCodeMirror(elements.editor, {
+                placeholder: t('editor.placeholder'),
+                onDocChange: () => onEditorInput(),
+                onSelectionChange: () => updateEditorMetrics(),
+            });
+        }
+
         // UIイベントリスナーを一括登録
         setupUIEventListeners();
-
-        if (elements.editor) {
-            elements.editor.placeholder = t('editor.placeholder');
-        }
 
         // 初回起動チェック
         const isFirstLaunch = !!settings.is_first_launch;
@@ -253,13 +259,6 @@ function setupUIEventListeners() {
         });
     }
 
-    if (elements.editor) {
-        elements.editor.addEventListener('keydown', handleTabKey);
-        elements.editor.addEventListener('input', onEditorInput);
-        elements.editor.addEventListener('click', updateEditorMetrics);
-        elements.editor.addEventListener('mouseup', updateEditorMetrics);
-        elements.editor.addEventListener('keyup', updateEditorMetrics);
-    }
     registerCloseHandler();
     setupTabScrollWheel();
     setupSettingsNavigation();

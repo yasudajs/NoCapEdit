@@ -5,6 +5,7 @@ import { generateTabId, getFileNameFromPath, isAutoCreatedFileName } from '../ut
 import { ensureTauriApi } from '../core/tauri.js';
 import { updateEditorMetrics, applyWordWrap } from './editor.js';
 import { autoSave, shouldDeleteEmptyFile, persistTabWithRecovery } from '../core/fileSystem.js';
+import { getContent, setContent, getSelection, setSelection, focusEditor } from './codemirror.js';
 
 export function getCurrentTab() {
     if (!appState.currentTab) {
@@ -143,16 +144,12 @@ export async function switchTab(tabId) {
         if (appState.currentTab) {
             const currentIdx = appState.tabs.findIndex(t => t.id === appState.currentTab);
             if (currentIdx !== -1) {
-                if (elements.editor) {
-                    appState.tabs[currentIdx].content = elements.editor.value;
-                    
-                    // 切り替え前のタブのカーソル状態を記憶
-                    appState.tabs[currentIdx].cursorState = {
-                        selectionStart: elements.editor.selectionStart || 0,
-                        selectionEnd: elements.editor.selectionEnd || 0,
-                        scrollTop: elements.editor.scrollTop || 0,
-                    };
-                }
+                appState.tabs[currentIdx].content = getContent();
+                const sel = getSelection();
+                appState.tabs[currentIdx].cursorState = {
+                    selectionStart: sel.from,
+                    selectionEnd: sel.to,
+                };
 
                 const ok = await persistTabWithRecovery(appState.tabs[currentIdx], 'tab-switch');
                 if (!ok) {
@@ -166,9 +163,7 @@ export async function switchTab(tabId) {
         const tab = appState.tabs.find(t => t.id === tabId);
 
         if (tab) {
-            if (elements.editor) {
-                elements.editor.value = tab.content;
-            }
+            setContent(tab.content || '');
             const wrapState = tab.wordWrap !== undefined ? tab.wordWrap : appState.wordWrap;
             applyWordWrap(wrapState);
             renderTabs();
@@ -176,21 +171,12 @@ export async function switchTab(tabId) {
             updateTabStatus(tab);
 
             // エディタにフォーカスを戻し、カーソル状態を復元する
-            if (elements.editor) {
-                elements.editor.focus();
-                
-                if (tab.cursorState) {
-                    // 記憶されたカーソル位置とスクロール位置を復元
-                    elements.editor.selectionStart = tab.cursorState.selectionStart;
-                    elements.editor.selectionEnd = tab.cursorState.selectionEnd;
-                    elements.editor.scrollTop = tab.cursorState.scrollTop;
-                } else {
-                    // 記憶がない場合（新規タブなど）は、テキストの末尾にカーソルを設定
-                    const len = elements.editor.value.length;
-                    elements.editor.selectionStart = len;
-                    elements.editor.selectionEnd = len;
-                    elements.editor.scrollTop = 0;
-                }
+            focusEditor();
+            if (tab.cursorState) {
+                setSelection(tab.cursorState.selectionStart, tab.cursorState.selectionEnd);
+            } else {
+                const len = (tab.content || '').length;
+                setSelection(len, len);
             }
 
             window.dispatchEvent(new CustomEvent('tab-switched'));
@@ -221,9 +207,7 @@ export async function closeTab(tabId) {
             await switchTab(appState.tabs[nextIdx].id);
         } else {
             appState.currentTab = null;
-            if (elements.editor) {
-                elements.editor.value = '';
-            }
+            setContent('');
             await createNewTab();
         }
     }

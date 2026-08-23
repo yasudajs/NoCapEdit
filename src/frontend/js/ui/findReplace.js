@@ -1,6 +1,7 @@
 import { t } from '../../i18n.js';
 import { elements, appState } from '../state.js';
 import { applyEditorTextWithUndo, updateEditorMetrics } from './editor.js';
+import { getContent, getSelection, setSelection, focusEditor } from './codemirror.js';
 
 let isMatchCase = false;
 let matches = [];
@@ -11,70 +12,8 @@ function escapeRegExp(string) {
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-function escapeHtml(str) {
-    return str
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-}
-
 export function isFindWidgetOpen() {
     return elements.findReplaceWidget && !elements.findReplaceWidget.classList.contains('hidden');
-}
-
-export function syncBackdropScroll() {
-    if (elements.editorBackdrop && elements.editor) {
-        elements.editorBackdrop.scrollTop = elements.editor.scrollTop;
-        elements.editorBackdrop.scrollLeft = elements.editor.scrollLeft;
-    }
-}
-
-export function renderHighlights() {
-    if (!elements.editorHighlights || !elements.editor) return;
-
-    if (!isFindWidgetOpen() || matches.length === 0) {
-        elements.editorHighlights.innerHTML = '';
-        return;
-    }
-
-    const text = elements.editor.value;
-    const query = elements.findInput ? elements.findInput.value : '';
-    const qLen = query.length;
-    if (qLen === 0) {
-        elements.editorHighlights.innerHTML = '';
-        return;
-    }
-
-    let html = '';
-    let lastIndex = 0;
-
-    for (let i = 0; i < matches.length; i++) {
-        const start = matches[i];
-        const end = start + qLen;
-        const isCurrent = (i === currentMatchIndex);
-
-        // 一致前のプレーンテキスト
-        html += escapeHtml(text.substring(lastIndex, start));
-
-        // 一致テキストを <mark> で囲む
-        const matchText = escapeHtml(text.substring(start, end));
-        html += `<mark class="search-match ${isCurrent ? 'current' : ''}">${matchText}</mark>`;
-
-        lastIndex = end;
-    }
-
-    // 残りのテキスト
-    html += escapeHtml(text.substring(lastIndex));
-
-    // 末尾改行の表示崩れ防止
-    if (text.endsWith('\n')) {
-        html += '<br>';
-    }
-
-    elements.editorHighlights.innerHTML = html;
-    syncBackdropScroll();
 }
 
 export function openFind(focusReplace = false) {
@@ -89,21 +28,15 @@ export function openFind(focusReplace = false) {
     }
 
     // エディタでテキストが選択されていれば検索文字列に設定
-    if (elements.editor) {
-        const selStart = elements.editor.selectionStart;
-        const selEnd = elements.editor.selectionEnd;
-        if (selStart !== selEnd) {
-            const selectedText = elements.editor.value.substring(selStart, selEnd);
-            if (!selectedText.includes('\n') && selectedText.length > 0 && selectedText.length <= 100) {
-                if (elements.findInput) {
-                    elements.findInput.value = selectedText;
-                }
+    const sel = getSelection();
+    if (!sel.empty) {
+        const text = getContent();
+        const selectedText = text.substring(sel.from, sel.to);
+        if (!selectedText.includes('\n') && selectedText.length > 0 && selectedText.length <= 100) {
+            if (elements.findInput) {
+                elements.findInput.value = selectedText;
             }
         }
-    }
-
-    if (elements.editor) {
-        elements.editor.classList.add('search-active');
     }
 
     updateMatches(true);
@@ -124,13 +57,7 @@ export function closeFind() {
         findEditorDebounceTimer = null;
     }
     elements.findReplaceWidget.classList.add('hidden');
-    if (elements.editorHighlights) {
-        elements.editorHighlights.innerHTML = '';
-    }
-    if (elements.editor) {
-        elements.editor.classList.remove('search-active');
-        elements.editor.focus();
-    }
+    focusEditor();
 }
 
 function updateCountDisplay() {
@@ -147,18 +74,17 @@ function updateCountDisplay() {
 }
 
 export function updateMatches(shouldJump = false) {
-    if (!elements.findInput || !elements.editor) return;
+    if (!elements.findInput) return;
 
     const query = elements.findInput.value;
     if (!query) {
         matches = [];
         currentMatchIndex = -1;
         updateCountDisplay();
-        renderHighlights();
         return;
     }
 
-    const text = elements.editor.value;
+    const text = getContent();
     const targetText = isMatchCase ? text : text.toLowerCase();
     const targetQuery = isMatchCase ? query : query.toLowerCase();
 
@@ -173,11 +99,11 @@ export function updateMatches(shouldJump = false) {
     if (matches.length === 0) {
         currentMatchIndex = -1;
         updateCountDisplay();
-        renderHighlights();
         return;
     }
 
-    const caret = elements.editor.selectionStart || 0;
+    const sel = getSelection();
+    const caret = sel.from || 0;
     let nearest = matches.findIndex(idx => idx >= caret);
     if (nearest === -1) nearest = 0;
     currentMatchIndex = nearest;
@@ -186,32 +112,18 @@ export function updateMatches(shouldJump = false) {
 
     if (shouldJump && currentMatchIndex >= 0) {
         highlightMatch(currentMatchIndex);
-    } else {
-        renderHighlights();
     }
 }
 
 function highlightMatch(index) {
-    if (!elements.editor || index < 0 || index >= matches.length) return;
+    if (index < 0 || index >= matches.length) return;
     currentMatchIndex = index;
     const start = matches[index];
     const query = elements.findInput ? elements.findInput.value : '';
     const end = start + query.length;
 
-    elements.editor.setSelectionRange(start, end);
+    setSelection(start, end);
     updateEditorMetrics();
-    renderHighlights();
-
-    // 現在のハイライト要素に合わせてスクロール位置を調整
-    if (elements.editorHighlights && elements.editor) {
-        const currentMark = elements.editorHighlights.querySelector('mark.current');
-        if (currentMark) {
-            const markTop = currentMark.offsetTop;
-            const targetScroll = markTop - (elements.editor.clientHeight / 2);
-            elements.editor.scrollTop = Math.max(0, targetScroll);
-            syncBackdropScroll();
-        }
-    }
 }
 
 export function findNext() {
@@ -229,7 +141,7 @@ export function findPrev() {
 }
 
 export function replaceOne() {
-    if (!elements.editor || !elements.findInput || !elements.replaceInput) return;
+    if (!elements.findInput || !elements.replaceInput) return;
     const query = elements.findInput.value;
     if (!query) return;
 
@@ -239,13 +151,12 @@ export function replaceOne() {
     }
 
     const replaceText = elements.replaceInput.value;
-    const selStart = elements.editor.selectionStart;
-    const selEnd = elements.editor.selectionEnd;
+    const sel = getSelection();
     const currentPos = matches[currentMatchIndex];
 
-    if (selStart === currentPos && selEnd === currentPos + query.length) {
+    if (sel.from === currentPos && sel.to === currentPos + query.length) {
         // 現在選択中のマッチを置換
-        applyEditorTextWithUndo(selStart, selEnd, replaceText, selStart + replaceText.length, selStart + replaceText.length);
+        applyEditorTextWithUndo(sel.from, sel.to, replaceText, sel.from + replaceText.length, sel.from + replaceText.length);
         updateMatches(true);
     } else {
         // 現在位置にフォーカスされていない場合はまずジャンプ
@@ -254,7 +165,7 @@ export function replaceOne() {
 }
 
 export function replaceAll() {
-    if (!elements.editor || !elements.findInput || !elements.replaceInput) return;
+    if (!elements.findInput || !elements.replaceInput) return;
     const query = elements.findInput.value;
     if (!query) return;
 
@@ -263,7 +174,7 @@ export function replaceAll() {
 
     const replaceText = elements.replaceInput.value;
     const totalCount = matches.length;
-    const fullText = elements.editor.value;
+    const fullText = getContent();
 
     let newFullText;
     if (isMatchCase) {
@@ -293,22 +204,6 @@ export function toggleMatchCase() {
 
 export function setupFindReplaceEvents() {
     if (!elements.findReplaceWidget) return;
-
-    // エディタのスクロール同期および編集時のハイライト再計算
-    if (elements.editor) {
-        elements.editor.addEventListener('scroll', syncBackdropScroll);
-        elements.editor.addEventListener('input', () => {
-            if (isFindWidgetOpen()) {
-                if (findEditorDebounceTimer) {
-                    clearTimeout(findEditorDebounceTimer);
-                }
-                findEditorDebounceTimer = setTimeout(() => {
-                    updateMatches(false);
-                    findEditorDebounceTimer = null;
-                }, 200);
-            }
-        });
-    }
 
     // タブ切り替え時のハイライト同期
     window.addEventListener('tab-switched', () => {

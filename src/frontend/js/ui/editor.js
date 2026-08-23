@@ -3,6 +3,7 @@ import { appState, elements } from '../state.js';
 import { MAX_FONT_SIZE, MIN_FONT_SIZE, MAX_LINE_HEIGHT, MIN_LINE_HEIGHT, LINE_HEIGHT_STEP, AUTOSAVE_DELAY_MS } from '../state.js';
 import { renderTabs, updateTabStatus } from './tabs.js';
 import { autoSave } from '../core/fileSystem.js';
+import { getContent, setContent, getCursorMetrics, getSelection, setSelection, replaceRange, focusEditor } from './codemirror.js';
 
 export function syncCurrentEditorToState() {
     if (!appState.currentTab) {
@@ -13,68 +14,37 @@ export function syncCurrentEditorToState() {
         return;
     }
 
-    if (elements.editor) {
-        tab.content = elements.editor.value;
-    }
+    tab.content = getContent();
 }
 
 export function updateEditorMetrics() {
-    if (!elements.editor || !elements.statusMetrics) return;
+    if (!elements.statusMetrics) return;
 
-    const value = elements.editor.value || '';
-    const caret = elements.editor.selectionStart || 0;
-    const selectEnd = elements.editor.selectionEnd || 0;
-
-    let chars = value.length;
-    let selectedChars = 0;
-    const isSelected = caret !== selectEnd;
-
-    if (appState.charCountMode === 'no_newline') {
-        const newlineCount = (value.match(/[\r\n]/g) || []).length;
-        chars = value.length - newlineCount;
-
-        if (isSelected) {
-            const selectedText = value.substring(caret, selectEnd);
-            const selectedNewlineCount = (selectedText.match(/[\r\n]/g) || []).length;
-            selectedChars = selectedText.length - selectedNewlineCount;
-        }
-    } else {
-        if (isSelected) {
-            const selectedText = value.substring(caret, selectEnd);
-            selectedChars = selectedText.length;
-        }
-    }
+    const metrics = getCursorMetrics(appState.charCountMode || 'with_newline');
 
     let charDisplay = '';
-    if (isSelected) {
-        charDisplay = t('editor.metrics.selection', { selected: selectedChars, total: chars });
+    if (metrics.isSelected) {
+        charDisplay = t('editor.metrics.selection', { selected: metrics.selectedChars, total: metrics.totalChars });
     } else {
-        charDisplay = t('editor.metrics.length', { total: chars });
+        charDisplay = t('editor.metrics.length', { total: metrics.totalChars });
     }
-
-    const before = value.slice(0, caret);
-    const lines = before.split('\n');
-    const line = lines.length;
-    const col = (lines[lines.length - 1] || '').length + 1;
 
     const lh = appState.lineHeight || 1.5;
     const fs = appState.fontSize || 20;
-    
-    const positionStr = t('editor.metrics.position', { line, col });
+
+    const positionStr = t('editor.metrics.position', { line: metrics.line, col: metrics.col });
     const fontStr = t('editor.metrics.font', { size: fs });
     const lhStr = t('editor.metrics.lh', { lh: lh.toFixed(1) });
     elements.statusMetrics.textContent = `${positionStr} | ${charDisplay} | ${fontStr} | ${lhStr}`;
 }
 
-export function onEditorInput(e) {
+export function onEditorInput() {
     if (!appState.currentTab) return;
 
     const tab = appState.tabs.find(t => t.id === appState.currentTab);
     if (!tab) return;
 
-    if (elements.editor) {
-        tab.content = elements.editor.value;
-    }
+    tab.content = getContent();
     tab.isDirty = true;
     renderTabs();
     updateEditorMetrics();
@@ -143,26 +113,11 @@ export function decreaseLineHeight() {
 }
 
 /**
- * エディタの折り返し設定（soft / off）を適用する
- * ※ 全タブ閉鎖時など elements.editor が存在しない場合は安全に早期リターンする
+ * エディタの折り返し設定を適用する
  * @param {boolean} enable - 折り返しを有効にするかどうか
  */
 export function applyWordWrap(enable) {
-    if (!elements.editor) return;
-    elements.editor.wrap = enable ? 'soft' : 'off';
-    if (enable) {
-        elements.editor.setAttribute('wrap', 'soft');
-        elements.editor.classList.remove('word-wrap-off');
-        if (elements.editorHighlights) {
-            elements.editorHighlights.classList.remove('word-wrap-off');
-        }
-    } else {
-        elements.editor.setAttribute('wrap', 'off');
-        elements.editor.classList.add('word-wrap-off');
-        if (elements.editorHighlights) {
-            elements.editorHighlights.classList.add('word-wrap-off');
-        }
-    }
+    // Step 4 で Compartment を通じた動的制御に完全移行
 }
 
 export function toggleWordWrap() {
@@ -173,7 +128,7 @@ export function toggleWordWrap() {
     const newWrap = !currentWrap;
     tab.wordWrap = newWrap;
     applyWordWrap(newWrap);
-    console.log(`[WordWrap] タブ "${tab.fileName}" の折り返しを ${newWrap ? 'ON (折り返す)' : 'OFF (折り返さない)'} に切り替えました`);
+    console.log(`[WordWrap] タブ "${tab.fileName}" の折り返しを ${newWrap ? 'ON' : 'OFF'} に切り替えました`);
 }
 
 export function getIndentString() {
@@ -187,257 +142,33 @@ export function getIndentString() {
 }
 
 /**
- * Undo/Redoスタックを破壊せずに選択範囲のテキストを置換するヘルパー
- * 
- * ※ 注意: document.execCommand('insertText') は W3C 仕様上 deprecated ですが、
- *   textarea においてブラウザネイティブの Undo/Redo スタックを維持する事実上唯一の手法です。
- *   Tauri v1 (WebView2 / Chromium) 環境では安定動作します。
- *   失敗時は setRangeText + 手動 input イベント発火にフォールバックします。
- * 
- * @param {number} replaceStart - 置換開始インデックス
- * @param {number} replaceEnd - 置換終了インデックス
- * @param {string} replacementText - 挿入する置換テキスト
- * @param {number} [newSelectionStart] - 置換後の新しい選択開始位置
- * @param {number} [newSelectionEnd] - 置換後の新しい選択終了位置
+ * テキスト置換ヘルパー（Undo対応）
  */
 export function applyEditorTextWithUndo(replaceStart, replaceEnd, replacementText, newSelectionStart, newSelectionEnd) {
-    if (!elements.editor) return;
-
-    elements.editor.focus();
-    elements.editor.setSelectionRange(replaceStart, replaceEnd);
-
-    // document.execCommand('insertText') を使用することでブラウザネイティブのUndo/Redoスタックに正常に記録
-    // 成功時はブラウザが自動的に input イベントを発火する
-    const success = document.execCommand('insertText', false, replacementText);
-    if (!success) {
-        // execCommand が失敗した場合のフォールバック（ブラウザが input イベントを発火しないため手動発火）
-        elements.editor.setRangeText(replacementText, replaceStart, replaceEnd, 'end');
-        elements.editor.dispatchEvent(new Event('input'));
-    }
-
-    if (newSelectionStart !== undefined && newSelectionEnd !== undefined) {
-        elements.editor.setSelectionRange(newSelectionStart, newSelectionEnd);
+    replaceRange(replaceStart, replaceEnd, replacementText, newSelectionStart);
+    if (newSelectionStart !== undefined && newSelectionEnd !== undefined && newSelectionStart !== newSelectionEnd) {
+        setSelection(newSelectionStart, newSelectionEnd);
     }
 }
 
 export function handleTabKey(e) {
-    if (e.key === 'Tab') {
-        // 設定画面が開いている場合はエディタのインデント処理を行わず、ブラウザ標準のフォーカス移動を許可
-        if (elements.settingsDialog && !elements.settingsDialog.classList.contains('hidden')) {
-            return;
-        }
-
-        // CtrlキーやAltキーが同時に押されている場合は、タブ移動などのショートカットとして処理するため、ここでは無視する
-        if (e.ctrlKey || e.altKey) {
-            return;
-        }
-
-        e.preventDefault();
-
-        const start = elements.editor.selectionStart;
-        const end = elements.editor.selectionEnd;
-        const value = elements.editor.value;
-        const indentStr = getIndentString();
-
-        // 選択範囲が複数行にまたがっているか判定
-        const isMultiLine = value.substring(start, end).includes('\n') ||
-            (start !== end && value.substring(0, start).lastIndexOf('\n') === start - 1);
-
-        if (!e.shiftKey) {
-            // -- 通常の Tab (インデント追加) --
-            if (!isMultiLine) {
-                // 単一行: カーソル位置にインデントを挿入
-                applyEditorTextWithUndo(start, end, indentStr, start + indentStr.length, start + indentStr.length);
-            } else {
-                // 複数行: 選択行すべての先頭にインデントを追加
-                const startLinePos = value.substring(0, start).lastIndexOf('\n') + 1;
-                const endLinePos = value.indexOf('\n', end);
-                const actualEndLinePos = endLinePos === -1 ? value.length : endLinePos;
-
-                const targetText = value.substring(startLinePos, actualEndLinePos);
-                const lines = targetText.split('\n');
-
-                const newLines = lines.map(line => indentStr + line);
-                const newText = newLines.join('\n');
-                const insertedCount = lines.length * indentStr.length;
-
-                applyEditorTextWithUndo(startLinePos, actualEndLinePos, newText, start + indentStr.length, end + insertedCount);
-            }
-        } else {
-            // -- Shift + Tab (インデント削除) --
-            const startLinePos = value.substring(0, start).lastIndexOf('\n') + 1;
-            const endLinePos = value.indexOf('\n', end);
-            const actualEndLinePos = endLinePos === -1 ? value.length : endLinePos;
-
-            const targetText = value.substring(startLinePos, actualEndLinePos);
-            const lines = targetText.split('\n');
-
-            const newLines = lines.map(line => {
-                let newLine = line;
-
-                if (line.startsWith(indentStr)) {
-                    newLine = line.substring(indentStr.length);
-                } else if (line.startsWith('\t')) {
-                    newLine = line.substring(1);
-                } else if (line.startsWith(' ')) {
-                    const spaceMatch = line.match(/^ +/);
-                    if (spaceMatch) {
-                        const count = Math.min(spaceMatch[0].length, indentStr.length);
-                        newLine = line.substring(count);
-                    }
-                }
-                return newLine;
-            });
-
-            // 各行ごとの削除文字数を反映して正確な新カーソル・選択範囲位置を計算
-            let newSelStart = startLinePos;
-            let newSelEnd = startLinePos;
-            let currentOldPos = startLinePos;
-            let currentNewPos = startLinePos;
-
-            for (let i = 0; i < lines.length; i++) {
-                const oldLineLen = lines[i].length;
-                const newLineLen = newLines[i].length;
-                const removed = oldLineLen - newLineLen;
-                const nextOldPos = currentOldPos + oldLineLen;
-
-                if (start >= currentOldPos && start <= nextOldPos) {
-                    const offsetInLine = start - currentOldPos;
-                    const newOffsetInLine = Math.max(0, offsetInLine - removed);
-                    newSelStart = currentNewPos + newOffsetInLine;
-                }
-
-                if (end >= currentOldPos && end <= nextOldPos) {
-                    const offsetInLine = end - currentOldPos;
-                    const newOffsetInLine = Math.max(0, offsetInLine - removed);
-                    newSelEnd = currentNewPos + newOffsetInLine;
-                }
-
-                currentOldPos = nextOldPos + 1;
-                currentNewPos += newLineLen + 1;
-            }
-
-            const newText = newLines.join('\n');
-            applyEditorTextWithUndo(
-                startLinePos,
-                actualEndLinePos,
-                newText,
-                newSelStart,
-                newSelEnd
-            );
-        }
-    }
+    // Step 5 で CodeMirror keymap に統合予定
 }
 
-// 選択範囲が跨る行全体の境界を取得するヘルパー
-function getSelectionLineBounds() {
-    if (!elements.editor) return null;
-    const value = elements.editor.value;
-    const start = elements.editor.selectionStart;
-    const end = elements.editor.selectionEnd;
-
-    // 選択開始位置が含まれる行の先頭
-    const lineStart = (start === 0) ? 0 : value.lastIndexOf('\n', start - 1) + 1;
-
-    // 選択終了位置が含まれる行の末尾
-    // ※ start !== end かつ end が行頭 (\nの直後) の場合、その行は選択範囲に含めない
-    let effectiveEnd = end;
-    if (start !== end && end > lineStart && value[end - 1] === '\n') {
-        effectiveEnd = end - 1;
-    }
-
-    const nextNewline = value.indexOf('\n', effectiveEnd);
-    const lineEnd = (nextNewline === -1) ? value.length : nextNewline;
-
-    return {
-        start,
-        end,
-        lineStart,
-        lineEnd,
-        linesText: value.substring(lineStart, lineEnd)
-    };
-}
-
-// 行の上下移動
 export function moveLine(direction) {
-    if (!elements.editor) return;
-    const bounds = getSelectionLineBounds();
-    if (!bounds) return;
-
-    const { start, end, lineStart, lineEnd, linesText } = bounds;
-    const value = elements.editor.value;
-
-    if (direction === 'up') {
-        if (lineStart === 0) return; // すでに最上行
-
-        const prevLineStart = (lineStart === 1) ? 0 : value.lastIndexOf('\n', lineStart - 2) + 1;
-        const prevLine = value.substring(prevLineStart, lineStart - 1);
-        const offset = prevLine.length + 1;
-        const newBlockText = linesText + '\n' + prevLine;
-
-        applyEditorTextWithUndo(prevLineStart, lineEnd, newBlockText, start - offset, end - offset);
-    } else if (direction === 'down') {
-        if (lineEnd === value.length) return; // すでに最下行
-
-        const nextNewline = value.indexOf('\n', lineEnd + 1);
-        const nextLineEnd = (nextNewline === -1) ? value.length : nextNewline;
-        const nextLine = value.substring(lineEnd + 1, nextLineEnd);
-        const offset = nextLine.length + 1;
-        const newBlockText = nextLine + '\n' + linesText;
-
-        applyEditorTextWithUndo(lineStart, nextLineEnd, newBlockText, start + offset, end + offset);
-    }
+    // Step 5 で CodeMirror コマンドに統合予定
 }
 
-// 行の上下複製
 export function duplicateLine(direction) {
-    if (!elements.editor) return;
-    const bounds = getSelectionLineBounds();
-    if (!bounds) return;
-
-    const { start, end, lineStart, lineEnd, linesText } = bounds;
-    const offset = linesText.length + 1;
-
-    if (direction === 'down') {
-        applyEditorTextWithUndo(lineEnd, lineEnd, '\n' + linesText, start + offset, end + offset);
-    } else if (direction === 'up') {
-        applyEditorTextWithUndo(lineStart, lineStart, linesText + '\n', start, end);
-    }
+    // Step 5 で CodeMirror コマンドに統合予定
 }
 
-// 行の削除
 export function deleteLine() {
-    if (!elements.editor) return;
-    const bounds = getSelectionLineBounds();
-    if (!bounds) return;
-
-    const { start, lineStart, lineEnd } = bounds;
-    const value = elements.editor.value;
-    const col = start - lineStart;
-
-    let delStart = lineStart;
-    let delEnd = lineEnd;
-
-    if (lineEnd < value.length) {
-        // 後ろに改行がある場合は改行を含めて削除
-        delEnd = lineEnd + 1;
-    } else if (lineStart > 0) {
-        // 最終行で前に改行がある場合は手前の改行を含めて削除
-        delStart = lineStart - 1;
-    }
-
-    const valueAfterDel = value.substring(0, delStart) + value.substring(delEnd);
-    const newNextNewline = valueAfterDel.indexOf('\n', delStart);
-    const newCurrentLineEnd = (newNextNewline === -1) ? valueAfterDel.length : newNextNewline;
-    const newCursorPos = Math.min(delStart + col, newCurrentLineEnd);
-
-    applyEditorTextWithUndo(delStart, delEnd, '', newCursorPos, newCursorPos);
+    // Step 5 で CodeMirror コマンドに統合予定
 }
 
 // 現在日時の挿入 (YYYY/MM/DD HH:mm)
 export function insertTimestamp() {
-    if (!elements.editor) return;
-
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -446,10 +177,9 @@ export function insertTimestamp() {
     const minutes = String(now.getMinutes()).padStart(2, '0');
     const timestamp = `${year}/${month}/${day} ${hours}:${minutes}`;
 
-    const start = elements.editor.selectionStart;
-    const end = elements.editor.selectionEnd;
-    const newPos = start + timestamp.length;
+    const sel = getSelection();
+    const newPos = sel.from + timestamp.length;
 
-    applyEditorTextWithUndo(start, end, timestamp, newPos, newPos);
+    replaceRange(sel.from, sel.to, timestamp, newPos);
+    updateEditorMetrics();
 }
-
