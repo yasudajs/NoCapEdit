@@ -1,4 +1,4 @@
-import { increaseLineHeight, decreaseLineHeight, zoomIn, zoomOut, resetZoomAndLineHeight, moveLine, duplicateLine, deleteLine, insertTimestamp, toggleWordWrap } from './editor.js';
+import { increaseLineHeight, decreaseLineHeight, zoomIn, zoomOut, resetZoomAndLineHeight, toggleWordWrap } from './editor.js';
 import { triggerManualSave } from '../core/fileSystem.js';
 import { switchTabByOffset, createNewTab, closeTab } from './tabs.js';
 import { toggleSettingsDialog } from './settings.js';
@@ -43,13 +43,6 @@ export function setupKeyboardShortcuts() {
             }
         }
 
-        // F5 キーで現在日時を挿入（Windowsメモ帳互換）
-        if ((e.key === 'F5' || e.code === 'F5') && !e.ctrlKey && !e.altKey && !e.metaKey) {
-            e.preventDefault();
-            insertTimestamp();
-            return;
-        }
-
         // F1 キーでヘルプ画面（ショートカット一覧）を開く
         if (e.key === 'F1' || e.code === 'F1') {
             e.preventDefault();
@@ -76,43 +69,12 @@ export function setupKeyboardShortcuts() {
             return;
         }
 
-        // Alt キーを使用したショートカット（行移動・行複製・行削除）
-        if (e.altKey && !e.ctrlKey) {
-            if (e.shiftKey) {
-                // 行の上下複製: Alt + Shift + ↑ / ↓
-                if (e.key === 'ArrowUp' || e.code === 'ArrowUp') {
-                    e.preventDefault();
-                    duplicateLine('up');
-                    return;
-                } else if (e.key === 'ArrowDown' || e.code === 'ArrowDown') {
-                    e.preventDefault();
-                    duplicateLine('down');
-                    return;
-                }
-                // 行の削除: Alt + Shift + K
-                else if (e.key === 'k' || e.key === 'K' || e.code === 'KeyK') {
-                    e.preventDefault();
-                    deleteLine();
-                    return;
-                }
-            } else {
-                // 行の上下移動: Alt + ↑ / ↓
-                if (e.key === 'ArrowUp' || e.code === 'ArrowUp') {
-                    e.preventDefault();
-                    moveLine('up');
-                    return;
-                } else if (e.key === 'ArrowDown' || e.code === 'ArrowDown') {
-                    e.preventDefault();
-                    moveLine('down');
-                    return;
-                }
-                // 行の折り返し切り替え: Alt + Z
-                else if (e.key === 'z' || e.key === 'Z' || e.code === 'KeyZ') {
-                    e.preventDefault();
-                    console.log("[shortcuts.js] Alt+Z 押下検知 -> toggleWordWrap()");
-                    toggleWordWrap();
-                    return;
-                }
+        // 行の折り返し切り替え: Alt + Z
+        if (e.altKey && !e.ctrlKey && !e.shiftKey) {
+            if (e.key === 'z' || e.key === 'Z' || e.code === 'KeyZ') {
+                e.preventDefault();
+                toggleWordWrap();
+                return;
             }
         }
 

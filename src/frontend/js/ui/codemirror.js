@@ -1,6 +1,12 @@
 import { EditorView, keymap, placeholder as cmPlaceholder, drawSelection, dropCursor } from '@codemirror/view';
 import { EditorState, Compartment } from '@codemirror/state';
-import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
+import {
+    defaultKeymap, history, historyKeymap,
+    indentWithTab,
+    moveLineUp, moveLineDown,
+    copyLineUp, copyLineDown,
+    deleteLine
+} from '@codemirror/commands';
 import { indentUnit } from '@codemirror/language';
 
 let editorView = null;
@@ -12,6 +18,48 @@ let selectionListeners = [];
 export const wrapCompartment = new Compartment();
 export const indentCompartment = new Compartment();
 export const themeCompartment = new Compartment();
+
+/**
+ * タイムスタンプ挿入コマンド (F5)
+ * @param {EditorView} view
+ * @returns {boolean}
+ */
+export function insertTimestampCommand(view) {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const timestamp = `${year}/${month}/${day} ${hours}:${minutes}`;
+
+    const mainSel = view.state.selection.main;
+    const newPos = mainSel.from + timestamp.length;
+
+    view.dispatch({
+        changes: { from: mainSel.from, to: mainSel.to, insert: timestamp },
+        selection: { anchor: newPos, head: newPos },
+        scrollIntoView: true,
+    });
+    return true;
+}
+
+/**
+ * エディタ操作用カスタムキーマップ
+ */
+export const customEditorKeymap = [
+    indentWithTab,
+    { key: "Alt-ArrowUp", run: moveLineUp },
+    { key: "Alt-ArrowDown", run: moveLineDown },
+    { key: "Shift-Alt-ArrowUp", run: copyLineUp },
+    { key: "Shift-Alt-ArrowDown", run: copyLineDown },
+    { key: "Alt-Shift-k", run: deleteLine },
+    { key: "Alt-Shift-K", run: deleteLine },
+    { key: "F5", run: (view) => {
+        if (view.composing) return false;
+        return insertTimestampCommand(view);
+    }},
+];
 
 /**
  * 基本テーマ（CSS変数連動）
@@ -85,6 +133,7 @@ export function getDefaultExtensions(options = {}) {
         wrapCompartment.of(wrap ? EditorView.lineWrapping : []),
         indentCompartment.of(getIndentExtension(tabBehavior)),
         keymap.of([
+            ...customEditorKeymap,
             ...defaultKeymap,
             ...historyKeymap,
         ]),

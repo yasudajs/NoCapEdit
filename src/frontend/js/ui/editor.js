@@ -3,7 +3,7 @@ import { appState, elements } from '../state.js';
 import { MAX_FONT_SIZE, MIN_FONT_SIZE, MAX_LINE_HEIGHT, MIN_LINE_HEIGHT, LINE_HEIGHT_STEP, AUTOSAVE_DELAY_MS } from '../state.js';
 import { renderTabs, updateTabStatus } from './tabs.js';
 import { autoSave } from '../core/fileSystem.js';
-import { getContent, setContent, getCursorMetrics, getSelection, setSelection, replaceRange, focusEditor, getEditorState, updateWrap } from './codemirror.js';
+import { getContent, setContent, getCursorMetrics, getSelection, setSelection, replaceRange, focusEditor, getEditorState, updateWrap, getEditorView, insertTimestampCommand } from './codemirror.js';
 
 export function syncCurrentEditorToState() {
     if (!appState.currentTab) {
@@ -167,35 +167,11 @@ export function applyEditorTextWithUndo(replaceStart, replaceEnd, replacementTex
     }
 }
 
-export function handleTabKey(e) {
-    // Step 5 で CodeMirror keymap に統合予定
-}
-
-export function moveLine(direction) {
-    // Step 5 で CodeMirror コマンドに統合予定
-}
-
-export function duplicateLine(direction) {
-    // Step 5 で CodeMirror コマンドに統合予定
-}
-
-export function deleteLine() {
-    // Step 5 で CodeMirror コマンドに統合予定
-}
-
-// 現在日時の挿入 (YYYY/MM/DD HH:mm)
+// 現在日時の挿入 (YYYY/MM/DD HH:mm) - 外部呼び出し用
 export function insertTimestamp() {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const timestamp = `${year}/${month}/${day} ${hours}:${minutes}`;
-
-    const sel = getSelection();
-    const newPos = sel.from + timestamp.length;
-
-    replaceRange(sel.from, sel.to, timestamp, newPos);
-    updateEditorMetrics();
+    const view = getEditorView();
+    if (view) {
+        insertTimestampCommand(view);
+        updateEditorMetrics();
+    }
 }

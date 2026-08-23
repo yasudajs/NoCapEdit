@@ -10,6 +10,14 @@ NoCapEdit v0.2系のバージョンアップおよび仕様変更の履歴です
 
 ## 改定履歴一覧
 
+### Ver 0.2.5 | 2026-08-23 | yasudajs
+- **CodeMirror移行 Step 5: エディタ操作（インデント・行移動/複製/削除・日時挿入）**
+  - **コマンドシステムへの統合**: 行の上下移動（`Alt + ↑/↓`）、行の複製（`Alt + Shift + ↑/↓`）、行の削除（`Alt + Shift + K`）、インデント（`Tab` / `Shift + Tab`）を CodeMirror 6 標準のコマンドシステム（`@codemirror/commands`）およびキーマップに完全移行
+  - **日時挿入コマンド（F5）の実装**: `insertTimestampCommand` を新設し、現在日時（`YYYY/MM/DD HH:mm`）を CodeMirror のトランザクションとして挿入、Undo/Redo と完全連動
+  - **旧実装のクリーンアップ**: 旧 textarea 依存の行操作処理（`moveLine`, `duplicateLine`, `deleteLine`, `handleTabKey`）を `editor.js` から完全削除し、グローバルショートカット側の二重定義も解消
+
+---
+
 ### Ver 0.2.4 | 2026-08-23 | yasudajs
 - **CodeMirror移行 Step 4: 外観設定の連携（テーマ・フォント・行間・折り返し・ズーム）**
   - **Compartment による動的設定制御**: `codemirror.js` に `wrapCompartment`, `indentCompartment`, `themeCompartment` を導入し、エディタを再構築することなく折り返し（Word Wrap）やインデント幅を瞬時に動的再設定できる構造を構築
