@@ -1,4 +1,4 @@
-import { EditorView, keymap, placeholder as cmPlaceholder } from '@codemirror/view';
+import { EditorView, keymap, placeholder as cmPlaceholder, drawSelection, dropCursor } from '@codemirror/view';
 import { EditorState } from '@codemirror/state';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 
@@ -31,6 +31,8 @@ export function initCodeMirror(parentEl, options = {}) {
 
     const extensions = [
         history(),
+        drawSelection(),
+        dropCursor(),
         keymap.of([
             ...defaultKeymap,
             ...historyKeymap,

@@ -529,7 +529,6 @@ body {
     border: none;
     outline: none;
     overflow: hidden;
-    display: flex;
 }
 
 .editor .cm-editor {

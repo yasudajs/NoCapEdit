@@ -44,9 +44,13 @@ export function onEditorInput() {
     const tab = appState.tabs.find(t => t.id === appState.currentTab);
     if (!tab) return;
 
+    const wasDirty = tab.isDirty;
     tab.content = getContent();
     tab.isDirty = true;
-    renderTabs();
+
+    if (!wasDirty) {
+        renderTabs();
+    }
     updateEditorMetrics();
 
     updateTabStatus(tab, t('tabs.state.editing'));
