@@ -31,10 +31,10 @@ cargo tauri build
 ```
 
 #### B. ポータブル版（ZIPアーカイブ）のビルド
-以下のコマンドを一括コピー＆ペーストして実行すると、フロントエンドのビルド・Rustリリースビルド・ZIPアーカイブの作成までが一気に完了し、`target/release/bundle/` 配下に ZIP が生成されます。
+以下のコマンドを一括コピー＆ペーストして実行すると、フロントエンドとアセットが完全に埋め込まれたポータブル版（`.exe`）がビルドされ、`target/release/bundle/` 配下に ZIP アーカイブが生成されます。
 
 ```powershell
-npm run build; cargo build --release; New-Item -ItemType Directory -Force -Path "target/release/bundle"; Compress-Archive -Path "target/release/NoCapEdit.exe" -DestinationPath "target/release/bundle/NoCapEdit_v0.2.9_x64_portable.zip" -Force
+cargo tauri build; Compress-Archive -Path "target/release/NoCapEdit.exe" -DestinationPath "target/release/bundle/NoCapEdit_v0.2.9_x64_portable.zip" -Force
 ```
 
 ---
