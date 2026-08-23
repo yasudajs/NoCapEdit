@@ -2,6 +2,7 @@
 
 ## 概要
 CodeMirror 6 への移行時に仮導入されていたデフォルトの横長英語検索パネルを廃止し、Ver 0.1 系で好評だった**エディタ右上フロート型・コンパクトな2行レイアウト（日本語対応・大文字区別Aa内包・件数表示・スムーズスクロール・Undo/Redo連動）**に刷新いたしました。
+また、F1キーで開くヘルプ画面（ショートカット一覧）にも「検索・置換」カテゴリを新設し、各種操作方法を掲載いたしました。
 
 ---
 
@@ -13,7 +14,7 @@ CodeMirror 6 への移行時に仮導入されていたデフォルトの横長�
   - 2行目: `[置換入力欄]`、`置換` ボタン、`すべて置換` ボタン
 - **CSS ([style.css](file:///c:/work/NoCapEdit/src/frontend/style.css))**:
   - エディタ右上に浮遊配置（`top: 10px; right: 20px;`）、角丸カード＋ドロップシャドウ
-  - ダーク / ソフトダーク / ライトの各テーマ配色に完全連動
+  - ダーク / ソフトダーク / ライトの全テーマ配色に完全連動
 
 ### 2. `findReplace.js` モジュールの新設 ([findReplace.js](file:///c:/work/NoCapEdit/src/frontend/js/ui/findReplace.js))
 - **CodeMirror 6 連携**:
@@ -29,8 +30,8 @@ CodeMirror 6 への移行時に仮導入されていたデフォルトの横長�
   - `Alt + A`: すべて置換
   - `Esc`: パネルを閉じてエディタにフォーカス復帰
 
-### 3. 多言語化対応 ([i18n.js](file:///c:/work/NoCapEdit/src/frontend/i18n.js))
-- プレースホルダー、ツールチップ、置換完了ステータスメッセージを多言語辞書から動的に適用。
+### 3. ヘルプ画面への検索・置換操作の反映 ([help.html](file:///c:/work/NoCapEdit/src/frontend/help.html), [i18n.js](file:///c:/work/NoCapEdit/src/frontend/i18n.js))
+- F1ヘルプ画面に独立した「検索・置換」カテゴリを追加し、上記の全ショートカット操作一覧を掲載。
 
 ---
 
@@ -39,4 +40,4 @@ CodeMirror 6 への移行時に仮導入されていたデフォルトの横長�
 - [x] **Vite ビルド**: `npm run build` 正常終了
 - [x] **Rust コンパイル & NSIS/MSI 生成**: `cargo tauri build` 正常終了（Ver 0.2.10）
 - [x] **ポータブル版 ZIP 生成**: `target/release/bundle/NoCapEdit_v0.2.10_x64_portable.zip`
-- [x] **ショートカット連携**: `Ctrl+F` / `Ctrl+H` / `Enter` / `Shift+Enter` / `Alt+C` / `Alt+A` / `Esc` の全操作を実装・検証完了
+- [x] **ショートカット連携 & ヘルプ表示**: `Ctrl+F` / `Ctrl+H` / `Enter` / `Shift+Enter` / `Alt+C` / `Alt+A` / `Esc` の全操作およびヘルプ画面への反映を確認完了
