@@ -28,11 +28,11 @@
 
 用途やユーザー環境に合わせて以下から選択してください。
 
-- **[ポータブル版（ZIP形式 / インストール不要）](https://github.com/yasudajs/NoCapEdit/releases/download/v0.1.92/NoCapEdit_v0.1.92_x64_portable.zip)**
+- **[ポータブル版（ZIP形式 / インストール不要）](https://github.com/yasudajs/NoCapEdit/releases/download/v0.2.11/NoCapEdit_v0.2.11_x64_portable.zip)**
   - ダウンロードしたフォルダを解凍するだけで、すぐに使い始められます。USBメモリなどに入れて持ち運ぶことも可能です。
-- **[標準インストーラー（EXE形式 / 推奨）](https://github.com/yasudajs/NoCapEdit/releases/download/v0.1.92/NoCapEdit_0.1.92_x64-setup.exe)**
+- **[標準インストーラー（EXE形式 / 推奨）](https://github.com/yasudajs/NoCapEdit/releases/download/v0.2.11/NoCapEdit_0.2.11_x64-setup.exe)**
   - パソコンの個人用エリアにインストールするため、管理者権限（パスワード入力等）なしで簡単に導入できます。迷ったらこちらがおすすめです。
-- **[システム全体用インストーラー（MSI形式）](https://github.com/yasudajs/NoCapEdit/releases/download/v0.1.92/NoCapEdit_0.1.92_x64_ja-JP.msi)**
+- **[システム全体用インストーラー（MSI形式）](https://github.com/yasudajs/NoCapEdit/releases/download/v0.2.11/NoCapEdit_0.2.11_x64_ja-JP.msi)**
   - 学校や職場などで、1台のパソコンを複数のユーザーで使う場合に適しています。（※インストールには管理者権限が必要です）
 
 > [!IMPORTANT]
