@@ -14,10 +14,14 @@ NoCapEdit v0.2系のバージョンアップおよび仕様変更の履歴です
 - **CodeMirror移行 Step 2: CodeMirror基本導入**
   - **エディタエンジンの置換**: HTMLの `<textarea>` を CodeMirror (v6) の `EditorView` に置き換え、高機能エディタ基盤を初期導入
   - **CodeMirror管理モジュールの新設**: `src/frontend/js/ui/codemirror.js` を作成し、インスタンス管理、テキスト取得・設定、メトリクス算出、選択範囲制御、Undo履歴連動 API を実装
+  - **日本語IMEインライン入力の不具合修正**: `drawSelection` / `dropCursor` 拡張の追加および入力中の不要なタブ全再描画を抑制し、日本語IME変換候補のカーソル位置追従を正常化
   - **エディタUI連携の刷新**: `src/frontend/js/ui/editor.js` を CodeMirror API 連携に改修し、ステータスバーのカーソル位置（Ln, Col）・文字数カウントおよび自動保存タイマーとの接続を完了
   - **タブ・設定・検索連携の改修**: `tabs.js`, `settings.js`, `findReplace.js` 内のエディタ直接参照を CodeMirror API 経由に更新し、フォーカス復元やテキスト同期の整合性を確保
   - **エディタスタイルの整備**: `style.css` に CodeMirror 用のレイアウト・フォント・カーソル・選択色スタイルを定義し、既存UIデザインと統合
 
+---
+
+### Ver 0.2.1 | 2026-08-23 | yasudajs
 - **CodeMirror移行 Step 1: Vite環境構築とディレクトリ移動**
   - **フロントエンドソースの移動**: 従来の `src/dist/` 配下のソースコード全般を `src/frontend/` に移動し、ソースとビルド成果物の分離を実施
   - **ビルドツール（Vite）の導入**: プロジェクトルートに `package.json` および `vite.config.js` を新規作成し、Vite による高速なバンドル・開発サーバー環境を構築
