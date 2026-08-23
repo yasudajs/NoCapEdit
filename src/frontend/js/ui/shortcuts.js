@@ -2,7 +2,7 @@ import { increaseLineHeight, decreaseLineHeight, zoomIn, zoomOut, resetZoomAndLi
 import { triggerManualSave } from '../core/fileSystem.js';
 import { switchTabByOffset, createNewTab, closeTab } from './tabs.js';
 import { toggleSettingsDialog } from './settings.js';
-import { openFind, closeFind, isFindWidgetOpen } from './findReplace.js';
+import { openSearch, closeSearch } from './codemirror.js';
 import { appState } from '../state.js';
 import { appWindow } from '../core/tauri.js';
 
@@ -36,11 +36,7 @@ export function setupKeyboardShortcuts() {
 
         // Esc キーで検索バーを閉じる
         if (e.key === 'Escape' || e.code === 'Escape') {
-            if (isFindWidgetOpen()) {
-                e.preventDefault();
-                closeFind();
-                return;
-            }
+            closeSearch();
         }
 
         // F1 キーでヘルプ画面（ショートカット一覧）を開く
@@ -132,12 +128,12 @@ export function setupKeyboardShortcuts() {
             // 検索バーを開く: "f" / "F" キー
             else if (e.key === 'f' || e.key === 'F' || e.code === 'KeyF') {
                 e.preventDefault();
-                openFind(false);
+                openSearch();
             }
             // 置換バーを開く: "h" / "H" キー
             else if (e.key === 'h' || e.key === 'H' || e.code === 'KeyH') {
                 e.preventDefault();
-                openFind(true);
+                openSearch();
             }
             // 手動保存: "s" / "S" キー
             else if (e.key === 's' || e.key === 'S' || e.code === 'KeyS') {

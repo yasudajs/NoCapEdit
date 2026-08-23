@@ -8,6 +8,7 @@ import {
     deleteLine
 } from '@codemirror/commands';
 import { indentUnit } from '@codemirror/language';
+import { search, searchKeymap, highlightSelectionMatches, openSearchPanel, closeSearchPanel } from '@codemirror/search';
 
 let editorView = null;
 let currentPlaceholder = '';
@@ -55,6 +56,7 @@ export const customEditorKeymap = [
     { key: "Shift-Alt-ArrowDown", run: copyLineDown },
     { key: "Alt-Shift-k", run: deleteLine },
     { key: "Alt-Shift-K", run: deleteLine },
+    { key: "Mod-h", run: openSearchPanel },
     { key: "F5", run: (view) => {
         if (view.composing) return false;
         return insertTimestampCommand(view);
@@ -96,6 +98,86 @@ export const baseTheme = EditorView.theme({
         color: "var(--text-secondary)",
         opacity: "0.6",
         fontStyle: "normal",
+    },
+    // 検索・選択マッチのハイライトスタイル
+    ".cm-selectionMatch": {
+        backgroundColor: "var(--search-match-bg)",
+        borderRadius: "2px",
+    },
+    ".cm-searchMatch": {
+        backgroundColor: "var(--search-match-bg)",
+        boxShadow: "0 0 0 1px var(--search-match-border)",
+        borderRadius: "2px",
+    },
+    ".cm-searchMatch.cm-searchMatch-selected": {
+        backgroundColor: "var(--search-current-bg)",
+        boxShadow: "0 0 0 2px var(--search-current-border)",
+        borderRadius: "2px",
+    },
+    // CodeMirror 検索パネル
+    ".cm-panels": {
+        backgroundColor: "var(--bg-secondary)",
+        color: "var(--text-primary)",
+        borderBottom: "1px solid var(--border)",
+        fontFamily: "var(--editor-font-family, sans-serif)",
+        fontSize: "13px",
+    },
+    ".cm-panels.cm-panels-top": {
+        borderBottom: "1px solid var(--border)",
+    },
+    ".cm-panel.cm-search": {
+        padding: "6px 12px",
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "6px",
+        alignItems: "center",
+    },
+    ".cm-panel.cm-search input[type=text]": {
+        backgroundColor: "var(--bg-primary)",
+        color: "var(--text-primary)",
+        border: "1px solid var(--border)",
+        borderRadius: "4px",
+        padding: "3px 8px",
+        fontSize: "12px",
+        outline: "none",
+        fontFamily: "inherit",
+    },
+    ".cm-panel.cm-search input[type=text]:focus": {
+        borderColor: "var(--accent)",
+    },
+    ".cm-panel.cm-search button": {
+        backgroundColor: "var(--bg-tertiary)",
+        color: "var(--text-primary)",
+        border: "1px solid var(--border)",
+        borderRadius: "4px",
+        padding: "3px 10px",
+        fontSize: "12px",
+        cursor: "pointer",
+        transition: "all 0.15s ease",
+    },
+    ".cm-panel.cm-search button:hover": {
+        backgroundColor: "var(--border)",
+        borderColor: "var(--accent)",
+    },
+    ".cm-panel.cm-search label": {
+        color: "var(--text-secondary)",
+        fontSize: "12px",
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "4px",
+        cursor: "pointer",
+    },
+    ".cm-panel.cm-search button[name=close]": {
+        marginLeft: "auto",
+        backgroundColor: "transparent",
+        border: "none",
+        color: "var(--text-secondary)",
+        fontSize: "14px",
+        cursor: "pointer",
+        padding: "2px 6px",
+    },
+    ".cm-panel.cm-search button[name=close]:hover": {
+        color: "var(--text-primary)",
     }
 });
 
@@ -129,11 +211,14 @@ export function getDefaultExtensions(options = {}) {
         history(),
         drawSelection(),
         dropCursor(),
+        search({ top: true }),
+        highlightSelectionMatches(),
         themeCompartment.of(baseTheme),
         wrapCompartment.of(wrap ? EditorView.lineWrapping : []),
         indentCompartment.of(getIndentExtension(tabBehavior)),
         keymap.of([
             ...customEditorKeymap,
+            ...searchKeymap,
             ...defaultKeymap,
             ...historyKeymap,
         ]),
@@ -207,6 +292,24 @@ export function initCodeMirror(parentEl, options = {}) {
     });
 
     return editorView;
+}
+
+/**
+ * 検索パネルを開く
+ */
+export function openSearch() {
+    if (editorView) {
+        openSearchPanel(editorView);
+    }
+}
+
+/**
+ * 検索パネルを閉じる
+ */
+export function closeSearch() {
+    if (editorView) {
+        closeSearchPanel(editorView);
+    }
 }
 
 /**

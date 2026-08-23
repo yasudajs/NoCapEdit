@@ -10,6 +10,15 @@ NoCapEdit v0.2系のバージョンアップおよび仕様変更の履歴です
 
 ## 改定履歴一覧
 
+### Ver 0.2.6 | 2026-08-23 | yasudajs
+- **CodeMirror移行 Step 6: 検索・置換（@codemirror/search の導入と独自UIの廃止）**
+  - **公式検索・置換拡張の導入**: `@codemirror/search` を導入し、エディタ上部（`search({ top: true })`）に洗練された検索・置換パネルを統合
+  - **選択単語ハイライト**: `highlightSelectionMatches` 拡張により、テキスト選択時に同一単語が自動で視覚的に強調表示される機能を追加
+  - **検索キーマップの統合**: `Ctrl + F`（検索パネル開閉）、`Ctrl + H`（置換パネル開閉）、`F3` / `Enter`（次を検索）、`Shift + F3` / `Shift + Enter`（前を検索）、`Esc`（閉じる）を CodeMirror の標準キーマップに統合
+  - **独自UIの完全廃止と軽量化**: 旧 `findReplace.js`（約390行）を削除し、HTML/CSS 内の独自ウィジェット要素・スタイルを完全撤去してコードベースを大幅に簡素化・軽量化
+
+---
+
 ### Ver 0.2.5 | 2026-08-23 | yasudajs
 - **CodeMirror移行 Step 5: エディタ操作（インデント・行移動/複製/削除・日時挿入）**
   - **コマンドシステムへの統合**: 行の上下移動（`Alt + ↑/↓`）、行の複製（`Alt + Shift + ↑/↓`）、行の削除（`Alt + Shift + K`）、インデント（`Tab` / `Shift + Tab`）を CodeMirror 6 標準のコマンドシステム（`@codemirror/commands`）およびキーマップに完全移行
