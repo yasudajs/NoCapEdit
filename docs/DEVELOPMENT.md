@@ -34,7 +34,7 @@ cargo tauri build
 以下のコマンドを一括コピー＆ペーストして実行すると、フロントエンドとアセットが完全に埋め込まれたポータブル版（`.exe`）がビルドされ、`target/release/bundle/` 配下に ZIP アーカイブが生成されます。
 
 ```powershell
-cargo tauri build; Compress-Archive -Path "target/release/NoCapEdit.exe" -DestinationPath "target/release/bundle/NoCapEdit_v0.2.10_x64_portable.zip" -Force
+cargo tauri build; Compress-Archive -Path "target/release/NoCapEdit.exe" -DestinationPath "target/release/bundle/NoCapEdit_v0.2.11_x64_portable.zip" -Force
 ```
 
 ---

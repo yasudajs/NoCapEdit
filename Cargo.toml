@@ -1,6 +1,6 @@
 [package]
 name = "NoCapEdit"
-version = "0.2.10"
+version = "0.2.11"
 edition = "2021"
 
 [dependencies]
@@ -14,6 +14,7 @@ regex = "1.0"
 dirs = "5.0"
 fontdb = "0.16"
 tempfile = "3"
+tauri-plugin-single-instance = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 
 [target.'cfg(windows)'.dependencies]
 windows-sys = { version = "0.52", features = ["Win32_Graphics_Dwm", "Win32_Foundation"] }
