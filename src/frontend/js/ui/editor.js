@@ -3,7 +3,7 @@ import { appState, elements } from '../state.js';
 import { MAX_FONT_SIZE, MIN_FONT_SIZE, MAX_LINE_HEIGHT, MIN_LINE_HEIGHT, LINE_HEIGHT_STEP, AUTOSAVE_DELAY_MS } from '../state.js';
 import { renderTabs, updateTabStatus } from './tabs.js';
 import { autoSave } from '../core/fileSystem.js';
-import { getContent, setContent, getCursorMetrics, getSelection, setSelection, replaceRange, focusEditor } from './codemirror.js';
+import { getContent, setContent, getCursorMetrics, getSelection, setSelection, replaceRange, focusEditor, getEditorState } from './codemirror.js';
 
 export function syncCurrentEditorToState() {
     if (!appState.currentTab) {
@@ -14,7 +14,13 @@ export function syncCurrentEditorToState() {
         return;
     }
 
-    tab.content = getContent();
+    const state = getEditorState();
+    if (state) {
+        tab.editorState = state;
+        tab.content = state.doc.toString();
+    } else {
+        tab.content = getContent();
+    }
 }
 
 export function updateEditorMetrics() {
@@ -45,7 +51,13 @@ export function onEditorInput() {
     if (!tab) return;
 
     const wasDirty = tab.isDirty;
-    tab.content = getContent();
+    const state = getEditorState();
+    if (state) {
+        tab.editorState = state;
+        tab.content = state.doc.toString();
+    } else {
+        tab.content = getContent();
+    }
     tab.isDirty = true;
 
     if (!wasDirty) {

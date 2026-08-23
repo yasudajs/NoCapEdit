@@ -3,32 +3,15 @@ import { EditorState } from '@codemirror/state';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 
 let editorView = null;
+let currentPlaceholder = '';
 let changeListeners = [];
 let selectionListeners = [];
 
 /**
- * CodeMirror の初期化
- * @param {HTMLElement} parentEl - エディタを配置する親要素 (#editor)
- * @param {Object} options - 初期化オプション
- * @param {string} [options.initialContent=''] - 初期テキスト
- * @param {string} [options.placeholder=''] - プレースホルダー文字列
- * @param {Function} [options.onDocChange] - ドキュメント変更時コールバック
- * @param {Function} [options.onSelectionChange] - 選択範囲・カーソル変更時コールバック
- * @returns {EditorView}
+ * 共通の拡張機能（Extensions）を取得
+ * @returns {Array}
  */
-export function initCodeMirror(parentEl, options = {}) {
-    if (editorView) {
-        editorView.destroy();
-        editorView = null;
-    }
-
-    if (options.onDocChange) {
-        changeListeners = [options.onDocChange];
-    }
-    if (options.onSelectionChange) {
-        selectionListeners = [options.onSelectionChange];
-    }
-
+export function getDefaultExtensions() {
     const extensions = [
         history(),
         drawSelection(),
@@ -48,17 +31,56 @@ export function initCodeMirror(parentEl, options = {}) {
         }),
     ];
 
-    if (options.placeholder) {
-        extensions.push(cmPlaceholder(options.placeholder));
+    if (currentPlaceholder) {
+        extensions.push(cmPlaceholder(currentPlaceholder));
     }
 
-    const startState = EditorState.create({
-        doc: options.initialContent || '',
-        extensions,
+    return extensions;
+}
+
+/**
+ * 新規タブ用の EditorState を生成
+ * @param {string} [initialContent=''] - 初期テキスト
+ * @returns {EditorState}
+ */
+export function createTabState(initialContent = '') {
+    return EditorState.create({
+        doc: initialContent,
+        extensions: getDefaultExtensions(),
     });
+}
+
+/**
+ * CodeMirror の初期化
+ * @param {HTMLElement} parentEl - エディタを配置する親要素 (#editor)
+ * @param {Object} options - 初期化オプション
+ * @param {string} [options.initialContent=''] - 初期テキスト
+ * @param {string} [options.placeholder=''] - プレースホルダー文字列
+ * @param {EditorState} [options.state] - 初期 EditorState
+ * @param {Function} [options.onDocChange] - ドキュメント変更時コールバック
+ * @param {Function} [options.onSelectionChange] - 選択範囲・カーソル変更時コールバック
+ * @returns {EditorView}
+ */
+export function initCodeMirror(parentEl, options = {}) {
+    if (editorView) {
+        editorView.destroy();
+        editorView = null;
+    }
+
+    if (options.onDocChange) {
+        changeListeners = [options.onDocChange];
+    }
+    if (options.onSelectionChange) {
+        selectionListeners = [options.onSelectionChange];
+    }
+    if (options.placeholder) {
+        currentPlaceholder = options.placeholder;
+    }
+
+    const state = options.state || createTabState(options.initialContent || '');
 
     editorView = new EditorView({
-        state: startState,
+        state,
         parent: parentEl,
     });
 
@@ -71,6 +93,23 @@ export function initCodeMirror(parentEl, options = {}) {
  */
 export function getEditorView() {
     return editorView;
+}
+
+/**
+ * 現在の EditorState を取得
+ * @returns {EditorState|null}
+ */
+export function getEditorState() {
+    return editorView ? editorView.state : null;
+}
+
+/**
+ * EditorState をエディタに丸ごと設定（タブ切り替え用）
+ * @param {EditorState} state
+ */
+export function setEditorState(state) {
+    if (!editorView || !state) return;
+    editorView.setState(state);
 }
 
 /**
@@ -91,14 +130,9 @@ export function setContent(text, clearHistory = false) {
     if (!editorView) return;
 
     if (clearHistory) {
-        // 新しい状態を作成して差し替える（Undo履歴もリセット）
-        const newState = EditorState.create({
-            doc: text,
-            extensions: editorView.state.config.extensions,
-        });
+        const newState = createTabState(text);
         editorView.setState(newState);
     } else {
-        // ドキュメント全体を置換（Undo可能）
         const currentDocLen = editorView.state.doc.length;
         editorView.dispatch({
             changes: { from: 0, to: currentDocLen, insert: text },

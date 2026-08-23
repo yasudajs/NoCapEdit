@@ -3,6 +3,7 @@ import { appState, FILE_EXT_NCTX, FILE_EXT_NCMD } from '../state.js';
 import { invoke, saveDialog, appWindow, ensureTauriApi } from './tauri.js';
 import { updateStatus, updateTabStatus, renderTabs, switchTab, createNewTab } from '../ui/tabs.js';
 import { syncCurrentEditorToState } from '../ui/editor.js';
+import { createTabState } from '../ui/codemirror.js';
 import { getFileNameFromPath, isAutoCreatedFileName, generateTimestamp, generateTabId } from '../utils/helpers.js';
 import { showSaveErrorDialog } from '../ui/dialogs.js';
 
@@ -284,6 +285,7 @@ export async function openExistingFile(filePath) {
             fileName: fileName,
             filePath: filePath,
             content: content,
+            editorState: createTabState(content),
             isDirty: false,
             isSaving: false,
             savePromise: null,

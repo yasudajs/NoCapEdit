@@ -10,6 +10,15 @@ NoCapEdit v0.2系のバージョンアップおよび仕様変更の履歴です
 
 ## 改定履歴一覧
 
+### Ver 0.2.3 | 2026-08-23 | yasudajs
+- **CodeMirror移行 Step 3: タブ管理（EditorState ごとの分離と独立 Undo）**
+  - **タブごとの EditorState 保持**: 各タブオブジェクトに CodeMirror の `EditorState` を直接保持させ、タブ切り替え時に `setEditorState()` で状態（ドキュメント内容、選択範囲、カーソル位置、Undo/Redo履歴）を丸ごと復元する設計に刷新
+  - **独立した Undo/Redo 履歴の実現**: タブ間で Undo/Redo 履歴が混ざる問題を完全に解決し、タブごとの完全独立した編集履歴管理を達成
+  - **状態管理 API の拡充**: `codemirror.js` に `createTabState()`, `getEditorState()`, `setEditorState()` を追加し、新規タブ作成時・ファイル読み込み時・タブ切り替え時の状態生成フローを一本化
+  - **タブ・ファイル操作との連携**: `tabs.js`, `fileSystem.js`, `editor.js` の状態同期ロジックを `EditorState` ベースに更新
+
+---
+
 ### Ver 0.2.2 | 2026-08-23 | yasudajs
 - **CodeMirror移行 Step 2: CodeMirror基本導入**
   - **エディタエンジンの置換**: HTMLの `<textarea>` を CodeMirror (v6) の `EditorView` に置き換え、高機能エディタ基盤を初期導入
