@@ -149,6 +149,11 @@ const DICT = {
                 openHelp: "ヘルプ画面を開く",
                 exitApp: "アプリを終了",
                 closeHelp: "ヘルプを閉じる"
+            },
+            footer: {
+                devLabel: "開発：",
+                devTeam: "安田情報システム@NoCapEditチーム",
+                githubLabel: "GitHub："
             }
         },
         ui: {
