@@ -5,10 +5,10 @@
 
 mod settings;
 use settings::{AppSettings, APP_DIR_NAME};
-mod instance;
 mod commands;
 mod cli;
 mod theme;
+use tauri::Manager;
 
 // ウィンドウ設定
 const WINDOW_WIDTH: f64 = 900.0;
@@ -18,20 +18,19 @@ const WINDOW_MIN_HEIGHT: f64 = 300.0;
 
 pub const FILE_EXTENSION: &str = ".nctx";
 
-
-
 fn main() {
-    let file_arg = cli::parse_launch_file_arg();
-
-    if !instance::check_primary_or_forward(file_arg.as_ref()) {
-        std::process::exit(0);
-    }
-
     tauri::Builder::default()
-        .setup(|app| {
-            let app_handle = app.handle();
-            instance::start_instance_listener(app_handle);
+        .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
+            if let Some(window) = app.get_window("main") {
+                let _ = window.unminimize();
+                let _ = window.set_focus();
 
+                if let Some(file_path) = cli::parse_file_arg_from_argv(&argv, Some(&cwd)) {
+                    let _ = window.emit("single-instance-file", file_path);
+                }
+            }
+        }))
+        .setup(|app| {
             let window = tauri::WindowBuilder::new(
                 app,
                 "main",
