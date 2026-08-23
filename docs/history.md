@@ -10,6 +10,14 @@ NoCapEdit v0.2系のバージョンアップおよび仕様変更の履歴です
 
 ## 改定履歴一覧
 
+### Ver 0.2.7 | 2026-08-23 | yasudajs
+- **CodeMirror移行 Step 7: 最終クリーンアップ、全体動作検証、ウォークスルー作成**
+  - **全体検証の完了**: `npm run build`、`cargo check`、`cargo build`、`cargo build --release` の全ビルドおよび全機能動作検証を完了
+  - **ウォークスルー文書の作成**: Step 1 〜 Step 7 までの移行内容とアーキテクチャ変更を網羅した `docs/codemirror-migration/walkthrough.md` を作成
+  - **CodeMirror (v6) 移行フェーズの完了**: エディタ基盤の近代化、独立 Undo/Redo、Compartment による動的設定制御、公式検索拡張の統合を達成
+
+---
+
 ### Ver 0.2.6 | 2026-08-23 | yasudajs
 - **CodeMirror移行 Step 6: 検索・置換（@codemirror/search の導入と独自UIの廃止）**
   - **公式検索・置換拡張の導入**: `@codemirror/search` を導入し、エディタ上部（`search({ top: true })`）に洗練された検索・置換パネルを統合

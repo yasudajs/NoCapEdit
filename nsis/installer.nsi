@@ -19,10 +19,10 @@ ${StrLoc}
 !define MANUFACTURER "nocapedit"
 !define PRODUCTNAME "NoCapEdit"
 !ifndef VERSION
-  !define VERSION "0.2.6"
+  !define VERSION "0.2.7"
 !endif
 !ifndef VERSIONWITHBUILD
-  !define VERSIONWITHBUILD "0.2.6.0"
+  !define VERSIONWITHBUILD "0.2.7.0"
 !endif
 !define INSTALLMODE "currentUser"
 !define LICENSE ""
