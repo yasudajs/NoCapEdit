@@ -282,4 +282,8 @@ export function applyI18nToDOM() {
         const text = t(el.dataset.i18nTitle);
         if (text) el.title = text;
     });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const text = t(el.dataset.i18nPlaceholder);
+        if (text) el.placeholder = text;
+    });
 };

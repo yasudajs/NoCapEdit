@@ -8,6 +8,7 @@ import { initCodeMirror } from './ui/codemirror.js';
 import { toggleSettingsDialog, closeSettingsDialog, openSettingsDialog, onThemeChange, onFontFamilyChange, saveSettings, setupSettingsNavigation } from './ui/settings.js';
 import { applyThemeUI, loadSystemFonts, applyFontFamily, setShouldOpenFontPicker } from './ui/theme.js';
 import { setupKeyboardShortcuts } from './ui/shortcuts.js';
+import { initFindReplace } from './ui/findReplace.js';
 import { checkNewVersion } from './core/updater.js';
 
 function registerCloseHandler() {
@@ -282,6 +283,7 @@ function setupUIEventListeners() {
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         initElements();
+        initFindReplace();
         if (typeof applyI18nToDOM === 'function') {
             applyI18nToDOM();
         }
