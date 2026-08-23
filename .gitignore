@@ -5,3 +5,8 @@ Cargo.lock
 *.tmp
 .DS_Store
 
+# Vite ビルド出力（自動生成）
+/src/dist/
+
+# npm
+/node_modules/
