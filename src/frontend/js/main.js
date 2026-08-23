@@ -280,12 +280,24 @@ function setupUIEventListeners() {
 
 // アプリケーション起動
 document.addEventListener('DOMContentLoaded', async () => {
-    initElements();
-    if (typeof applyI18nToDOM === 'function') {
-        applyI18nToDOM();
+    try {
+        initElements();
+        if (typeof applyI18nToDOM === 'function') {
+            applyI18nToDOM();
+        }
+        await init();
+        updateEditorMetrics();
+    } catch (e) {
+        console.error('Fatal initialization error:', e);
+    } finally {
+        if (appWindow && typeof appWindow.show === 'function') {
+            try {
+                await appWindow.show();
+            } catch (showError) {
+                console.error('Failed to show window in DOMContentLoaded finally:', showError);
+            }
+        }
     }
-    await init();
-    updateEditorMetrics();
 });
 
 window.addEventListener('error', (event) => {

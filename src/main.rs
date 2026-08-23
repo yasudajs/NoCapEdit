@@ -52,6 +52,17 @@ fn main() {
             
             let _ = theme::apply_to_window(&window, is_dark);
             
+            // 万が一フロントエンド側からの表示通知が届かなかった場合のフェイルセーフ
+            let fallback_window = window.clone();
+            std::thread::spawn(move || {
+                std::thread::sleep(std::time::Duration::from_millis(1500));
+                if let Ok(is_visible) = fallback_window.is_visible() {
+                    if !is_visible {
+                        let _ = fallback_window.show();
+                    }
+                }
+            });
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![

@@ -1,24 +1,80 @@
+/**
+ * Tauri API ラッパーモジュール
+ * window.__TAURI__ がスクリプト読み込み後に注入される場合でも確実に動作するよう、
+ * すべての API を実行時（動的）に解決する Proxy / ラッパーで提供します。
+ */
 
-const tauriApi = window.__TAURI__ || null;
-export const invoke = tauriApi?.tauri?.invoke || tauriApi?.invoke || null;
-export const openDialog = tauriApi?.dialog?.open || null;
-export const saveDialog = tauriApi?.dialog?.save || null;
-export const appWindow = tauriApi?.window?.appWindow || null;
-export const listen = tauriApi?.event?.listen || null;
-export const emit = tauriApi?.event?.emit || null;
+function getTauri() {
+    return window.__TAURI__ || null;
+}
+
+export const invoke = (...args) => {
+    const tauri = getTauri();
+    const inv = tauri?.tauri?.invoke || tauri?.invoke;
+    if (inv) {
+        return inv(...args);
+    }
+    return Promise.reject(new Error('Tauri invoke API is not available'));
+};
+
+export const openDialog = (...args) => {
+    const tauri = getTauri();
+    const open = tauri?.dialog?.open;
+    if (open) {
+        return open(...args);
+    }
+    return Promise.reject(new Error('Tauri dialog.open API is not available'));
+};
+
+export const saveDialog = (...args) => {
+    const tauri = getTauri();
+    const save = tauri?.dialog?.save;
+    if (save) {
+        return save(...args);
+    }
+    return Promise.reject(new Error('Tauri dialog.save API is not available'));
+};
+
+export const listen = (...args) => {
+    const tauri = getTauri();
+    const lst = tauri?.event?.listen;
+    if (lst) {
+        return lst(...args);
+    }
+    return Promise.reject(new Error('Tauri event.listen API is not available'));
+};
+
+export const emit = (...args) => {
+    const tauri = getTauri();
+    const emt = tauri?.event?.emit;
+    if (emt) {
+        return emt(...args);
+    }
+    return Promise.reject(new Error('Tauri event.emit API is not available'));
+};
 
 /**
- * [WARNING] 循環参照の防止 (Circular Dependency Prevention)
- * 
- * tauri.js はアプリケーションの最下層（コア）に位置するAPIラッパーです。
- * ここから上位の UI 層モジュール（例: `ui/tabs.js` の `updateStatus` など）を
- * import して呼び出すと、循環参照が発生し起動時にクラッシュします。
- * 
- * エラー時の UI 通知（ステータス更新やダイアログ等）は、ここでは行わず、
- * `ensureTauriApi()` を呼び出した上位モジュール側の責任でハンドリングしてください。
+ * appWindow の動的 Proxy
  */
+export const appWindow = new Proxy({}, {
+    get(_target, prop) {
+        const tauri = getTauri();
+        const win = tauri?.window?.appWindow;
+        if (!win) {
+            return undefined;
+        }
+        const val = win[prop];
+        if (typeof val === 'function') {
+            return val.bind(win);
+        }
+        return val;
+    }
+});
+
 export function ensureTauriApi() {
-    if (!invoke) {
+    const tauri = getTauri();
+    const inv = tauri?.tauri?.invoke || tauri?.invoke;
+    if (!inv) {
         console.error('Tauri invoke API is not available.', window.__TAURI__);
         return false;
     }
