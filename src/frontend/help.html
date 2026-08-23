@@ -54,6 +54,33 @@
             display: flex;
             align-items: center;
         }
+        .help-footer {
+            margin-top: 36px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border, #333);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--text-secondary, #888);
+        }
+        .help-footer-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .repo-link {
+            color: var(--accent, #4daafc);
+            text-decoration: none;
+            word-break: break-all;
+            transition: color 0.15s ease;
+        }
+        .repo-link:hover {
+            color: var(--accent-hover, #7cb3db);
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -160,6 +187,15 @@
         <div class="shortcut-desc" data-i18n="help.shortcuts.exitApp">アプリを終了</div>
         <div class="shortcut-key">Ctrl + Q</div>
     </div>
+
+    <footer class="help-footer">
+        <div class="help-footer-row">
+            <span>NoCapEdit v0.2.8</span>
+            <a href="https://github.com/yasudajs/NoCapEdit" class="repo-link" id="repoLink" target="_blank" rel="noopener noreferrer">
+                https://github.com/yasudajs/NoCapEdit
+            </a>
+        </div>
+    </footer>
 
     <script type="module" src="js/help.js"></script>
 </body>
