@@ -1,6 +1,6 @@
 [package]
 name = "NoCapEdit"
-version = "0.1.94"
+version = "0.2.7"
 edition = "2021"
 
 [dependencies]

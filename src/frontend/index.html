@@ -33,29 +33,7 @@
 
         <!-- エディタエリア -->
         <div class="editor-container">
-            <div id="editorBackdrop" class="editor-backdrop">
-                <div id="editorHighlights" class="editor-highlights"></div>
-            </div>
-            <textarea id="editor" class="editor"></textarea>
-
-            <!-- 検索・置換ウィジェット -->
-            <div id="findReplaceWidget" class="find-replace-widget hidden">
-                <div class="find-row">
-                    <div class="input-with-options">
-                        <input type="text" id="findInput" class="find-input" placeholder="検索" data-i18n-placeholder="ui.find.placeholder" autocomplete="off" spellcheck="false">
-                        <button id="matchCaseBtn" class="toggle-btn" title="大文字/小文字を区別 (Alt+C)" data-i18n-title="ui.find.matchCase">Aa</button>
-                    </div>
-                    <span id="findMatchCount" class="match-count">0 / 0</span>
-                    <button id="findPrevBtn" class="icon-btn" title="前を検索 (Shift+Enter)" data-i18n-title="ui.find.prev">▲</button>
-                    <button id="findNextBtn" class="icon-btn" title="次を検索 (Enter)" data-i18n-title="ui.find.next">▼</button>
-                    <button id="closeFindBtn" class="icon-btn" title="閉じる (Esc)" data-i18n-title="ui.find.close">✕</button>
-                </div>
-                <div id="replaceRow" class="replace-row hidden">
-                    <input type="text" id="replaceInput" class="replace-input" placeholder="置換" data-i18n-placeholder="ui.find.replacePlaceholder" autocomplete="off" spellcheck="false">
-                    <button id="replaceOneBtn" class="action-btn" title="置換 (Enter)" data-i18n="ui.find.replace">置換</button>
-                    <button id="replaceAllBtn" class="action-btn" title="すべて置換 (Alt+A)" data-i18n="ui.find.replaceAll">すべて置換</button>
-                </div>
-            </div>
+            <div id="editor" class="editor"></div>
         </div>
 
         <!-- ステータスバー -->
