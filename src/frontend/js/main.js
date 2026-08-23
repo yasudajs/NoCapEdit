@@ -3,11 +3,12 @@ import { appState, elements, initElements } from './state.js';
 import { invoke, appWindow, listen, ensureTauriApi } from './core/tauri.js';
 import { createNewTab, updateStatus, renderTabs, setupTabScrollWheel } from './ui/tabs.js';
 import { openExistingFile, persistAllTabsBeforeExit } from './core/fileSystem.js';
-import { updateEditorMetrics, onEditorInput, applyFontSize, applyLineHeight, handleTabKey, applyWordWrap } from './ui/editor.js';
+import { updateEditorMetrics, onEditorInput, applyFontSize, applyLineHeight, applyWordWrap } from './ui/editor.js';
+import { initCodeMirror } from './ui/codemirror.js';
 import { toggleSettingsDialog, closeSettingsDialog, openSettingsDialog, onThemeChange, onFontFamilyChange, saveSettings, setupSettingsNavigation } from './ui/settings.js';
 import { applyThemeUI, loadSystemFonts, applyFontFamily, setShouldOpenFontPicker } from './ui/theme.js';
 import { setupKeyboardShortcuts } from './ui/shortcuts.js';
-import { setupFindReplaceEvents } from './ui/findReplace.js';
+import { initFindReplace } from './ui/findReplace.js';
 import { checkNewVersion } from './core/updater.js';
 
 function registerCloseHandler() {
@@ -127,12 +128,19 @@ async function init() {
             elements.fontFamilySelectModal.appendChild(option);
         }
 
+        // CodeMirror エディタの初期化
+        if (elements.editor) {
+            initCodeMirror(elements.editor, {
+                placeholder: t('editor.placeholder'),
+                wordWrap: appState.wordWrap,
+                tabBehavior: appState.tabBehavior,
+                onDocChange: () => onEditorInput(),
+                onSelectionChange: () => updateEditorMetrics(),
+            });
+        }
+
         // UIイベントリスナーを一括登録
         setupUIEventListeners();
-
-        if (elements.editor) {
-            elements.editor.placeholder = t('editor.placeholder');
-        }
 
         // 初回起動チェック
         const isFirstLaunch = !!settings.is_first_launch;
@@ -253,18 +261,10 @@ function setupUIEventListeners() {
         });
     }
 
-    if (elements.editor) {
-        elements.editor.addEventListener('keydown', handleTabKey);
-        elements.editor.addEventListener('input', onEditorInput);
-        elements.editor.addEventListener('click', updateEditorMetrics);
-        elements.editor.addEventListener('mouseup', updateEditorMetrics);
-        elements.editor.addEventListener('keyup', updateEditorMetrics);
-    }
     registerCloseHandler();
     setupTabScrollWheel();
     setupSettingsNavigation();
     setupKeyboardShortcuts();
-    setupFindReplaceEvents();
 
     // シングルインスタンス動作でのファイル通知の購読
     if (listen) {
@@ -281,12 +281,25 @@ function setupUIEventListeners() {
 
 // アプリケーション起動
 document.addEventListener('DOMContentLoaded', async () => {
-    initElements();
-    if (typeof applyI18nToDOM === 'function') {
-        applyI18nToDOM();
+    try {
+        initElements();
+        initFindReplace();
+        if (typeof applyI18nToDOM === 'function') {
+            applyI18nToDOM();
+        }
+        await init();
+        updateEditorMetrics();
+    } catch (e) {
+        console.error('Fatal initialization error:', e);
+    } finally {
+        if (appWindow && typeof appWindow.show === 'function') {
+            try {
+                await appWindow.show();
+            } catch (showError) {
+                console.error('Failed to show window in DOMContentLoaded finally:', showError);
+            }
+        }
     }
-    await init();
-    updateEditorMetrics();
 });
 
 window.addEventListener('error', (event) => {
