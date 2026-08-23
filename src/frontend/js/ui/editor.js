@@ -4,6 +4,7 @@ import { MAX_FONT_SIZE, MIN_FONT_SIZE, MAX_LINE_HEIGHT, MIN_LINE_HEIGHT, LINE_HE
 import { renderTabs, updateTabStatus } from './tabs.js';
 import { autoSave } from '../core/fileSystem.js';
 import { getContent, setContent, getCursorMetrics, getSelection, setSelection, replaceRange, focusEditor, getEditorState, updateWrap, getEditorView, insertTimestampCommand } from './codemirror.js';
+import { isFindWidgetOpen, updateMatches } from './findReplace.js';
 
 export function syncCurrentEditorToState() {
     if (!appState.currentTab) {
@@ -66,6 +67,11 @@ export function onEditorInput() {
     updateEditorMetrics();
 
     updateTabStatus(tab, t('tabs.state.editing'));
+
+    // 検索バーが開いている場合はマッチ件数を同期更新
+    if (typeof isFindWidgetOpen === 'function' && isFindWidgetOpen()) {
+        updateMatches(false);
+    }
 
     // 自動保存タイマーをリセット
     if (appState.saveMode !== 'manual') {

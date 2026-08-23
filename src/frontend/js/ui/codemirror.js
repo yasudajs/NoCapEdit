@@ -56,7 +56,6 @@ export const customEditorKeymap = [
     { key: "Shift-Alt-ArrowDown", run: copyLineDown },
     { key: "Alt-Shift-k", run: deleteLine },
     { key: "Alt-Shift-K", run: deleteLine },
-    { key: "Mod-h", run: openSearchPanel },
     { key: "F5", run: (view) => {
         if (view.composing) return false;
         return insertTimestampCommand(view);
@@ -218,7 +217,6 @@ export function getDefaultExtensions(options = {}) {
         indentCompartment.of(getIndentExtension(tabBehavior)),
         keymap.of([
             ...customEditorKeymap,
-            ...searchKeymap,
             ...defaultKeymap,
             ...historyKeymap,
         ]),
@@ -502,3 +500,44 @@ export function replaceRange(from, to, insertText, newCursorPos) {
 
     editorView.dispatch(transaction);
 }
+
+/**
+ * 複数箇所を一括置換（1つのUndo履歴として記録）
+ * @param {Array<{from: number, to: number, insert: string}>} changes
+ */
+export function replaceAllMatches(changes) {
+    if (!editorView || !changes || changes.length === 0) return;
+
+    editorView.dispatch({
+        changes,
+    });
+}
+
+/**
+ * 指定範囲を選択し、中央付近へスムーズにスクロール
+ * @param {number} from
+ * @param {number} to
+ */
+export function selectAndScrollTo(from, to) {
+    if (!editorView) return;
+    const docLen = editorView.state.doc.length;
+    const safeFrom = Math.max(0, Math.min(from, docLen));
+    const safeTo = Math.max(0, Math.min(to, docLen));
+
+    editorView.dispatch({
+        selection: { anchor: safeFrom, head: safeTo },
+        scrollIntoView: true,
+    });
+}
+
+/**
+ * 現在選択されている文字列を取得
+ * @returns {string}
+ */
+export function getSelectionText() {
+    if (!editorView) return '';
+    const mainSel = editorView.state.selection.main;
+    if (mainSel.empty) return '';
+    return editorView.state.doc.sliceString(mainSel.from, mainSel.to);
+}
+

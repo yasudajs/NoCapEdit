@@ -114,6 +114,7 @@ const DICT = {
             title: "ショートカット一覧",
             categories: {
                 edit: "テキスト編集",
+                findReplace: "検索・置換",
                 file: "ファイル・タブ操作",
                 view: "表示・ズーム",
                 settings: "設定画面の操作",
@@ -124,8 +125,13 @@ const DICT = {
                 duplicateLine: "行の上下複製",
                 deleteLine: "行の削除",
                 insertTimestamp: "現在日時の挿入",
-                find: "検索",
-                replace: "置換",
+                openFind: "検索パネルを開く",
+                openReplace: "検索・置換パネルを開く",
+                findNextMatch: "次のマッチへ移動",
+                findPrevMatch: "前のマッチへ移動",
+                toggleMatchCase: "大文字/小文字区別の切り替え",
+                replaceAll: "すべて置換",
+                closeFind: "検索・置換パネルを閉じる",
                 indent: "インデント挿入",
                 unindent: "インデント削除",
                 save: "手動保存",
@@ -281,5 +287,9 @@ export function applyI18nToDOM() {
     document.querySelectorAll('[data-i18n-title]').forEach(el => {
         const text = t(el.dataset.i18nTitle);
         if (text) el.title = text;
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+        const text = t(el.dataset.i18nPlaceholder);
+        if (text) el.placeholder = text;
     });
 };
