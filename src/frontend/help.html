@@ -6,40 +6,41 @@
     <title data-i18n="help.title">ショートカット一覧</title>
     <link rel="stylesheet" href="style.css">
     <style>
+        html, body {
+            height: auto !important;
+            min-height: 100vh !important;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+        }
         body {
-            padding: 30px 30px 40px 30px;
-            overflow-y: auto;
+            padding: 24px 24px 20px 24px;
             background-color: var(--bg-primary, #1e1e1e);
             color: var(--text-primary, #d4d4d4);
-        }
-        body::after {
-            content: '';
-            display: block;
-            height: 30px;
+            box-sizing: border-box;
         }
         h1 {
             font-size: 20px;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
             border-bottom: 1px solid var(--border, #333);
-            padding-bottom: 12px;
+            padding-bottom: 10px;
             color: var(--text-primary);
         }
         .category {
             font-weight: bold;
-            margin: 28px 0 14px 0;
+            margin: 22px 0 10px 0;
             color: var(--accent, #4daafc);
-            font-size: 16px;
+            font-size: 15px;
         }
         .shortcut-list {
             display: grid;
             grid-template-columns: 1fr auto;
-            gap: 12px;
-            font-size: 14px;
+            gap: 10px;
+            font-size: 13.5px;
             margin-left: 8px;
         }
         .shortcut-key {
             background-color: var(--bg-secondary, #333);
-            padding: 4px 8px;
+            padding: 3px 8px;
             border-radius: 4px;
             font-family: var(--editor-font-family, "Fira Code", "Consolas", monospace);
             white-space: nowrap;
@@ -47,6 +48,39 @@
         .shortcut-desc {
             display: flex;
             align-items: center;
+        }
+        .help-footer {
+            margin-top: 24px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border, #333);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-size: 12px;
+            color: var(--text-secondary, #888);
+        }
+        .help-footer-item {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        .help-footer-label {
+            color: var(--text-secondary, #888);
+            font-weight: 500;
+        }
+        .help-footer-value {
+            color: var(--text-primary, #d4d4d4);
+        }
+        .repo-link {
+            color: var(--accent, #4daafc);
+            text-decoration: none;
+            word-break: break-all;
+            transition: color 0.15s ease;
+        }
+        .repo-link:hover {
+            color: var(--accent-hover, #7cb3db);
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -154,6 +188,19 @@
         <div class="shortcut-desc" data-i18n="help.shortcuts.exitApp">アプリを終了</div>
         <div class="shortcut-key">Ctrl + Q</div>
     </div>
+
+    <footer class="help-footer">
+        <div class="help-footer-item">
+            <span class="help-footer-label" data-i18n="help.footer.devLabel">開発：</span>
+            <span class="help-footer-value" data-i18n="help.footer.devTeam">安田情報システム@NoCapEditチーム</span>
+        </div>
+        <div class="help-footer-item">
+            <span class="help-footer-label" data-i18n="help.footer.githubLabel">GitHub：</span>
+            <a href="https://github.com/yasudajs/NoCapEdit" class="repo-link" id="repoLink" target="_blank" rel="noopener noreferrer">
+                https://github.com/yasudajs/NoCapEdit
+            </a>
+        </div>
+    </footer>
 
     <script type="module" src="js/help.js"></script>
 </body>

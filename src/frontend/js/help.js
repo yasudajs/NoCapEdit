@@ -46,6 +46,20 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Failed to listen to theme-changed event in help window:', err);
         });
     }
+
+    // リポジトリリンクのクリック（既定のWebブラウザで開く）
+    const repoLink = document.getElementById('repoLink');
+    if (repoLink) {
+        repoLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            const url = repoLink.getAttribute('href');
+            if (window.__TAURI__ && window.__TAURI__.shell && typeof window.__TAURI__.shell.open === 'function') {
+                window.__TAURI__.shell.open(url).catch(console.error);
+            } else {
+                window.open(url, '_blank');
+            }
+        });
+    }
 });
 
 // キーボードイベントの監視

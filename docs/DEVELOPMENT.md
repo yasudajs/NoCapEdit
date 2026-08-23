@@ -34,7 +34,7 @@ cargo tauri build
 以下のコマンドを一括コピー＆ペーストして実行すると、フロントエンドのビルド・Rustリリースビルド・ZIPアーカイブの作成までが一気に完了し、`target/release/bundle/` 配下に ZIP が生成されます。
 
 ```powershell
-npm run build; cargo build --release; New-Item -ItemType Directory -Force -Path "target/release/bundle"; Compress-Archive -Path "target/release/NoCapEdit.exe" -DestinationPath "target/release/bundle/NoCapEdit_v0.2.7_x64_portable.zip" -Force
+npm run build; cargo build --release; New-Item -ItemType Directory -Force -Path "target/release/bundle"; Compress-Archive -Path "target/release/NoCapEdit.exe" -DestinationPath "target/release/bundle/NoCapEdit_v0.2.8_x64_portable.zip" -Force
 ```
 
 ---
