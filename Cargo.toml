@@ -1,6 +1,6 @@
 [package]
 name = "NoCapEdit"
-version = "0.2.8"
+version = "0.2.9"
 edition = "2021"
 
 [dependencies]
@@ -22,4 +22,5 @@ windows-sys = { version = "0.52", features = ["Win32_Graphics_Dwm", "Win32_Found
 tauri-build = { version = "1.5", features = [] }
 
 [features]
+default = ["custom-protocol"]
 custom-protocol = ["tauri/custom-protocol"]
