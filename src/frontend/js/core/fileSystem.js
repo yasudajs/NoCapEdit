@@ -1,9 +1,9 @@
 import { t } from '../../i18n.js';
 import { appState, FILE_EXT_NCTX, FILE_EXT_NCMD } from '../state.js';
-import { invoke, saveDialog, appWindow, ensureTauriApi } from './tauri.js';
+import { invoke, openDialog, saveDialog, appWindow, ensureTauriApi } from './tauri.js';
 import { updateStatus, updateTabStatus, renderTabs, switchTab, createNewTab } from '../ui/tabs.js';
 import { syncCurrentEditorToState } from '../ui/editor.js';
-import { createTabState } from '../ui/codemirror.js';
+import { createTabState, getLanguageSupport, updateLanguageForFileName, getEditorView } from '../ui/codemirror.js';
 import { getFileNameFromPath, isAutoCreatedFileName, generateTimestamp, generateTabId } from '../utils/helpers.js';
 import { showSaveErrorDialog } from '../ui/dialogs.js';
 
@@ -36,6 +36,9 @@ export async function saveTabAs(tab) {
     tab.fileName = getFileNameFromPath(targetPath);
     tab.isDirty = false;
     renderTabs();
+    if (tab.id === appState.currentTab) {
+        await updateLanguageForFileName(getEditorView(), tab.fileName);
+    }
     updateStatus(t('fs.status.savedAs'), 'saved');
     return true;
 }
@@ -266,40 +269,138 @@ export async function triggerManualSave() {
     }
 }
 
-export async function openExistingFile(filePath) {
+/**
+ * 既存のテキストファイルをタブとして開く
+ * @param {string} filePath - ファイルパス
+ * @param {boolean} [suppressStatus=false] - 個別ステータス通知を抑制するか
+ */
+export async function openExistingFile(filePath, suppressStatus = false) {
+    if (!filePath || typeof filePath !== 'string') return;
+
     const targetPath = filePath.replace(/\\/g, '/').toLowerCase();
-    const existingTab = appState.tabs.find((t) => t.filePath.replace(/\\/g, '/').toLowerCase() === targetPath);
+    const existingTab = appState.tabs.find((t) => t.filePath && t.filePath.replace(/\\/g, '/').toLowerCase() === targetPath);
     if (existingTab) {
         await switchTab(existingTab.id);
         return;
     }
 
     try {
-        updateStatus(t('fs.status.loading'), 'saving');
+        if (!suppressStatus) {
+            updateStatus(t('fs.status.loading'), 'saving');
+        }
         if (!ensureTauriApi()) return;
+
         const content = await invoke('read_text_file', { filePath });
         const fileName = getFileNameFromPath(filePath);
+        const languageSupport = await getLanguageSupport(fileName);
 
-        const tab = {
-            id: generateTabId(),
-            fileName: fileName,
-            filePath: filePath,
-            content: content,
-            editorState: createTabState(content, { wordWrap: appState.wordWrap, tabBehavior: appState.tabBehavior }),
-            isDirty: false,
-            isSaving: false,
-            savePromise: null,
-            createdTimestamp: '',
-        };
+        const editorState = createTabState(content, {
+            wordWrap: appState.wordWrap,
+            tabBehavior: appState.tabBehavior,
+            languageSupport: languageSupport,
+        });
 
-        appState.tabs.push(tab);
-        await switchTab(tab.id);
-        renderTabs();
-        updateStatus(t('fs.status.opened', { fileName: tab.fileName }), 'saved');
+        // 起動直後の未編集・未作成の空タブ（1つのみ存在）であれば、そのタブを再利用して開く
+        const isSingleEmptyTab = appState.tabs.length === 1 &&
+            !appState.tabs[0].filePath &&
+            !appState.tabs[0].isDirty &&
+            appState.tabs[0].content === '';
+
+        if (isSingleEmptyTab) {
+            const firstTab = appState.tabs[0];
+            firstTab.fileName = fileName;
+            firstTab.filePath = filePath;
+            firstTab.content = content;
+            firstTab.editorState = editorState;
+            firstTab.isDirty = false;
+            firstTab.isSaving = false;
+            firstTab.savePromise = null;
+            firstTab.createdTimestamp = '';
+
+            await switchTab(firstTab.id);
+            renderTabs();
+        } else {
+            const tab = {
+                id: generateTabId(),
+                fileName: fileName,
+                filePath: filePath,
+                content: content,
+                editorState: editorState,
+                isDirty: false,
+                isSaving: false,
+                savePromise: null,
+                createdTimestamp: '',
+            };
+
+            appState.tabs.push(tab);
+            await switchTab(tab.id);
+            renderTabs();
+        }
+
+        if (!suppressStatus) {
+            updateStatus(t('fs.status.opened', { fileName: fileName }), 'saved');
+        }
     } catch (error) {
         console.error('Failed to open file:', error);
         updateStatus(t('fs.status.loadFailed'), 'error');
-        await createNewTab();
     }
+}
+
+/**
+ * 複数のファイルを一括で開く
+ * @param {string[]} filePaths
+ */
+export async function openFiles(filePaths) {
+    if (!filePaths || !Array.isArray(filePaths) || filePaths.length === 0) {
+        return;
+    }
+
+    const validPaths = filePaths.filter(p => typeof p === 'string' && p.trim() !== '');
+    if (validPaths.length === 0) return;
+
+    if (validPaths.length === 1) {
+        await openExistingFile(validPaths[0]);
+        return;
+    }
+
+    updateStatus(t('fs.status.loading'), 'saving');
+    for (const filePath of validPaths) {
+        await openExistingFile(filePath, true);
+    }
+    updateStatus(t('fs.status.openBatch', { count: validPaths.length }), 'saved');
+}
+
+/**
+ * ファイル選択ダイアログを開いてファイルを選択・オープン (Ctrl+O)
+ */
+export async function openFileDialog() {
+    if (!openDialog) {
+        throw new Error(t('fs.error.noOpenDialog'));
+    }
+
+    const selected = await openDialog({
+        multiple: true,
+        filters: [
+            {
+                name: 'Supported Files / Text Files',
+                extensions: [
+                    'nctx', 'ncmd', 'txt', 'md', 'markdown',
+                    'js', 'mjs', 'cjs', 'ts', 'mts', 'cts', 'jsx', 'tsx',
+                    'json', 'yaml', 'yml', 'toml', 'xml', 'html', 'htm', 'css', 'scss', 'less',
+                    'py', 'rs', 'c', 'cpp', 'h', 'hpp', 'cs', 'java', 'go', 'rb', 'php', 'sql',
+                    'sh', 'bash', 'zsh', 'bat', 'cmd', 'ps1', 'psm1',
+                    'csv', 'tsv', 'log', 'ini', 'conf', 'env'
+                ]
+            },
+            { name: 'All Files (*.*)', extensions: ['*'] }
+        ]
+    });
+
+    if (!selected) {
+        return;
+    }
+
+    const paths = Array.isArray(selected) ? selected : [selected];
+    await openFiles(paths);
 }
 
