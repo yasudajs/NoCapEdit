@@ -8,7 +8,7 @@ import {
     deleteLine
 } from '@codemirror/commands';
 import { indentUnit } from '@codemirror/language';
-import { search, searchKeymap, highlightSelectionMatches, openSearchPanel, closeSearchPanel } from '@codemirror/search';
+import { search, highlightSelectionMatches, openSearchPanel, closeSearchPanel } from '@codemirror/search';
 
 let editorView = null;
 let currentPlaceholder = '';
