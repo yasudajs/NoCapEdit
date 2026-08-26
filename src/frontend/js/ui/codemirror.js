@@ -7,7 +7,8 @@ import {
     copyLineUp, copyLineDown,
     deleteLine
 } from '@codemirror/commands';
-import { indentUnit } from '@codemirror/language';
+import { indentUnit, syntaxHighlighting, defaultHighlightStyle, LanguageDescription } from '@codemirror/language';
+import { languages } from '@codemirror/language-data';
 import { search, highlightSelectionMatches } from '@codemirror/search';
 
 let editorView = null;
@@ -19,6 +20,34 @@ let selectionListeners = [];
 export const wrapCompartment = new Compartment();
 export const indentCompartment = new Compartment();
 export const themeCompartment = new Compartment();
+export const languageCompartment = new Compartment();
+
+/**
+ * ファイル名から対応する CodeMirror LanguageSupport を取得（非同期）
+ * @param {string} fileName 
+ * @returns {Promise<import('@codemirror/language').LanguageSupport|null>}
+ */
+export async function getLanguageSupport(fileName) {
+    if (!fileName) return null;
+
+    let targetName = fileName;
+    if (fileName.toLowerCase().endsWith('.ncmd')) {
+        targetName = fileName.slice(0, -5) + '.md';
+    } else if (fileName.toLowerCase().endsWith('.nctx')) {
+        return null;
+    }
+
+    const desc = LanguageDescription.matchFilename(languages, targetName);
+    if (desc) {
+        try {
+            return await desc.load();
+        } catch (e) {
+            console.warn(`Failed to load language support for ${fileName}:`, e);
+            return null;
+        }
+    }
+    return null;
+}
 
 /**
  * タイムスタンプ挿入コマンド (F5)
@@ -200,16 +229,20 @@ export function getIndentExtension(tabBehavior = 'tab') {
  * @param {Object} [options]
  * @param {boolean} [options.wordWrap=true]
  * @param {string} [options.tabBehavior='tab']
+ * @param {import('@codemirror/language').LanguageSupport|Array} [options.languageSupport=[]]
  * @returns {Array}
  */
 export function getDefaultExtensions(options = {}) {
     const wrap = options.wordWrap !== undefined ? options.wordWrap : true;
     const tabBehavior = options.tabBehavior || 'tab';
+    const languageSupport = options.languageSupport || [];
 
     const extensions = [
         history(),
         drawSelection(),
         dropCursor(),
+        syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
+        languageCompartment.of(languageSupport),
         search({ top: true }),
         highlightSelectionMatches(),
         themeCompartment.of(baseTheme),
@@ -240,13 +273,26 @@ export function getDefaultExtensions(options = {}) {
 /**
  * 新規タブ用の EditorState を生成
  * @param {string} [initialContent=''] - 初期テキスト
- * @param {Object} [options={}] - オプション (wordWrap, tabBehavior 等)
+ * @param {Object} [options={}] - オプション (wordWrap, tabBehavior, languageSupport 等)
  * @returns {EditorState}
  */
 export function createTabState(initialContent = '', options = {}) {
     return EditorState.create({
         doc: initialContent,
         extensions: getDefaultExtensions(options),
+    });
+}
+
+/**
+ * ファイル名に応じて EditorView の言語ハイライトを動的に更新
+ * @param {EditorView} view
+ * @param {string} fileName
+ */
+export async function updateLanguageForFileName(view, fileName) {
+    if (!view) return;
+    const langSupport = await getLanguageSupport(fileName);
+    view.dispatch({
+        effects: languageCompartment.reconfigure(langSupport || [])
     });
 }
 

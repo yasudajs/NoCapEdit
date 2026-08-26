@@ -90,6 +90,7 @@ const DICT = {
         },
         fs: {
             error: {
+                noOpenDialog: "ファイル選択ダイアログを利用できません",
                 noSaveDialog: "別名保存ダイアログを利用できません",
                 deleteEmptyFile: "空ファイル削除失敗",
                 maxLimitReached: "同名ファイル回避の上限に達しました",
@@ -104,6 +105,7 @@ const DICT = {
                 created: "{prefix}{fileName} を作成",
                 loading: "ファイルを読み込み中...",
                 opened: "{fileName} を開きました",
+                openBatch: "{count}件のファイルを開きました",
                 loadFailed: "ファイル読み込み失敗"
             },
             dialog: {
@@ -134,6 +136,7 @@ const DICT = {
                 closeFind: "検索・置換パネルを閉じる",
                 indent: "インデント挿入",
                 unindent: "インデント削除",
+                openFile: "ファイルを開く",
                 save: "手動保存",
                 newTab: "新規タブ追加",
                 closeTab: "タブを閉じる",

@@ -1,5 +1,5 @@
 import { increaseLineHeight, decreaseLineHeight, zoomIn, zoomOut, resetZoomAndLineHeight, toggleWordWrap } from './editor.js';
-import { triggerManualSave } from '../core/fileSystem.js';
+import { triggerManualSave, openFileDialog } from '../core/fileSystem.js';
 import { switchTabByOffset, createNewTab, closeTab } from './tabs.js';
 import { toggleSettingsDialog } from './settings.js';
 import { openFind, openReplace, closeFind, isFindWidgetOpen } from './findReplace.js';
@@ -138,6 +138,11 @@ export function setupKeyboardShortcuts() {
             else if (e.key === 'h' || e.key === 'H' || e.code === 'KeyH') {
                 e.preventDefault();
                 openReplace();
+            }
+            // ファイルを開く: "o" / "O" キー
+            else if (e.key === 'o' || e.key === 'O' || e.code === 'KeyO') {
+                e.preventDefault();
+                openFileDialog();
             }
             // 手動保存: "s" / "S" キー
             else if (e.key === 's' || e.key === 'S' || e.code === 'KeyS') {
