@@ -346,7 +346,7 @@ export async function openExistingFile(filePath, suppressStatus = false) {
         }
 
         if (!suppressStatus) {
-            updateStatus(t('fs.status.opened', { fileName: fileName }), 'saved');
+            updateStatus(t('fs.status.opened', { fileName: `${fileName} (${encoding})` }), 'saved');
         }
     } catch (error) {
         console.error('Failed to open file:', error);
