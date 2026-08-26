@@ -30,6 +30,7 @@ export async function saveTabAs(tab) {
     await invoke('save_text_file', {
         filePath: targetPath,
         content: tab.content,
+        encoding: tab.encoding || 'UTF-8',
     });
 
     tab.filePath = targetPath;
@@ -80,12 +81,14 @@ export async function saveTabIfDirty(tab) {
                 });
                 tab.filePath = file.file_path;
                 tab.fileName = file.file_name;
+                tab.encoding = 'UTF-8';
                 tab.createdTimestamp = saveTimestamp;
             } else {
                 // 2回目以降：既存ファイルに上書き保存
                 await invoke('save_text_file', {
                     filePath: tab.filePath,
                     content: tab.content,
+                    encoding: tab.encoding || 'UTF-8',
                 });
             }
             tab.isDirty = false;
@@ -240,6 +243,7 @@ export async function triggerManualSave() {
             });
             tab.filePath = file.file_path;
             tab.fileName = file.file_name;
+            tab.encoding = 'UTF-8';
             tab.createdTimestamp = saveTimestamp;
             tab.isDirty = false;
             saved = true;
@@ -290,7 +294,9 @@ export async function openExistingFile(filePath, suppressStatus = false) {
         }
         if (!ensureTauriApi()) return;
 
-        const content = await invoke('read_text_file', { filePath });
+        const res = await invoke('read_text_file', { filePath });
+        const content = typeof res === 'string' ? res : (res && res.content !== undefined ? res.content : '');
+        const encoding = (res && typeof res === 'object' && res.encoding) ? res.encoding : 'UTF-8';
         const fileName = getFileNameFromPath(filePath);
         const languageSupport = await getLanguageSupport(fileName);
 
@@ -311,6 +317,7 @@ export async function openExistingFile(filePath, suppressStatus = false) {
             firstTab.fileName = fileName;
             firstTab.filePath = filePath;
             firstTab.content = content;
+            firstTab.encoding = encoding;
             firstTab.editorState = editorState;
             firstTab.isDirty = false;
             firstTab.isSaving = false;
@@ -325,6 +332,7 @@ export async function openExistingFile(filePath, suppressStatus = false) {
                 fileName: fileName,
                 filePath: filePath,
                 content: content,
+                encoding: encoding,
                 editorState: editorState,
                 isDirty: false,
                 isSaving: false,
@@ -338,7 +346,7 @@ export async function openExistingFile(filePath, suppressStatus = false) {
         }
 
         if (!suppressStatus) {
-            updateStatus(t('fs.status.opened', { fileName: fileName }), 'saved');
+            updateStatus(t('fs.status.opened', { fileName: `${fileName} (${encoding})` }), 'saved');
         }
     } catch (error) {
         console.error('Failed to open file:', error);

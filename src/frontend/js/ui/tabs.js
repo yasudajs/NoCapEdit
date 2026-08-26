@@ -35,12 +35,7 @@ export function formatTabDisplayName(fileName) {
             displayName = fileName;
         }
     } else {
-        const lastDotIdx = fileName.lastIndexOf('.');
-        if (lastDotIdx <= 0) {
-            displayName = fileName;
-        } else {
-            displayName = fileName.substring(0, lastDotIdx);
-        }
+        displayName = fileName;
     }
 
     if (appState.saveMode === 'manual') {
@@ -89,7 +84,8 @@ export function updateTabStatus(tab, state = null, statusType = 'normal') {
         if (appState.saveMode === 'manual') {
             prefix = t('tabs.status.manualSavePrefix');
         }
-        updateStatus(`${prefix}${tab.fileName} - ${targetState}`, statusType, true);
+        const encodingStr = tab.encoding ? ` (${tab.encoding})` : ' (UTF-8)';
+        updateStatus(`${prefix}${tab.fileName}${encodingStr} - ${targetState}`, statusType, true);
     }
 }
 
@@ -121,6 +117,7 @@ export async function createNewTab() {
             fileName: fileName,
             filePath: filePath,
             content: '',
+            encoding: 'UTF-8',
             editorState: createTabState('', { wordWrap: appState.wordWrap, tabBehavior: appState.tabBehavior }),
             isDirty: false,
             isSaving: false,
@@ -141,8 +138,8 @@ export async function createNewTab() {
 // タブ切り替え
 export async function switchTab(tabId) {
     try {
-        // 前のタブを保存
-        if (appState.currentTab) {
+        // 前のタブを保存（異なるタブへ切り替える場合のみ）
+        if (appState.currentTab && appState.currentTab !== tabId) {
             const currentIdx = appState.tabs.findIndex(t => t.id === appState.currentTab);
             if (currentIdx !== -1) {
                 const state = getEditorState();

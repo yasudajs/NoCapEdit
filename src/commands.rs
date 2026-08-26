@@ -92,21 +92,118 @@ pub fn create_and_save_file(
     })
 }
 
-#[tauri::command]
-pub fn read_text_file(file_path: PathBuf) -> Result<String, String> {
-    fs::read_to_string(file_path).map_err(|e| e.to_string())
+#[derive(Debug, Serialize)]
+pub struct ReadFileResult {
+    pub content: String,
+    pub encoding: String,
+}
+
+fn detect_and_decode(bytes: &[u8]) -> (String, String) {
+    if bytes.is_empty() {
+        return (String::new(), "UTF-8".to_string());
+    }
+
+    // 1. BOM チェック
+    if bytes.starts_with(&[0xEF, 0xBB, 0xBF]) {
+        if let Ok(s) = std::str::from_utf8(&bytes[3..]) {
+            return (s.to_string(), "UTF-8".to_string());
+        }
+    } else if bytes.starts_with(&[0xFF, 0xFE]) {
+        let u16s: Vec<u16> = bytes[2..]
+            .chunks_exact(2)
+            .map(|chunk| u16::from_le_bytes([chunk[0], chunk[1]]))
+            .collect();
+        if let Ok(s) = String::from_utf16(&u16s) {
+            return (s, "UTF-16LE".to_string());
+        }
+    } else if bytes.starts_with(&[0xFE, 0xFF]) {
+        let u16s: Vec<u16> = bytes[2..]
+            .chunks_exact(2)
+            .map(|chunk| u16::from_be_bytes([chunk[0], chunk[1]]))
+            .collect();
+        if let Ok(s) = String::from_utf16(&u16s) {
+            return (s, "UTF-16BE".to_string());
+        }
+    }
+
+    // 2. UTF-8 (BOMなし) 厳格判定
+    if let Ok(s) = std::str::from_utf8(bytes) {
+        return (s.to_string(), "UTF-8".to_string());
+    }
+
+    // 3. Shift_JIS (CP932) 判定
+    if let Some(s) =
+        encoding_rs::SHIFT_JIS.decode_without_bom_handling_and_without_replacement(bytes)
+    {
+        return (s.to_string(), "Shift_JIS".to_string());
+    }
+
+    // 4. EUC-JP 判定
+    if let Some(s) =
+        encoding_rs::EUC_JP.decode_without_bom_handling_and_without_replacement(bytes)
+    {
+        return (s.to_string(), "EUC-JP".to_string());
+    }
+
+    // 5. フォールバック: Shift_JIS で置換デコード、または UTF-8 lossy
+    let (cow_fallback, _, had_errors) = encoding_rs::SHIFT_JIS.decode(bytes);
+    if !had_errors {
+        return (cow_fallback.to_string(), "Shift_JIS".to_string());
+    }
+
+    (String::from_utf8_lossy(bytes).to_string(), "UTF-8".to_string())
+}
+
+fn encode_content(content: &str, encoding: Option<&str>) -> Vec<u8> {
+    let normalized = normalize_crlf(content);
+    match encoding {
+        Some("Shift_JIS") | Some("shift_jis") | Some("sjis") | Some("CP932") => {
+            let (encoded, _, _) = encoding_rs::SHIFT_JIS.encode(&normalized);
+            encoded.into_owned()
+        }
+        Some("EUC-JP") | Some("euc-jp") => {
+            let (encoded, _, _) = encoding_rs::EUC_JP.encode(&normalized);
+            encoded.into_owned()
+        }
+        Some("UTF-16LE") | Some("utf-16le") => {
+            let mut bytes = vec![0xFF, 0xFE];
+            for c in normalized.encode_utf16() {
+                bytes.extend_from_slice(&c.to_le_bytes());
+            }
+            bytes
+        }
+        Some("UTF-16BE") | Some("utf-16be") => {
+            let mut bytes = vec![0xFE, 0xFF];
+            for c in normalized.encode_utf16() {
+                bytes.extend_from_slice(&c.to_be_bytes());
+            }
+            bytes
+        }
+        _ => normalized.into_bytes(),
+    }
 }
 
 #[tauri::command]
-pub fn save_text_file(file_path: PathBuf, content: String) -> Result<(), String> {
+pub fn read_text_file(file_path: PathBuf) -> Result<ReadFileResult, String> {
+    let bytes = fs::read(&file_path).map_err(|e| e.to_string())?;
+    let (content, encoding) = detect_and_decode(&bytes);
+    Ok(ReadFileResult { content, encoding })
+}
+
+#[tauri::command]
+pub fn save_text_file(
+    file_path: PathBuf,
+    content: String,
+    encoding: Option<String>,
+) -> Result<(), String> {
     let parent = file_path
         .parent()
         .ok_or_else(|| "fs.error.invalidPath".to_string())?;
     fs::create_dir_all(parent).map_err(|e| e.to_string())?;
 
-    let normalized = normalize_crlf(&content);
+    let encoded_bytes = encode_content(&content, encoding.as_deref());
     let mut tmp = NamedTempFile::new_in(parent).map_err(|e| e.to_string())?;
-    tmp.write_all(normalized.as_bytes()).map_err(|e| e.to_string())?;
+    tmp.write_all(&encoded_bytes).map_err(|e| e.to_string())?;
     tmp.persist(&file_path).map_err(|e| e.to_string())?;
 
     Ok(())
