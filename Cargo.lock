@@ -4,10 +4,11 @@ version = 4
 
 [[package]]
 name = "NoCapEdit"
-version = "0.2.14"
+version = "0.2.15"
 dependencies = [
  "chrono",
  "dirs",
+ "encoding_rs",
  "fontdb",
  "regex",
  "serde",

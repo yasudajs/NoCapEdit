@@ -84,7 +84,8 @@ export function updateTabStatus(tab, state = null, statusType = 'normal') {
         if (appState.saveMode === 'manual') {
             prefix = t('tabs.status.manualSavePrefix');
         }
-        updateStatus(`${prefix}${tab.fileName} - ${targetState}`, statusType, true);
+        const encodingStr = tab.encoding ? ` (${tab.encoding})` : ' (UTF-8)';
+        updateStatus(`${prefix}${tab.fileName}${encodingStr} - ${targetState}`, statusType, true);
     }
 }
 
@@ -116,6 +117,7 @@ export async function createNewTab() {
             fileName: fileName,
             filePath: filePath,
             content: '',
+            encoding: 'UTF-8',
             editorState: createTabState('', { wordWrap: appState.wordWrap, tabBehavior: appState.tabBehavior }),
             isDirty: false,
             isSaving: false,
