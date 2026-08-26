@@ -35,12 +35,7 @@ export function formatTabDisplayName(fileName) {
             displayName = fileName;
         }
     } else {
-        const lastDotIdx = fileName.lastIndexOf('.');
-        if (lastDotIdx <= 0) {
-            displayName = fileName;
-        } else {
-            displayName = fileName.substring(0, lastDotIdx);
-        }
+        displayName = fileName;
     }
 
     if (appState.saveMode === 'manual') {
