@@ -10,6 +10,16 @@ NoCapEdit v0.2系のバージョンアップおよび仕様変更の履歴です
 
 ## 改定履歴一覧
 
+### Ver 0.2.12 | 2026-08-26 | yasudajs
+- **CodeMirror (v6) 移行レビュー指摘事項のクリーンアップとパフォーマンス最適化**
+  - **仕様書（spec.md）の整理**: §5.1「将来の拡張候補」からすでに実装済みの「検索・置換機能」を削除
+  - **未使用 import の整理**: `codemirror.js` から未使用だった `searchKeymap` の import を削除
+  - **デッドコードの削除**: カスタム検索UI移行に伴い不要となった公式検索パネル制御関数 `openSearch()` / `closeSearch()` および `openSearchPanel` / `closeSearchPanel` の import を削除
+  - **カーソルメトリクス（文字数カウント）の最適化**: `getCursorMetrics()` 内で発生していた `doc.toString()` 全文文字列化を排除し、CodeMirror 6 の `doc.length` および `doc.lines` プロパティを活用した $O(1)$ パフォーマンスへ改善
+  - **アーキテクチャ設計書の補足**: `ARCHITECTURE.md` に `tauri-plugin-single-instance` が Git ブランチ参照（`v1`）である旨、および将来の Tauri v2 移行時の切り替え推奨に関する注記を追記
+
+---
+
 ### Ver 0.2.11 | 2026-08-23 | yasudajs
 - **公式 single-instance プラグインへの移行およびバージョンチェック処理の統合**
   - **tauri-plugin-single-instance の導入**: 自前の TCP ソケット通信（`127.0.0.1:49423`）を廃止し、Tauri 公式のシングルインスタンスプラグインへ移行
