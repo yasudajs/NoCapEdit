@@ -138,8 +138,8 @@ export async function createNewTab() {
 // タブ切り替え
 export async function switchTab(tabId) {
     try {
-        // 前のタブを保存
-        if (appState.currentTab) {
+        // 前のタブを保存（異なるタブへ切り替える場合のみ）
+        if (appState.currentTab && appState.currentTab !== tabId) {
             const currentIdx = appState.tabs.findIndex(t => t.id === appState.currentTab);
             if (currentIdx !== -1) {
                 const state = getEditorState();
