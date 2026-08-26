@@ -430,19 +430,18 @@ export function getCursorMetrics(charCountMode = 'with_newline') {
     const line = lineObj.number;
     const col = head - lineObj.from + 1;
 
-    const fullText = doc.toString();
     const docLength = doc.length;
     const isSelected = !mainSel.empty;
 
-    let totalChars = fullText.length;
+    let totalChars = docLength;
     let selectedChars = 0;
 
     if (charCountMode === 'no_newline') {
-        const newlineCount = (fullText.match(/[\r\n]/g) || []).length;
-        totalChars = fullText.length - newlineCount;
+        const newlineCount = doc.lines - 1;
+        totalChars = docLength - newlineCount;
 
         if (isSelected) {
-            const selectedText = fullText.substring(mainSel.from, mainSel.to);
+            const selectedText = doc.sliceString(mainSel.from, mainSel.to);
             const selNewlines = (selectedText.match(/[\r\n]/g) || []).length;
             selectedChars = selectedText.length - selNewlines;
         }
