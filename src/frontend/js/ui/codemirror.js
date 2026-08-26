@@ -8,7 +8,7 @@ import {
     deleteLine
 } from '@codemirror/commands';
 import { indentUnit } from '@codemirror/language';
-import { search, highlightSelectionMatches, openSearchPanel, closeSearchPanel } from '@codemirror/search';
+import { search, highlightSelectionMatches } from '@codemirror/search';
 
 let editorView = null;
 let currentPlaceholder = '';
@@ -290,24 +290,6 @@ export function initCodeMirror(parentEl, options = {}) {
     });
 
     return editorView;
-}
-
-/**
- * 検索パネルを開く
- */
-export function openSearch() {
-    if (editorView) {
-        openSearchPanel(editorView);
-    }
-}
-
-/**
- * 検索パネルを閉じる
- */
-export function closeSearch() {
-    if (editorView) {
-        closeSearchPanel(editorView);
-    }
 }
 
 /**
