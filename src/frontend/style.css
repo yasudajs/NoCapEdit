@@ -335,7 +335,8 @@ body {
 }
 
 .editor.no-tabs .cm-editor {
-    display: none;
+    display: none !important;
+    visibility: hidden !important;
 }
 
 /* タブなし時の案内テキスト（左上に薄く表示） */
