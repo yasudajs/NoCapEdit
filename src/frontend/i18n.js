@@ -94,7 +94,9 @@ const DICT = {
                 noSaveDialog: "別名保存ダイアログを利用できません",
                 deleteEmptyFile: "空ファイル削除失敗",
                 maxLimitReached: "同名ファイル回避の上限に達しました",
-                invalidPath: "保存先パスが不正です"
+                invalidPath: "保存先パスが不正です",
+                fileTooLarge: "ファイルサイズが上限（10MB）を超えているため開けません",
+                binaryFileNotSupported: "バイナリファイルのため開けません"
             },
             status: {
                 saving: "保存中...",

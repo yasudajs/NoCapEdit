@@ -348,9 +348,14 @@ export async function openExistingFile(filePath, suppressStatus = false) {
         if (!suppressStatus) {
             updateStatus(t('fs.status.opened', { fileName: `${fileName} (${encoding})` }), 'saved');
         }
+        return true;
     } catch (error) {
         console.error('Failed to open file:', error);
-        updateStatus(t('fs.status.loadFailed'), 'error');
+        const errorKey = typeof error === 'string' ? error : (error && error.message ? error.message : '');
+        const translatedMsg = errorKey ? t(errorKey) : '';
+        const displayMsg = (translatedMsg && translatedMsg !== errorKey) ? translatedMsg : t('fs.status.loadFailed');
+        updateStatus(displayMsg, 'error');
+        return false;
     }
 }
 
@@ -372,10 +377,14 @@ export async function openFiles(filePaths) {
     }
 
     updateStatus(t('fs.status.loading'), 'saving');
+    let successCount = 0;
     for (const filePath of validPaths) {
-        await openExistingFile(filePath, true);
+        const ok = await openExistingFile(filePath, true);
+        if (ok) successCount++;
     }
-    updateStatus(t('fs.status.openBatch', { count: validPaths.length }), 'saved');
+    if (successCount > 0) {
+        updateStatus(t('fs.status.openBatch', { count: successCount }), 'saved');
+    }
 }
 
 /**

@@ -183,9 +183,30 @@ fn encode_content(content: &str, encoding: Option<&str>) -> Vec<u8> {
     }
 }
 
+const MAX_FILE_SIZE_BYTES: u64 = 10 * 1024 * 1024; // 10MB
+
+fn is_binary(bytes: &[u8]) -> bool {
+    // UTF-16 BOM付き（FF FE または FE FF）の場合はNULLバイトが含まれるがテキストとして許容
+    if bytes.starts_with(&[0xFF, 0xFE]) || bytes.starts_with(&[0xFE, 0xFF]) {
+        return false;
+    }
+    // 先頭8KB以内の NULL バイト (0x00) を検査
+    let check_len = bytes.len().min(8192);
+    bytes[..check_len].contains(&0x00)
+}
+
 #[tauri::command]
 pub fn read_text_file(file_path: PathBuf) -> Result<ReadFileResult, String> {
+    let metadata = fs::metadata(&file_path).map_err(|e| e.to_string())?;
+    if metadata.len() > MAX_FILE_SIZE_BYTES {
+        return Err("fs.error.fileTooLarge".to_string());
+    }
+
     let bytes = fs::read(&file_path).map_err(|e| e.to_string())?;
+    if is_binary(&bytes) {
+        return Err("fs.error.binaryFileNotSupported".to_string());
+    }
+
     let (content, encoding) = detect_and_decode(&bytes);
     Ok(ReadFileResult { content, encoding })
 }
