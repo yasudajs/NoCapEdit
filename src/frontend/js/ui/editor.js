@@ -27,6 +27,11 @@ export function syncCurrentEditorToState() {
 export function updateEditorMetrics() {
     if (!elements.statusMetrics) return;
 
+    if (!appState.currentTab || !appState.tabs || appState.tabs.length === 0) {
+        elements.statusMetrics.textContent = '';
+        return;
+    }
+
     const metrics = getCursorMetrics(appState.charCountMode || 'with_newline');
 
     let charDisplay = '';

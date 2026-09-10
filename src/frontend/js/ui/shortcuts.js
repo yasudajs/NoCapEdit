@@ -5,6 +5,7 @@ import { toggleSettingsDialog } from './settings.js';
 import { openFind, openReplace, closeFind, isFindWidgetOpen } from './findReplace.js';
 import { appState } from '../state.js';
 import { appWindow } from '../core/tauri.js';
+import { t } from '../../i18n.js';
 
 export function setupKeyboardShortcuts() {
     // Ctrl + マウスホイールでフォントサイズ拡大縮小、Ctrl + Shift + マウスホイールで行間調整
@@ -58,7 +59,7 @@ export function setupKeyboardShortcuts() {
                     console.log("[shortcuts.js] 新規ヘルプウィンドウを作成します. URL:", helpUrl);
                     new WebviewWindow('help_screen', {
                         url: helpUrl,
-                        title: 'ショートカット一覧',
+                        title: t('help.title'),
                         width: 600,
                         height: 700,
                         resizable: true,

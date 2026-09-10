@@ -258,7 +258,30 @@ export function renderTabs() {
             }
         });
     }
+
+    // タブ0件時のエディタ状態（グレーアウト・案内表示）を連動
+    updateEditorEmptyState();
 }
+
+// タブが0件時のエディタのグレーアウト・案内表示の切り替え
+export function updateEditorEmptyState() {
+    const hasTabs = appState.tabs && appState.tabs.length > 0;
+    if (elements.editor) {
+        if (!hasTabs) {
+            elements.editor.classList.add('no-tabs');
+        } else {
+            elements.editor.classList.remove('no-tabs');
+        }
+    }
+    if (elements.emptyEditorNotice) {
+        if (!hasTabs) {
+            elements.emptyEditorNotice.classList.remove('hidden');
+        } else {
+            elements.emptyEditorNotice.classList.add('hidden');
+        }
+    }
+}
+
 
 // タブ切り替え（Ctrl + Tab などのナビゲーション用）
 export async function switchTabByOffset(offset) {

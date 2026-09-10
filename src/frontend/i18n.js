@@ -80,6 +80,7 @@ const DICT = {
         },
         editor: {
             placeholder: "入力準備完了",
+            emptyNotice: "＋ を押して新規タブを開いてください",
             metrics: {
                 position: "{line}行, {col}列",
                 selection: "{selected} / {total} 文字",
@@ -94,7 +95,9 @@ const DICT = {
                 noSaveDialog: "別名保存ダイアログを利用できません",
                 deleteEmptyFile: "空ファイル削除失敗",
                 maxLimitReached: "同名ファイル回避の上限に達しました",
-                invalidPath: "保存先パスが不正です"
+                invalidPath: "保存先パスが不正です",
+                fileTooLarge: "ファイルサイズが上限（10MB）を超えているため開けません",
+                binaryFileNotSupported: "バイナリファイルのため開けません"
             },
             status: {
                 saving: "保存中...",
@@ -248,7 +251,14 @@ const DICT = {
                     retry: "再試行",
                     saveAs: "別名で保存",
                     cancel: "キャンセル"
+                },
+                alert: {
+                    title: "お知らせ",
+                    ok: "OK"
                 }
+            },
+            find: {
+                replacedCount: "{count} 件を置換しました"
             }
         }
     }

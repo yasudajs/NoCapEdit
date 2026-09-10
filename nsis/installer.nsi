@@ -16,36 +16,84 @@ Unicode true
 ${StrCase}
 ${StrLoc}
 
-!define MANUFACTURER "nocapedit"
-!define PRODUCTNAME "NoCapEdit"
+!ifndef MANUFACTURER
+  !define MANUFACTURER "nocapedit"
+!endif
+!ifndef PRODUCTNAME
+  !define PRODUCTNAME "NoCapEdit"
+!endif
 !ifndef VERSION
-  !define VERSION "0.2.17"
+  !define VERSION "0.2.18"
 !endif
 !ifndef VERSIONWITHBUILD
-  !define VERSIONWITHBUILD "0.2.17.0"
+  !define VERSIONWITHBUILD "0.2.18.0"
 !endif
-!define INSTALLMODE "currentUser"
-!define LICENSE ""
-!define INSTALLERICON ""
-!define SIDEBARIMAGE ""
-!define HEADERIMAGE ""
-!define MAINBINARYNAME "NoCapEdit"
-!define MAINBINARYSRCPATH "C:\work\NoCapEdit\target\release\NoCapEdit.exe"
-!define BUNDLEID "com.nocapedit.dev"
-!define COPYRIGHT ""
-!define OUTFILE "nsis-output.exe"
-!define ARCH "x64"
-!define PLUGINSPATH ""
-!define ALLOWDOWNGRADES "true"
-!define DISPLAYLANGUAGESELECTOR ""
-!define INSTALLWEBVIEW2MODE "downloadBootstrapper"
-!define WEBVIEW2INSTALLERARGS "/silent"
-!define WEBVIEW2BOOTSTRAPPERPATH ""
-!define WEBVIEW2INSTALLERPATH ""
-!define UNINSTKEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCTNAME}"
-!define MANUPRODUCTKEY "Software\${MANUFACTURER}\${PRODUCTNAME}"
-!define UNINSTALLERSIGNCOMMAND ""
-!define ESTIMATEDSIZE "0x001ba7"
+!ifndef INSTALLMODE
+  !define INSTALLMODE "currentUser"
+!endif
+!ifndef LICENSE
+  !define LICENSE ""
+!endif
+!ifndef INSTALLERICON
+  !define INSTALLERICON ""
+!endif
+!ifndef SIDEBARIMAGE
+  !define SIDEBARIMAGE ""
+!endif
+!ifndef HEADERIMAGE
+  !define HEADERIMAGE ""
+!endif
+!ifndef MAINBINARYNAME
+  !define MAINBINARYNAME "NoCapEdit"
+!endif
+!ifndef MAINBINARYSRCPATH
+  !define MAINBINARYSRCPATH "..\..\NoCapEdit.exe"
+!endif
+!ifndef BUNDLEID
+  !define BUNDLEID "com.nocapedit.dev"
+!endif
+!ifndef COPYRIGHT
+  !define COPYRIGHT ""
+!endif
+!ifndef OUTFILE
+  !define OUTFILE "nsis-output.exe"
+!endif
+!ifndef ARCH
+  !define ARCH "x64"
+!endif
+!ifndef PLUGINSPATH
+  !define PLUGINSPATH ""
+!endif
+!ifndef ALLOWDOWNGRADES
+  !define ALLOWDOWNGRADES "true"
+!endif
+!ifndef DISPLAYLANGUAGESELECTOR
+  !define DISPLAYLANGUAGESELECTOR ""
+!endif
+!ifndef INSTALLWEBVIEW2MODE
+  !define INSTALLWEBVIEW2MODE "downloadBootstrapper"
+!endif
+!ifndef WEBVIEW2INSTALLERARGS
+  !define WEBVIEW2INSTALLERARGS "/silent"
+!endif
+!ifndef WEBVIEW2BOOTSTRAPPERPATH
+  !define WEBVIEW2BOOTSTRAPPERPATH ""
+!endif
+!ifndef WEBVIEW2INSTALLERPATH
+  !define WEBVIEW2INSTALLERPATH ""
+!endif
+!ifndef UNINSTKEY
+  !define UNINSTKEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCTNAME}"
+!endif
+!ifndef MANUPRODUCTKEY
+  !define MANUPRODUCTKEY "Software\${MANUFACTURER}\${PRODUCTNAME}"
+!endif
+!ifndef UNINSTALLERSIGNCOMMAND
+  !define UNINSTALLERSIGNCOMMAND ""
+!endif
+!ifndef ESTIMATEDSIZE
+  !define ESTIMATEDSIZE "0x001ba7"
+!endif
 
 Name "${PRODUCTNAME}"
 BrandingText "${COPYRIGHT}"
@@ -309,6 +357,42 @@ FunctionEnd
 Var AppStartMenuFolder
 !insertmacro MUI_PAGE_STARTMENU Application $AppStartMenuFolder
 
+; 6.5 Additional Tasks page (右クリックメニュー登録選択)
+Var AdditionalTasksPageCheck
+Var ContextMenuCheckbox
+Var ContextMenuCheckboxState
+Page custom PageAdditionalTasks PageLeaveAdditionalTasks
+
+Function PageAdditionalTasks
+  Call SkipIfPassive
+  nsDialogs::Create 1018
+  Pop $R0
+  ${IfThen} $(^RTL) == 1 ${|} nsDialogs::SetRTL $(^RTL) ${|}
+
+  !insertmacro MUI_HEADER_TEXT "$(additionalTasksTitle)" "$(additionalTasksSubtitle)"
+
+  ${NSD_CreateLabel} 0 0 100% 24u "$(additionalTasksLabel)"
+  Pop $R0
+
+  ${NSD_CreateCheckbox} 10u 30u -10u 12u "$(registerContextMenu)"
+  Pop $ContextMenuCheckbox
+
+  ${If} $AdditionalTasksPageCheck == ""
+    ${NSD_SetState} $ContextMenuCheckbox ${BST_CHECKED}
+    StrCpy $ContextMenuCheckboxState ${BST_CHECKED}
+  ${Else}
+    ${NSD_SetState} $ContextMenuCheckbox $ContextMenuCheckboxState
+  ${EndIf}
+
+  ${NSD_SetFocus} $ContextMenuCheckbox
+  nsDialogs::Show
+FunctionEnd
+
+Function PageLeaveAdditionalTasks
+  ${NSD_GetState} $ContextMenuCheckbox $ContextMenuCheckboxState
+  StrCpy $AdditionalTasksPageCheck 1
+FunctionEnd
+
 ; 7. Installation page
 !insertmacro MUI_PAGE_INSTFILES
 
@@ -385,6 +469,11 @@ LangString appRunning ${LANG_JAPANESE} "${PRODUCTNAME} が起動中のため、�
 LangString failedToKillApp ${LANG_JAPANESE} "${PRODUCTNAME} を終了できませんでした。"
 LangString createDesktop ${LANG_JAPANESE} "デスクトップにショートカットを作成する"
 LangString deleteAppData ${LANG_JAPANESE} "アプリケーションデータを削除する"
+LangString additionalTasksTitle ${LANG_JAPANESE} "追加タスクの選択"
+LangString additionalTasksSubtitle ${LANG_JAPANESE} "実行する追加タスクを選択してください。"
+LangString additionalTasksLabel ${LANG_JAPANESE} "${PRODUCTNAME} のインストール時に実行する追加タスクを選択してください:"
+LangString registerContextMenu ${LANG_JAPANESE} "エクスプローラーの右クリックメニューに「NoCapEdit で開く」を追加する"
+LangString openWithNoCapEdit ${LANG_JAPANESE} "NoCapEdit で開く"
 
 !macro SetContext
   !if "${INSTALLMODE}" == "currentUser"
@@ -611,6 +700,13 @@ Section Install
   WriteRegStr SHCTX "Software\Classes\NoCapEdit.ncmd\DefaultIcon" "" "$INSTDIR\${MAINBINARYNAME}.exe,0"
   WriteRegStr SHCTX "Software\Classes\NoCapEdit.ncmd\shell\open\command" "" '"$INSTDIR\${MAINBINARYNAME}.exe" "%1"'
 
+  ; 右クリックメニュー（「NoCapEdit で開く」）の登録
+  ${If} $ContextMenuCheckboxState != 0
+    WriteRegStr SHCTX "Software\Classes\*\shell\NoCapEdit" "" "$(openWithNoCapEdit)"
+    WriteRegStr SHCTX "Software\Classes\*\shell\NoCapEdit" "Icon" '"$INSTDIR\${MAINBINARYNAME}.exe"'
+    WriteRegStr SHCTX "Software\Classes\*\shell\NoCapEdit\command" "" '"$INSTDIR\${MAINBINARYNAME}.exe" "%1"'
+  ${EndIf}
+
   ; システムに変更を通知
   System::Call 'Shell32::SHChangeNotify(i 0x08000000, i 0, i 0, i 0)'
 
@@ -733,6 +829,7 @@ Section Uninstall
   DeleteRegKey SHCTX "Software\Classes\NoCapEdit.nctx"
   DeleteRegKey SHCTX "Software\Classes\.ncmd"
   DeleteRegKey SHCTX "Software\Classes\NoCapEdit.ncmd"
+  DeleteRegKey SHCTX "Software\Classes\*\shell\NoCapEdit"
 
   System::Call 'Shell32::SHChangeNotify(i 0x08000000, i 0, i 0, i 0)'
 
