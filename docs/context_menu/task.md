@@ -1,0 +1,37 @@
+# タスクリスト: 右クリックメニュー「NoCapEdit で開く」追加とバイナリ/巨大ファイル安全ガード機能
+
+- [x] 作業開始の指示待ち（フェーズ1完了、ユーザー承認待ち）
+- [x] 作業用ブランチの作成（`v0.2` から派生）
+- [x] ドキュメントの移動（`docs/wip/context_menu/` ➔ `docs/context_menu/`）
+- [ ] バージョン番号の更新（`0.2.18` へ4ファイルセット更新）
+  - [ ] `Cargo.toml`
+  - [ ] `tauri.conf.json`
+  - [ ] `nsis/installer.nsi`
+  - [ ] `docs/DEVELOPMENT.md`
+- [ ] 仕様書（`docs/spec.md`）の更新
+  - [ ] 右クリックメニュー登録仕様の追記
+  - [ ] バイナリ検出・10MB制限仕様の追記
+- [ ] バックエンド（Rust）の実装
+  - [ ] `src/commands.rs`: `read_text_file` に10MBサイズ上限チェックを追加
+  - [ ] `src/commands.rs`: `read_text_file` にNULLバイト（`0x00`）スキャンによるバイナリ判定を追加
+- [ ] フロントエンドの実装
+  - [ ] `src/frontend/i18n.js`: `fs.error.fileTooLarge`, `fs.error.binaryFileNotSupported` の多言語定義追加
+  - [ ] `src/frontend/js/core/fileSystem.js`: `openExistingFile` でのエラーメッセージ多言語ハンドリングとブロック処理
+- [ ] NSISインストーラー（`nsis/installer.nsi`）の実装
+  - [ ] 多言語文字列（LangString）の定義
+  - [ ] 追加オプション選択ページ（カスタムページ）の実装
+  - [ ] `Section Install` でのレジストリ登録処理（チェック判定付き）
+  - [ ] `Section Uninstall` でのレジストリ削除処理
+- [ ] WiX（`wix/file-association.wxs`）の実装
+  - [ ] 右クリックメニュー登録レジストリの追加
+- [ ] ビルドおよび動作検証
+  - [ ] 画像ファイル（.png等）や.exeファイルを開こうとした際に「バイナリファイルのため開けません」とブロックされることの検証
+  - [ ] 10MB超過ファイルを開こうとした際にブロックされることの検証
+  - [ ] 通常のテキストファイルが正常に開けることの検証
+  - [ ] `cargo tauri build` によるインストーラー生成確認
+  - [ ] インストーラーUI・チェックボックスの動作確認
+  - [ ] 右クリックメニュー表示・アイコン・ファイルオープン動作確認
+  - [ ] アンインストール時のレジストリ削除確認
+- [ ] 作業結果報告ドキュメント（`walkthrough.md`）の作成
+- [ ] 変更履歴（`docs/history.md`）への追記
+- [ ] コミット＆プッシュおよびユーザー確認
