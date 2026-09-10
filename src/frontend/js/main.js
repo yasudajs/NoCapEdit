@@ -2,7 +2,7 @@ import { t, applyI18nToDOM } from '../i18n.js';
 import { appState, elements, initElements } from './state.js';
 import { invoke, appWindow, listen, ensureTauriApi } from './core/tauri.js';
 import { createNewTab, updateStatus, renderTabs, setupTabScrollWheel } from './ui/tabs.js';
-import { openExistingFile, persistAllTabsBeforeExit } from './core/fileSystem.js';
+import { openExistingFile, openFiles, persistAllTabsBeforeExit } from './core/fileSystem.js';
 import { updateEditorMetrics, onEditorInput, applyFontSize, applyLineHeight, applyWordWrap } from './ui/editor.js';
 import { initCodeMirror } from './ui/codemirror.js';
 import { toggleSettingsDialog, closeSettingsDialog, openSettingsDialog, onThemeChange, onFontFamilyChange, saveSettings, setupSettingsNavigation } from './ui/settings.js';
@@ -154,7 +154,10 @@ async function init() {
             // 起動時引数のチェック
             const launchFile = await invoke('get_launch_file');
             if (launchFile) {
-                await openExistingFile(launchFile);
+                const ok = await openExistingFile(launchFile);
+                if (!ok && appState.tabs.length === 0) {
+                    renderTabs();
+                }
             } else {
                 await createNewTab();
             }
@@ -272,6 +275,14 @@ function setupUIEventListeners() {
             const filePath = event.payload;
             if (filePath) {
                 await openExistingFile(filePath);
+            }
+        });
+
+        // ドラッグ＆ドロップによるファイルオープンの購読
+        listen('tauri://file-drop', async (event) => {
+            const filePaths = event.payload;
+            if (filePaths && Array.isArray(filePaths) && filePaths.length > 0) {
+                await openFiles(filePaths);
             }
         });
     }

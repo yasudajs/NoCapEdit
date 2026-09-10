@@ -327,6 +327,38 @@ body {
     overflow: hidden;
 }
 
+/* タブなし状態（グレーアウト・入力不可） */
+.editor.no-tabs {
+    background-color: var(--bg-secondary);
+    pointer-events: none;
+    user-select: none;
+}
+
+.editor.no-tabs .cm-editor {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* タブなし時の案内テキスト（左上に薄く表示） */
+.empty-editor-notice {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    color: var(--text-secondary);
+    opacity: 0.6;
+    font-size: var(--editor-font-size, 20px);
+    font-family: var(--editor-font-family, monospace);
+    line-height: var(--editor-line-height, 1.5);
+    pointer-events: none;
+    z-index: 5;
+    user-select: none;
+}
+
+.empty-editor-notice.hidden {
+    display: none;
+}
+
+
 .editor .cm-editor {
     width: 100%;
     height: 100%;

@@ -1,4 +1,5 @@
 import { elements } from '../state.js';
+import { t } from '../../i18n.js';
 
 export function showSaveErrorDialog(message) {
     return new Promise((resolve) => {
@@ -32,3 +33,48 @@ export function showSaveErrorDialog(message) {
         elements.cancelExitBtn.addEventListener('click', onCancel);
     });
 }
+
+export function showAlertDialog(message, title = null) {
+    return new Promise((resolve) => {
+        if (!elements.alertDialog) {
+            console.warn('alertDialog element not found');
+            resolve();
+            return;
+        }
+
+        elements.alertTitle.textContent = title || t('ui.dialog.alert.title');
+        elements.alertMessage.textContent = message;
+        elements.alertDialog.classList.remove('hidden');
+
+        if (elements.alertOkBtn) {
+            elements.alertOkBtn.focus();
+        }
+
+        const onClose = () => {
+            cleanup();
+            resolve();
+        };
+
+        const onKeyDown = (e) => {
+            if (e.key === 'Enter' || e.key === 'Escape') {
+                e.preventDefault();
+                e.stopPropagation();
+                onClose();
+            }
+        };
+
+        function cleanup() {
+            elements.alertDialog.classList.add('hidden');
+            if (elements.alertOkBtn) {
+                elements.alertOkBtn.removeEventListener('click', onClose);
+            }
+            window.removeEventListener('keydown', onKeyDown, true);
+        }
+
+        if (elements.alertOkBtn) {
+            elements.alertOkBtn.addEventListener('click', onClose);
+        }
+        window.addEventListener('keydown', onKeyDown, true);
+    });
+}
+

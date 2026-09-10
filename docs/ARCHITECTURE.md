@@ -28,6 +28,8 @@ NoCapEdit は **Tauri** フレームワークを採用しており、バック�
 
 - `main.rs`:
   - エントリポイントです。Tauri アプリケーションの初期化、プラグイン（`tauri-plugin-single-instance` による名前付きパイプ/UNIXドメインソケット多重起動制御）の登録、および各コマンドのバインディングを行います。
+  - > [!NOTE]
+  - > `tauri-plugin-single-instance` は Tauri v1 向けの crates.io パッケージが存在しないため、Git リポジトリの `v1` ブランチから直接参照しています（`Cargo.toml` 参照）。将来的に Tauri v2 へ移行する際は、crates.io に公開されている v2 向けのレジストリ版（`tauri-plugin-single-instance = "2"`）に切り替えてください。
 - `commands.rs`:
   - フロントエンドから呼び出される Tauri コマンド群（ファイル保存、読み込み、ダイアログ表示など）を定義しています。フロントエンドとバックエンドの橋渡し役となります。
 - `settings.rs`:

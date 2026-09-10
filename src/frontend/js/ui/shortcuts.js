@@ -1,10 +1,11 @@
 import { increaseLineHeight, decreaseLineHeight, zoomIn, zoomOut, resetZoomAndLineHeight, toggleWordWrap } from './editor.js';
-import { triggerManualSave } from '../core/fileSystem.js';
+import { triggerManualSave, openFileDialog } from '../core/fileSystem.js';
 import { switchTabByOffset, createNewTab, closeTab } from './tabs.js';
 import { toggleSettingsDialog } from './settings.js';
 import { openFind, openReplace, closeFind, isFindWidgetOpen } from './findReplace.js';
 import { appState } from '../state.js';
 import { appWindow } from '../core/tauri.js';
+import { t } from '../../i18n.js';
 
 export function setupKeyboardShortcuts() {
     // Ctrl + マウスホイールでフォントサイズ拡大縮小、Ctrl + Shift + マウスホイールで行間調整
@@ -58,7 +59,7 @@ export function setupKeyboardShortcuts() {
                     console.log("[shortcuts.js] 新規ヘルプウィンドウを作成します. URL:", helpUrl);
                     new WebviewWindow('help_screen', {
                         url: helpUrl,
-                        title: 'ショートカット一覧',
+                        title: t('help.title'),
                         width: 600,
                         height: 700,
                         resizable: true,
@@ -138,6 +139,11 @@ export function setupKeyboardShortcuts() {
             else if (e.key === 'h' || e.key === 'H' || e.code === 'KeyH') {
                 e.preventDefault();
                 openReplace();
+            }
+            // ファイルを開く: "o" / "O" キー
+            else if (e.key === 'o' || e.key === 'O' || e.code === 'KeyO') {
+                e.preventDefault();
+                openFileDialog();
             }
             // 手動保存: "s" / "S" キー
             else if (e.key === 's' || e.key === 'S' || e.code === 'KeyS') {
