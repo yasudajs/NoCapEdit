@@ -16,36 +16,84 @@ Unicode true
 ${StrCase}
 ${StrLoc}
 
-!define MANUFACTURER "nocapedit"
-!define PRODUCTNAME "NoCapEdit"
+!ifndef MANUFACTURER
+  !define MANUFACTURER "nocapedit"
+!endif
+!ifndef PRODUCTNAME
+  !define PRODUCTNAME "NoCapEdit"
+!endif
 !ifndef VERSION
   !define VERSION "0.2.18"
 !endif
 !ifndef VERSIONWITHBUILD
   !define VERSIONWITHBUILD "0.2.18.0"
 !endif
-!define INSTALLMODE "currentUser"
-!define LICENSE ""
-!define INSTALLERICON ""
-!define SIDEBARIMAGE ""
-!define HEADERIMAGE ""
-!define MAINBINARYNAME "NoCapEdit"
-!define MAINBINARYSRCPATH "C:\work\NoCapEdit\target\release\NoCapEdit.exe"
-!define BUNDLEID "com.nocapedit.dev"
-!define COPYRIGHT ""
-!define OUTFILE "nsis-output.exe"
-!define ARCH "x64"
-!define PLUGINSPATH ""
-!define ALLOWDOWNGRADES "true"
-!define DISPLAYLANGUAGESELECTOR ""
-!define INSTALLWEBVIEW2MODE "downloadBootstrapper"
-!define WEBVIEW2INSTALLERARGS "/silent"
-!define WEBVIEW2BOOTSTRAPPERPATH ""
-!define WEBVIEW2INSTALLERPATH ""
-!define UNINSTKEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCTNAME}"
-!define MANUPRODUCTKEY "Software\${MANUFACTURER}\${PRODUCTNAME}"
-!define UNINSTALLERSIGNCOMMAND ""
-!define ESTIMATEDSIZE "0x001ba7"
+!ifndef INSTALLMODE
+  !define INSTALLMODE "currentUser"
+!endif
+!ifndef LICENSE
+  !define LICENSE ""
+!endif
+!ifndef INSTALLERICON
+  !define INSTALLERICON ""
+!endif
+!ifndef SIDEBARIMAGE
+  !define SIDEBARIMAGE ""
+!endif
+!ifndef HEADERIMAGE
+  !define HEADERIMAGE ""
+!endif
+!ifndef MAINBINARYNAME
+  !define MAINBINARYNAME "NoCapEdit"
+!endif
+!ifndef MAINBINARYSRCPATH
+  !define MAINBINARYSRCPATH "..\..\NoCapEdit.exe"
+!endif
+!ifndef BUNDLEID
+  !define BUNDLEID "com.nocapedit.dev"
+!endif
+!ifndef COPYRIGHT
+  !define COPYRIGHT ""
+!endif
+!ifndef OUTFILE
+  !define OUTFILE "nsis-output.exe"
+!endif
+!ifndef ARCH
+  !define ARCH "x64"
+!endif
+!ifndef PLUGINSPATH
+  !define PLUGINSPATH ""
+!endif
+!ifndef ALLOWDOWNGRADES
+  !define ALLOWDOWNGRADES "true"
+!endif
+!ifndef DISPLAYLANGUAGESELECTOR
+  !define DISPLAYLANGUAGESELECTOR ""
+!endif
+!ifndef INSTALLWEBVIEW2MODE
+  !define INSTALLWEBVIEW2MODE "downloadBootstrapper"
+!endif
+!ifndef WEBVIEW2INSTALLERARGS
+  !define WEBVIEW2INSTALLERARGS "/silent"
+!endif
+!ifndef WEBVIEW2BOOTSTRAPPERPATH
+  !define WEBVIEW2BOOTSTRAPPERPATH ""
+!endif
+!ifndef WEBVIEW2INSTALLERPATH
+  !define WEBVIEW2INSTALLERPATH ""
+!endif
+!ifndef UNINSTKEY
+  !define UNINSTKEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCTNAME}"
+!endif
+!ifndef MANUPRODUCTKEY
+  !define MANUPRODUCTKEY "Software\${MANUFACTURER}\${PRODUCTNAME}"
+!endif
+!ifndef UNINSTALLERSIGNCOMMAND
+  !define UNINSTALLERSIGNCOMMAND ""
+!endif
+!ifndef ESTIMATEDSIZE
+  !define ESTIMATEDSIZE "0x001ba7"
+!endif
 
 Name "${PRODUCTNAME}"
 BrandingText "${COPYRIGHT}"
