@@ -703,7 +703,7 @@ Section Install
   ; 右クリックメニュー（「NoCapEdit で開く」）の登録
   ${If} $ContextMenuCheckboxState != 0
     WriteRegStr SHCTX "Software\Classes\*\shell\NoCapEdit" "" "$(openWithNoCapEdit)"
-    WriteRegStr SHCTX "Software\Classes\*\shell\NoCapEdit" "Icon" '"$INSTDIR\${MAINBINARYNAME}.exe,0"'
+    WriteRegStr SHCTX "Software\Classes\*\shell\NoCapEdit" "Icon" '"$INSTDIR\${MAINBINARYNAME}.exe"'
     WriteRegStr SHCTX "Software\Classes\*\shell\NoCapEdit\command" "" '"$INSTDIR\${MAINBINARYNAME}.exe" "%1"'
   ${EndIf}
 
