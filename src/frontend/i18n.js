@@ -80,6 +80,7 @@ const DICT = {
         },
         editor: {
             placeholder: "入力準備完了",
+            emptyNotice: "＋ を押して新規タブを開いてください",
             metrics: {
                 position: "{line}行, {col}列",
                 selection: "{selected} / {total} 文字",
@@ -250,6 +251,10 @@ const DICT = {
                     retry: "再試行",
                     saveAs: "別名で保存",
                     cancel: "キャンセル"
+                },
+                alert: {
+                    title: "お知らせ",
+                    ok: "OK"
                 }
             }
         }

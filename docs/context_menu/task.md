@@ -27,14 +27,15 @@
 - [x] ビルドおよび動作検証
   - [x] フロントエンドビルド（npm run build）の検証
   - [x] 多言語エラーキー解決の検証
-  - [ ] モーダルダイアログとエディタグレーアウト（左上案内）の実装
-  - [ ] `src/frontend/index.html`: `alertDialog` および `emptyEditorNotice` の追加
-  - [ ] `src/frontend/css/style.css`: `#editor.no-tabs` および `.empty-editor-notice` のスタイル定義
-  - [ ] `src/frontend/i18n.js`: `editor.emptyNotice`, `ui.dialog.alert.title`, `ui.dialog.alert.ok` の追加
-  - [ ] `src/frontend/js/ui/dialogs.js`: `showAlertDialog` の追加
-  - [ ] `src/frontend/js/ui/tabs.js`: タブ0件時のエディタグレーアウト・案内表示連動
-  - [ ] `src/frontend/js/core/fileSystem.js`: オープンエラー時の `showAlertDialog` 呼び出し
-- [ ] ビルドおよび動作検証
-- [ ] 作業結果報告ドキュメント（`walkthrough.md`）の更新
-- [ ] 変更履歴（`docs/history.md`）の更新
-- [ ] コミット＆プッシュおよびユーザー確認
+  - [x] モーダルダイアログとエディタグレーアウト（左上案内）の実装
+  - [x] `src/frontend/index.html`: `alertDialog` および `emptyEditorNotice` の追加
+  - [x] `src/frontend/style.css`: `.editor.no-tabs` および `.empty-editor-notice` のスタイル定義
+  - [x] `src/frontend/i18n.js`: `editor.emptyNotice`, `ui.dialog.alert.title`, `ui.dialog.alert.ok` の追加
+  - [x] `src/frontend/js/ui/dialogs.js`: `showAlertDialog` の追加
+  - [x] `src/frontend/js/ui/tabs.js`: タブ0件時のエディタグレーアウト・案内表示連動
+  - [x] `src/frontend/js/core/fileSystem.js`: オープンエラー時の `showAlertDialog` 呼び出し
+- [x] ビルドおよび動作検証（npm run build & cargo check 成功）
+- [x] 作業結果報告ドキュメント（`walkthrough.md`）の更新
+- [x] 変更履歴（`docs/history.md`）の更新
+- [x] コミット＆プッシュおよびユーザー確認
+

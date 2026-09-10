@@ -82,6 +82,11 @@ export const elements = {
     updateNoticeContainer: null,
     currentVerSpan: null,
     latestVerSpan: null,
+    emptyEditorNotice: null,
+    alertDialog: null,
+    alertTitle: null,
+    alertMessage: null,
+    alertOkBtn: null,
     releaseLink: null,
 };
 

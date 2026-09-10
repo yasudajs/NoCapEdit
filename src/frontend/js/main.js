@@ -154,7 +154,10 @@ async function init() {
             // 起動時引数のチェック
             const launchFile = await invoke('get_launch_file');
             if (launchFile) {
-                await openExistingFile(launchFile);
+                const ok = await openExistingFile(launchFile);
+                if (!ok && appState.tabs.length === 0) {
+                    renderTabs();
+                }
             } else {
                 await createNewTab();
             }

@@ -5,7 +5,7 @@ import { updateStatus, updateTabStatus, renderTabs, switchTab, createNewTab } fr
 import { syncCurrentEditorToState } from '../ui/editor.js';
 import { createTabState, getLanguageSupport, updateLanguageForFileName, getEditorView } from '../ui/codemirror.js';
 import { getFileNameFromPath, isAutoCreatedFileName, generateTimestamp, generateTabId } from '../utils/helpers.js';
-import { showSaveErrorDialog } from '../ui/dialogs.js';
+import { showSaveErrorDialog, showAlertDialog } from '../ui/dialogs.js';
 
 
 
@@ -355,6 +355,7 @@ export async function openExistingFile(filePath, suppressStatus = false) {
         const translatedMsg = errorKey ? t(errorKey) : '';
         const displayMsg = (translatedMsg && translatedMsg !== errorKey) ? translatedMsg : t('fs.status.loadFailed');
         updateStatus(displayMsg, 'error');
+        await showAlertDialog(displayMsg);
         return false;
     }
 }

@@ -35,7 +35,20 @@
 
 ---
 
-### 3. バージョン更新および仕様書追記
+### 3. モーダルダイアログ通知とエディタのタブなし状態制御
+- **モーダルダイアログ（お知らせダイアログ） ([`src/frontend/index.html`](file:///d:/antigravity/NoCapEdit/src/frontend/index.html), [`src/frontend/js/ui/dialogs.js`](file:///d:/antigravity/NoCapEdit/src/frontend/js/ui/dialogs.js))**:
+  - バイナリや巨大ファイルを開こうとした際、ステータスバーのメッセージだけでなく、画面中央に `showAlertDialog(message)` によるモーダルダイアログを表示して分かりやすくユーザーに通知。
+  - OKボタンのクリック、Enterキー、Escapeキーでスムーズに閉じることが可能。
+- **未起動時オープン失敗時のエディタグレーアウトと案内表示 ([`src/frontend/style.css`](file:///d:/antigravity/NoCapEdit/src/frontend/style.css), [`src/frontend/js/ui/tabs.js`](file:///d:/antigravity/NoCapEdit/src/frontend/js/ui/tabs.js))**:
+  - アプリ未起動時にバイナリファイル等を開いて失敗した場合、タブを作成せずタブ0件のまま保持。
+  - タブ0件時はエディタエリアをグレーアウト（`no-tabs` クラス、入力・フォーカス禁止）とし、エディタの**左上（通常の入力開始位置・「＋」ボタン真下）**に薄い文字で「＋ を押して新規タブを開いてください」と案内を表示。
+  - 「＋」ボタンを押して新規タブを作成すると、即座に通常のエディタ入力状態に復帰。
+- **既存作業中の安全保護**:
+  - すでに起動してファイルを編集中・開いている場合は、モーダルダイアログが表示されてブロックされた後、既存の作業タブ・エディタ画面に安全に戻る設計。
+
+---
+
+### 4. バージョン更新および仕様書追記
 - 内部バージョンを **`0.2.18`** に更新（`Cargo.toml`, `tauri.conf.json`, `nsis/installer.nsi`, `docs/DEVELOPMENT.md`, `package.json`）。
 - [`docs/spec.md`](file:///d:/antigravity/NoCapEdit/docs/spec.md) に右クリックメニュー仕様および安全ガード仕様を追記。
 - [`docs/history.md`](file:///d:/antigravity/NoCapEdit/docs/history.md) に Ver 0.2.18 の変更履歴を追記。
@@ -48,12 +61,19 @@
 |---|---|
 | [`Cargo.toml`](file:///d:/antigravity/NoCapEdit/Cargo.toml) | バージョンを `0.2.18` に更新 |
 | [`tauri.conf.json`](file:///d:/antigravity/NoCapEdit/tauri.conf.json) | バージョンを `0.2.18` に更新 |
-| [`nsis/installer.nsi`](file:///d:/antigravity/NoCapEdit/nsis/installer.nsi) | バージョン更新、追加タスク選択画面（カスタムページ）、右クリックメニュー登録/削除処理を追加 |
+| [`nsis/installer.nsi`](file:///d:/antigravity/NoCapEdit/nsis/installer.nsi) | バージョン更新、追加タスク選択画面（カスタムページ）、右クリックメニュー登録/削除処理、アイコン表示修正、外部パス動的解決対応 |
 | [`wix/file-association.wxs`](file:///d:/antigravity/NoCapEdit/wix/file-association.wxs) | 右クリックメニュー登録レジストリエントリを追加 |
 | [`package.json`](file:///d:/antigravity/NoCapEdit/package.json) | バージョンを `0.2.18` に更新 |
 | [`src/commands.rs`](file:///d:/antigravity/NoCapEdit/src/commands.rs) | 10MB上限チェックおよびNULLバイトスキャンによるバイナリ検出ガードを追加 |
-| [`src/frontend/i18n.js`](file:///d:/antigravity/NoCapEdit/src/frontend/i18n.js) | サイズ上限超過およびバイナリ未対応エラーの多言語キー定義を追加 |
-| [`src/frontend/js/core/fileSystem.js`](file:///d:/antigravity/NoCapEdit/src/frontend/js/core/fileSystem.js) | ファイルオープン時のエラー多言語表示および成否判定によるタブ保護を追加 |
+| [`src/frontend/index.html`](file:///d:/antigravity/NoCapEdit/src/frontend/index.html) | お知らせモーダルダイアログ要素およびエディタ左上案内テキスト要素を追加 |
+| [`src/frontend/style.css`](file:///d:/antigravity/NoCapEdit/src/frontend/style.css) | タブなし時のグレーアウト（`.editor.no-tabs`）および左上案内テキスト（`.empty-editor-notice`）のスタイルを追加 |
+| [`src/frontend/i18n.js`](file:///d:/antigravity/NoCapEdit/src/frontend/i18n.js) | サイズ上限超過、バイナリ未対応、ダイアログタイトル、エディタ案内文の多言語キー定義を追加 |
+| [`src/frontend/js/state.js`](file:///d:/antigravity/NoCapEdit/src/frontend/js/state.js) | 新規モーダルダイアログ要素・案内要素のキャッシュ定義を追加 |
+| [`src/frontend/js/ui/dialogs.js`](file:///d:/antigravity/NoCapEdit/src/frontend/js/ui/dialogs.js) | モーダルダイアログ表示関数 `showAlertDialog` を実装 |
+| [`src/frontend/js/ui/tabs.js`](file:///d:/antigravity/NoCapEdit/src/frontend/js/ui/tabs.js) | タブ0件時のエディタグレーアウト・案内文連動関数 `updateEditorEmptyState` を実装 |
+| [`src/frontend/js/ui/editor.js`](file:///d:/antigravity/NoCapEdit/src/frontend/js/ui/editor.js) | タブなし時のステータスメトリクス非表示制御を追加 |
+| [`src/frontend/js/core/fileSystem.js`](file:///d:/antigravity/NoCapEdit/src/frontend/js/core/fileSystem.js) | ファイルオープン失敗時の `showAlertDialog` モーダル呼び出しを統合 |
+| [`src/frontend/js/main.js`](file:///d:/antigravity/NoCapEdit/src/frontend/js/main.js) | 起動時ファイルオープン失敗時のタブ空状態連動を追加 |
 | [`docs/spec.md`](file:///d:/antigravity/NoCapEdit/docs/spec.md) | 右クリックメニュー仕様およびバイナリガード・10MB上限仕様を追記 |
 | [`docs/history.md`](file:///d:/antigravity/NoCapEdit/docs/history.md) | Ver 0.2.18 の変更履歴を最上部に追記 |
 | [`docs/DEVELOPMENT.md`](file:///d:/antigravity/NoCapEdit/docs/DEVELOPMENT.md) | ポータブル版ビルドコマンド例のバージョン文字列を `0.2.18` に更新 |
@@ -62,5 +82,7 @@
 
 ## 検証結果
 
-- **フロントエンドビルド**: `npm run build` を実行し、CodeMirror 6 等を含めて正常にアセットがビルド・出力されることを確認。
-- **多言語エラー解決**: Node.js実行環境により、`fs.error.binaryFileNotSupported` ➔ `バイナリファイルのため開けません`、`fs.error.fileTooLarge` ➔ `ファイルサイズが上限（10MB）を超えているため開けません` が正確に解決されることを確認。
+- **フロントエンドビルド**: `npm run build` を実行し、Vite によるアセットビルド・バンドルが正常終了することを確認。
+- **Rustバックエンド整合性チェック**: `cargo check` を実行し、コンパイルエラーなく正常終了（Finished dev profile）することを確認。
+- **多言語エラー解決**: Node.js実行環境により、`fs.error.binaryFileNotSupported` ➔ `バイナリファイルのため開けません`、`fs.error.fileTooLarge` ➔ `ファイルサイズが上限（10MB）を超えているため開けません`、`editor.emptyNotice` ➔ `＋ を押して新規タブを開いてください` が正確に解決されることを確認。
+
