@@ -3,14 +3,14 @@
 - [x] 作業開始の指示待ち（フェーズ1完了、ユーザー承認待ち）
 - [x] 作業用ブランチの作成（`v0.2` から派生）
 - [x] ドキュメントの移動（`docs/wip/context_menu/` ➔ `docs/context_menu/`）
-- [ ] バージョン番号の更新（`0.2.18` へ4ファイルセット更新）
-  - [ ] `Cargo.toml`
-  - [ ] `tauri.conf.json`
-  - [ ] `nsis/installer.nsi`
-  - [ ] `docs/DEVELOPMENT.md`
-- [ ] 仕様書（`docs/spec.md`）の更新
-  - [ ] 右クリックメニュー登録仕様の追記
-  - [ ] バイナリ検出・10MB制限仕様の追記
+- [x] バージョン番号の更新（`0.2.18` へ4ファイルセット更新）
+  - [x] `Cargo.toml`
+  - [x] `tauri.conf.json`
+  - [x] `nsis/installer.nsi`
+  - [x] `docs/DEVELOPMENT.md`
+- [x] 仕様書（`docs/spec.md`）の更新
+  - [x] 右クリックメニュー登録仕様の追記
+  - [x] バイナリ検出・10MB制限仕様の追記
 - [ ] バックエンド（Rust）の実装
   - [ ] `src/commands.rs`: `read_text_file` に10MBサイズ上限チェックを追加
   - [ ] `src/commands.rs`: `read_text_file` にNULLバイト（`0x00`）スキャンによるバイナリ判定を追加
