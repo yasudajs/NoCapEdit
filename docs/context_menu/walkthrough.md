@@ -48,7 +48,16 @@
 
 ---
 
-### 4. バージョン更新および仕様書追記
+### 4. コーディング規約準拠（多言語化 i18n）の改善
+- **ヘルプ画面タイトルの動的取得 ([`src/frontend/js/ui/shortcuts.js`](file:///d:/antigravity/NoCapEdit/src/frontend/js/ui/shortcuts.js))**:
+  - F1キー押下時のWebviewWindowタイトルを `'ショートカット一覧'` ハードコードから `t('help.title')` 経由へ改善。
+- **置換完了メッセージの多言語定義とフォールバック除去 ([`src/frontend/i18n.js`](file:///d:/antigravity/NoCapEdit/src/frontend/i18n.js), [`src/frontend/js/ui/findReplace.js`](file:///d:/antigravity/NoCapEdit/src/frontend/js/ui/findReplace.js))**:
+  - `i18n.js` の `ui` 配下に `find: { replacedCount: "{count} 件を置換しました" }` を正式定義。
+  - `findReplace.js` のフォールバック日本語リテラルを除去し、`t('ui.find.replacedCount', { count: totalCount })` による直接展開に改善。
+
+---
+
+### 5. バージョン更新および仕様書追記
 - 内部バージョンを **`0.2.18`** に更新（`Cargo.toml`, `tauri.conf.json`, `nsis/installer.nsi`, `docs/DEVELOPMENT.md`, `package.json`）。
 - [`docs/spec.md`](file:///d:/antigravity/NoCapEdit/docs/spec.md) に右クリックメニュー仕様および安全ガード仕様を追記。
 - [`docs/history.md`](file:///d:/antigravity/NoCapEdit/docs/history.md) に Ver 0.2.18 の変更履歴を追記。
@@ -66,12 +75,14 @@
 | [`package.json`](file:///d:/antigravity/NoCapEdit/package.json) | バージョンを `0.2.18` に更新 |
 | [`src/commands.rs`](file:///d:/antigravity/NoCapEdit/src/commands.rs) | 10MB上限チェックおよびNULLバイトスキャンによるバイナリ検出ガードを追加 |
 | [`src/frontend/index.html`](file:///d:/antigravity/NoCapEdit/src/frontend/index.html) | お知らせモーダルダイアログ要素およびエディタ左上案内テキスト要素を追加 |
-| [`src/frontend/style.css`](file:///d:/antigravity/NoCapEdit/src/frontend/style.css) | タブなし時のグレーアウト（`.editor.no-tabs`）および左上案内テキスト（`.empty-editor-notice`）のスタイルを追加 |
-| [`src/frontend/i18n.js`](file:///d:/antigravity/NoCapEdit/src/frontend/i18n.js) | サイズ上限超過、バイナリ未対応、ダイアログタイトル、エディタ案内文の多言語キー定義を追加 |
+| [`src/frontend/style.css`](file:///d:/antigravity/NoCapEdit/src/frontend/style.css) | タブなし時のグレーアウト（`.editor.no-tabs`）および左上案内テキスト（`.empty-editor-notice`）のスタイルを追加（CodeMirror非表示の `!important` 上書き対応） |
+| [`src/frontend/i18n.js`](file:///d:/antigravity/NoCapEdit/src/frontend/i18n.js) | サイズ上限超過、バイナリ未対応、ダイアログタイトル、エディタ案内文、置換完了メッセージ（`ui.find.replacedCount`）の多言語キー定義を追加 |
 | [`src/frontend/js/state.js`](file:///d:/antigravity/NoCapEdit/src/frontend/js/state.js) | 新規モーダルダイアログ要素・案内要素のキャッシュ定義を追加 |
 | [`src/frontend/js/ui/dialogs.js`](file:///d:/antigravity/NoCapEdit/src/frontend/js/ui/dialogs.js) | モーダルダイアログ表示関数 `showAlertDialog` を実装 |
 | [`src/frontend/js/ui/tabs.js`](file:///d:/antigravity/NoCapEdit/src/frontend/js/ui/tabs.js) | タブ0件時のエディタグレーアウト・案内文連動関数 `updateEditorEmptyState` を実装 |
 | [`src/frontend/js/ui/editor.js`](file:///d:/antigravity/NoCapEdit/src/frontend/js/ui/editor.js) | タブなし時のステータスメトリクス非表示制御を追加 |
+| [`src/frontend/js/ui/shortcuts.js`](file:///d:/antigravity/NoCapEdit/src/frontend/js/ui/shortcuts.js) | F1ヘルプウィンドウタイトルの多言語対応（`t('help.title')`） |
+| [`src/frontend/js/ui/findReplace.js`](file:///d:/antigravity/NoCapEdit/src/frontend/js/ui/findReplace.js) | 「すべて置換」完了メッセージの多言語展開およびフォールバック日本語リテラルの除去 |
 | [`src/frontend/js/core/fileSystem.js`](file:///d:/antigravity/NoCapEdit/src/frontend/js/core/fileSystem.js) | ファイルオープン失敗時の `showAlertDialog` モーダル呼び出しを統合 |
 | [`src/frontend/js/main.js`](file:///d:/antigravity/NoCapEdit/src/frontend/js/main.js) | 起動時ファイルオープン失敗時のタブ空状態連動を追加 |
 | [`docs/spec.md`](file:///d:/antigravity/NoCapEdit/docs/spec.md) | 右クリックメニュー仕様およびバイナリガード・10MB上限仕様を追記 |

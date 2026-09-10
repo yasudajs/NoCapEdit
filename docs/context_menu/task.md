@@ -35,7 +35,12 @@
   - [x] `src/frontend/js/ui/tabs.js`: タブ0件時のエディタグレーアウト・案内表示連動
   - [x] `src/frontend/js/core/fileSystem.js`: オープンエラー時の `showAlertDialog` 呼び出し
 - [x] ビルドおよび動作検証（npm run build & cargo check 成功）
+- [x] レビュー指摘事項（i18n改善）の修正
+  - [x] `src/frontend/js/ui/shortcuts.js`: ヘルプ画面タイトルの多言語化（`t('help.title')`）
+  - [x] `src/frontend/i18n.js`: `ui.find.replacedCount` の多言語定義追加
+  - [x] `src/frontend/js/ui/findReplace.js`: 置換メッセージの多言語展開とフォールバック除去
 - [x] 作業結果報告ドキュメント（`walkthrough.md`）の更新
 - [x] 変更履歴（`docs/history.md`）の更新
 - [x] コミット＆プッシュおよびユーザー確認
+
 

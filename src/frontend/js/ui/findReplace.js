@@ -293,7 +293,7 @@ export function replaceAll() {
 
     replaceAllMatches(changes);
 
-    const msg = (t('ui.find.replacedCount') || '{count} 件を置換しました').replace('{count}', totalCount);
+    const msg = t('ui.find.replacedCount', { count: totalCount });
     updateStatus(msg);
 
     updateMatches(false);

@@ -256,6 +256,9 @@ const DICT = {
                     title: "お知らせ",
                     ok: "OK"
                 }
+            },
+            find: {
+                replacedCount: "{count} 件を置換しました"
             }
         }
     }
