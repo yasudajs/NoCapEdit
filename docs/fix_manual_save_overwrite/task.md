@@ -1,0 +1,23 @@
+# タスクリスト: 手動保存モードにおける上書き保存不具合の修正
+
+- [ ] 実装準備
+  - [ ] 作業用ブランチ作成 (`fix-manual-save-overwrite`)
+  - [ ] `docs/wip/fix_manual_save_overwrite/` から `docs/fix_manual_save_overwrite/` へ移動・コミット＆プッシュ
+  - [ ] バージョン番号の更新 (`0.2.18` -> `0.2.19`)
+    - [ ] `Cargo.toml`
+    - [ ] `tauri.conf.json`
+    - [ ] `nsis/installer.nsi`
+    - [ ] `docs/DEVELOPMENT.md`
+  - [ ] `docs/spec.md` の確認・更新
+- [ ] 実装
+  - [ ] `src/frontend/js/core/fileSystem.js` の `triggerManualSave()` を修正（`saveTabIfDirty` への一本化）
+- [ ] 検証
+  - [ ] `cargo test` の実行確認
+  - [ ] 手動保存モードでの初回保存テスト（新規作成確認）
+  - [ ] 手動保存モードでの2回目以降保存テスト（上書き確認、ファイル名・タイムスタンプ不変確認）
+  - [ ] 手動保存モードでの外部ファイル保存テスト（元ファイルへの上書き確認）
+  - [ ] 自動保存モードでの退行確認（通常通り上書き保存されること）
+- [ ] 完了報告
+  - [ ] `docs/fix_manual_save_overwrite/walkthrough.md` の作成
+  - [ ] `docs/history.md` に v0.2.19 の変更履歴を追記
+  - [ ] コミット＆プッシュ
