@@ -15,6 +15,7 @@ let editorView = null;
 let currentPlaceholder = '';
 let changeListeners = [];
 let selectionListeners = [];
+let pendingImeResync = false;
 
 // 動的設定変更用 Compartments
 export const wrapCompartment = new Compartment();
@@ -335,7 +336,41 @@ export function initCodeMirror(parentEl, options = {}) {
         parent: parentEl,
     });
 
+    editorView.contentDOM.addEventListener('compositionend', () => {
+        if (pendingImeResync) {
+            pendingImeResync = false;
+            resyncEditorPosition();
+        }
+    });
+
     return editorView;
+}
+
+/**
+ * マルチディスプレイ移動時等にIMEのキャレット座標を再同期（リフレッシュ）する
+ */
+export function resyncEditorPosition() {
+    if (!editorView) return;
+
+    // IME変換中の場合はフォーカスを外すと入力が中断するため、変換確定後に遅延実行する
+    if (editorView.composing) {
+        pendingImeResync = true;
+        return;
+    }
+
+    pendingImeResync = false;
+
+    // エディタがフォーカス中、またはアクティブ要素がエディタ内の場合に再同期を実行
+    if (editorView.hasFocus || document.activeElement === editorView.contentDOM) {
+        editorView.requestMeasure();
+        editorView.contentDOM.blur();
+        setTimeout(() => {
+            if (editorView) {
+                editorView.focus();
+                editorView.requestMeasure();
+            }
+        }, 30);
+    }
 }
 
 /**

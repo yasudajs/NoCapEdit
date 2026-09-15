@@ -3,7 +3,7 @@ import { appState, elements, initElements } from './state.js';
 import { invoke, appWindow, listen, ensureTauriApi } from './core/tauri.js';
 import { createNewTab, updateStatus, renderTabs, setupTabScrollWheel } from './ui/tabs.js';
 import { openExistingFile, openFiles, persistAllTabsBeforeExit } from './core/fileSystem.js';
-import { updateEditorMetrics, onEditorInput, applyFontSize, applyLineHeight, applyWordWrap } from './ui/editor.js';
+import { updateEditorMetrics, onEditorInput, applyFontSize, applyLineHeight, applyWordWrap, resyncEditorPosition } from './ui/editor.js';
 import { initCodeMirror } from './ui/codemirror.js';
 import { toggleSettingsDialog, closeSettingsDialog, openSettingsDialog, onThemeChange, onFontFamilyChange, saveSettings, setupSettingsNavigation } from './ui/settings.js';
 import { applyThemeUI, loadSystemFonts, applyFontFamily, setShouldOpenFontPicker } from './ui/theme.js';
@@ -285,6 +285,22 @@ function setupUIEventListeners() {
                 await openFiles(filePaths);
             }
         });
+
+        // ウィンドウ移動・DPI変更・リサイズ検知によるIMEキャレット座標の再同期（150msデバウンス）
+        let windowPositionTimer = null;
+        const handleWindowPositionChange = () => {
+            if (windowPositionTimer) {
+                clearTimeout(windowPositionTimer);
+            }
+            windowPositionTimer = setTimeout(() => {
+                windowPositionTimer = null;
+                resyncEditorPosition();
+            }, 150);
+        };
+
+        listen('tauri://move', handleWindowPositionChange);
+        listen('tauri://scale-change', handleWindowPositionChange);
+        listen('tauri://resize', handleWindowPositionChange);
     }
 
     appState.initialized = true;
