@@ -1,0 +1,25 @@
+# タスクリスト: マルチディスプレイ環境でのIME位置ずれ修正
+
+- [ ] 実装準備
+  - [ ] 作業用ブランチ作成 (`fix-multimonitor-ime-position`)
+  - [ ] `docs/wip/fix_multimonitor_ime_position/` から `docs/fix_multimonitor_ime_position/` へ移動・コミット＆プッシュ
+  - [ ] バージョン番号の更新 (`0.2.19` -> `0.2.20`)
+    - [ ] `Cargo.toml`
+    - [ ] `tauri.conf.json`
+    - [ ] `nsis/installer.nsi`
+    - [ ] `docs/DEVELOPMENT.md`
+    - [ ] `package.json`
+  - [ ] `docs/spec.md` の確認・更新
+- [ ] 実装
+  - [ ] `src/frontend/js/ui/codemirror.js` に `resyncEditorPosition()` を実装（`compositionend` セーフガード連携、30ms遅延再フォーカス）
+  - [ ] `src/frontend/js/ui/editor.js` から `resyncEditorPosition` を再エクスポート
+  - [ ] `src/frontend/js/main.js` にて `tauri://move`, `tauri://scale-change` イベントを監視し150msデバウンスで再同期を接続
+- [ ] 検証
+  - [ ] `cargo test` の実行確認
+  - [ ] `npm run build` によるフロントエンドビルド確認
+  - [ ] ユーザーによるマルチディスプレイ環境での動作検証（移動後の即時インライン入力確認）
+  - [ ] IME変換中の移動セーフガード動作確認
+- [ ] 完了報告
+  - [ ] `docs/fix_multimonitor_ime_position/walkthrough.md` の作成
+  - [ ] `docs/history.md` に v0.2.20 の変更履歴を追記
+  - [ ] コミット＆プッシュ
