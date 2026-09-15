@@ -233,24 +233,8 @@ export async function triggerManualSave() {
     try {
         updateTabStatus(tab, t('fs.status.saving'), 'saving');
 
-        let saved = false;
-        if (appState.saveMode === 'manual') {
-            const saveTimestamp = generateTimestamp();
-            const file = await invoke('create_and_save_file', {
-                homeFolder: appState.homeFolder,
-                timestamp: saveTimestamp,
-                content: tab.content,
-            });
-            tab.filePath = file.file_path;
-            tab.fileName = file.file_name;
-            tab.encoding = 'UTF-8';
-            tab.createdTimestamp = saveTimestamp;
-            tab.isDirty = false;
-            saved = true;
-        } else {
-            tab.isDirty = true;
-            saved = await saveTabIfDirty(tab);
-        }
+        tab.isDirty = true;
+        const saved = await saveTabIfDirty(tab);
 
         renderTabs();
 

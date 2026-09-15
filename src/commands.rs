@@ -325,12 +325,12 @@ mod tests {
         let file_path = temp_dir.path().join("test.nctx");
 
         // 1. 初回保存
-        save_text_file(file_path.clone(), "Hello\nWorld".to_string()).unwrap();
+        save_text_file(file_path.clone(), "Hello\nWorld".to_string(), None).unwrap();
         let content1 = fs::read_to_string(&file_path).unwrap();
         assert_eq!(content1, "Hello\r\nWorld");
 
         // 2. 上書き保存
-        save_text_file(file_path.clone(), "Updated\r\nContent".to_string()).unwrap();
+        save_text_file(file_path.clone(), "Updated\r\nContent".to_string(), None).unwrap();
         let content2 = fs::read_to_string(&file_path).unwrap();
         assert_eq!(content2, "Updated\r\nContent");
     }
