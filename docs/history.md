@@ -12,7 +12,7 @@ NoCapEdit v0.2系のバージョンアップおよび仕様変更の履歴です
 
 ### Ver 0.2.22 | 2026-09-28 | yasudajs
 - **ファイル専用アイコン（案A: 左上ロゴ）の導入および関連付け対応**
-  - **ファイル専用アイコンの導入とアプリアイコンの分離**: 関連付けしたファイルが実行ファイル本体の丸いアプリアイコンのまま表示されてしまう問題を解消。角折れ用紙・横罫線の白いドキュメントシートの左上に NoCapEdit の丸いロゴを配置した専用アイコン（`icons/document.ico`, `icons/document.png`）を新規作成。16x16 から 256x256 までのマルチ解像度（32bpp RGBA）に対応
+  - **ファイル専用アイコンの導入とアプリアイコンの分離**: 関連付けしたファイルが実行ファイル本体の丸いアプリアイコンのまま表示されてしまう問題を解消。角折れ用紙・横罫線の白いドキュメントシートの左上に NoCapEdit の丸いロゴを配置した専用アイコン（`icons/document.ico`, `icons/document.png`）を新規作成。右側の Office/Excel アイコン等の存在感に合わせてロゴサイズを 280px（約1.55倍）に拡大調整し、16x16 から 256x256 までのマルチ解像度（32bpp RGBA）に対応
   - **全関連付けファイルへの自動アイコン適用**: NSIS インストーラーにおいて `Software\Classes\Applications\NoCapEdit.exe\DefaultIcon` に `document.ico` を設定。エクスプローラーでユーザーが「プログラムから開く > 常にこのアプリを使って開く」で NoCapEdit を選択したすべてのファイルに対して、自動的に専用ファイルアイコンが表示される仕組みを導入
   - **共通ドキュメント ProgID (`NoCapEdit.Document`) の登録**: 共通 ProgID を定義し、`DefaultIcon` に `document.ico`、`shell\open\command` に実行ファイルパスを登録
   - **主要拡張子の事前登録 (SupportedTypes / Capabilities / OpenWithProgids)**: テキスト・文書系（`.txt`, `.nctx`, `.ncmd`, `.md` 等）、データ系（`.csv`, `.tsv`, `.json`, `.xml`, `.yaml` 等）、Web・プログラミング言語系（`.html`, `.css`, `.js`, `.ts`, `.py`, `.java`, `.c`, `.cpp`, `.rs` 等）、ログ・一時ファイル・設定系（`.log`, `.tmp`, `.ini`, `.env` 等）を `Applications\NoCapEdit.exe\SupportedTypes` および `Capabilities\FileAssociations` に登録。「プログラムから開く」の推奨候補表示および Windows の「既定のアプリ」設定に対応
