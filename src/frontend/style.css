@@ -438,12 +438,12 @@ body {
 /* ▼ マーカー */
 .ruler-marker {
     position: absolute;
-    top: 0;
+    bottom: 5px;
     transform: translateX(-50%);
     font-size: 10px;
     line-height: 1;
     color: var(--ruler-marker);
-    cursor: pointer;
+    cursor: grab;
     font-weight: bold;
     z-index: 5;
     padding: 0 4px;
@@ -453,6 +453,22 @@ body {
 .ruler-marker:hover {
     color: var(--accent-hover);
     transform: translateX(-50%) scale(1.2);
+}
+
+.ruler-marker.is-dragging {
+    cursor: grabbing !important;
+    color: var(--accent-hover);
+    transform: translateX(-50%) scale(1.25);
+    transition: none !important;
+}
+
+body.ruler-marker-dragging {
+    cursor: grabbing !important;
+    user-select: none !important;
+}
+
+body.ruler-marker-dragging * {
+    user-select: none !important;
 }
 
 /* カーソル追従インジケーター */

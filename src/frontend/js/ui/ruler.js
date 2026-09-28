@@ -146,13 +146,8 @@ function onRulerClick(e) {
     const charWidth = getCharWidth();
     if (charWidth <= 0) return;
 
-    // クリックされた要素が既にマーカーなら削除
+    // マーカー自体のクリック/ドラッグは setupMarkerDrag で個別に処理されるため除外
     if (e.target.classList.contains('ruler-marker')) {
-        const colToRemove = parseInt(e.target.dataset.col, 10);
-        if (!isNaN(colToRemove)) {
-            tab.rulerMarkers = tab.rulerMarkers.filter(c => c !== colToRemove);
-            renderMarkersAndGuides();
-        }
         return;
     }
 
@@ -265,7 +260,7 @@ export function renderMarkersAndGuides() {
         marker.dataset.col = String(col);
         marker.style.left = `${xInTrack}px`;
         marker.textContent = '▼';
-        marker.title = `${col}桁目マーカー (クリックで削除)`;
+        marker.title = `${col}桁目マーカー (ドラッグで移動、クリックで削除)`;
         elements.rulerTrack.appendChild(marker);
 
         // エディタ本文上の縦破線ガイド（マーカー先端のX座標と完全一致、文字と文字の間に垂直に伸びる）
@@ -274,9 +269,87 @@ export function renderMarkersAndGuides() {
         guide.dataset.col = String(col);
         guide.style.left = `${Math.round(baseLeft + xInTrack - currentScrollLeft)}px`;
         guideFragment.appendChild(guide);
+
+        // ドラッグ移動＆クリック削除のハンドラを設定
+        setupMarkerDrag(marker, col, baseLeft, guide);
     });
 
     elements.rulerGuidesOverlay.appendChild(guideFragment);
+}
+
+/**
+ * マーカーのドラッグ移動およびクリック削除を設定
+ * @param {HTMLElement} marker
+ * @param {number} initialCol
+ * @param {number} baseLeft
+ * @param {HTMLElement} guide
+ */
+function setupMarkerDrag(marker, initialCol, baseLeft, guide) {
+    marker.addEventListener('mousedown', (e) => {
+        if (e.button !== 0) return; // 左ボタンのみ
+        e.stopPropagation();
+        e.preventDefault();
+
+        const charWidth = getCharWidth();
+        if (charWidth <= 0) return;
+
+        const startX = e.clientX;
+        let isDragging = false;
+        let currentCol = initialCol;
+
+        const onMouseMove = (moveEvent) => {
+            const dx = Math.abs(moveEvent.clientX - startX);
+            if (!isDragging && dx >= 3) {
+                isDragging = true;
+                marker.classList.add('is-dragging');
+                document.body.classList.add('ruler-marker-dragging');
+            }
+
+            if (isDragging && elements.rulerTrackWrapper) {
+                const trackRect = elements.rulerTrackWrapper.getBoundingClientRect();
+                const xInTrack = moveEvent.clientX - trackRect.left + currentScrollLeft;
+                const col = Math.max(1, Math.min(DEFAULT_RULER_COLS, Math.round(xInTrack / charWidth)));
+                currentCol = col;
+
+                const newMarkerLeft = Math.round(col * charWidth);
+                marker.style.left = `${newMarkerLeft}px`;
+                marker.title = `${col}桁目マーカー (ドラッグで移動、クリックで削除)`;
+
+                if (guide) {
+                    guide.style.left = `${Math.round(baseLeft + newMarkerLeft - currentScrollLeft)}px`;
+                }
+            }
+        };
+
+        const onMouseUp = () => {
+            window.removeEventListener('mousemove', onMouseMove);
+            window.removeEventListener('mouseup', onMouseUp);
+
+            marker.classList.remove('is-dragging');
+            document.body.classList.remove('ruler-marker-dragging');
+
+            const tab = getCurrentTab();
+            if (!tab || !tab.rulerMarkers) return;
+
+            if (isDragging) {
+                if (currentCol !== initialCol) {
+                    tab.rulerMarkers = tab.rulerMarkers.filter(c => c !== initialCol);
+                    if (!tab.rulerMarkers.includes(currentCol)) {
+                        tab.rulerMarkers.push(currentCol);
+                        tab.rulerMarkers.sort((a, b) => a - b);
+                    }
+                }
+                renderMarkersAndGuides();
+            } else {
+                // クリック判定: マーカーを削除
+                tab.rulerMarkers = tab.rulerMarkers.filter(c => c !== initialCol);
+                renderMarkersAndGuides();
+            }
+        };
+
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mouseup', onMouseUp);
+    });
 }
 
 /**
