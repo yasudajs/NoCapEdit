@@ -49,6 +49,18 @@
             display: flex;
             align-items: center;
         }
+        .shortcut-desc.has-subdesc {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: center;
+        }
+        .shortcut-subdesc {
+            font-size: 11px;
+            color: var(--text-secondary, #888);
+            text-align: right;
+            margin-top: 2px;
+        }
         .help-footer {
             margin-top: 24px;
             padding-top: 12px;
@@ -113,7 +125,10 @@
         <div class="shortcut-desc" data-i18n="help.shortcuts.insertTimestamp">現在日時の挿入</div>
         <div class="shortcut-key">F5</div>
 
-        <div class="shortcut-desc" data-i18n="help.shortcuts.gotoLine">指定行へのジャンプ</div>
+        <div class="shortcut-desc has-subdesc">
+            <span data-i18n="help.shortcuts.gotoLine">指定行へのジャンプ</span>
+            <span class="shortcut-subdesc" data-i18n="help.shortcuts.gotoLineSub">※ -値: 行末からの行数へジャンプ、:指定: 指定列へカーソル移動</span>
+        </div>
         <div class="shortcut-key">Ctrl + G</div>
 
         <div class="shortcut-desc" data-i18n="help.shortcuts.indent">インデント挿入</div>

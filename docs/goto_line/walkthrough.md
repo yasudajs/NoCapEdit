@@ -49,7 +49,7 @@
 | `nsis/installer.nsi` | 更新 | バージョンを `0.2.28` / `0.2.28.0` に更新 |
 | `docs/DEVELOPMENT.md` | 更新 | ポータブル版ZIPファイル名バージョンを `0.2.28` に更新 |
 | `docs/spec.md` | 更新 | 指定行ジャンプ機能の仕様追記、対象バージョン更新 |
-| `src/frontend/i18n.js` | 更新 | `ui.goto` および `help.shortcuts.gotoLine` の多言語テキストを追加 |
+| `src/frontend/i18n.js` | 更新 | `ui.goto`、`help.shortcuts.gotoLine`、および `help.shortcuts.gotoLineSub` の多言語テキストを追加 |
 | `src/frontend/index.html` | 更新 | 指定行ジャンプウィジェット（`#gotoLineWidget`）のHTMLを追加 |
 | `src/frontend/style.css` | 更新 | ウィジェットのレイアウト、エラー枠線、エラーメッセージ表示スタイルを追加 |
 | `src/frontend/js/ui/gotoLine.js` | **新規** | 入力パース、バリデーション、イベント制御、ジャンプ実行ロジック |
@@ -57,7 +57,7 @@
 | `src/frontend/js/ui/findReplace.js` | 更新 | `openFind` / `openReplace` 時に行ジャンプバーを閉じる排他制御を追加 |
 | `src/frontend/js/ui/shortcuts.js` | 更新 | `Ctrl + G` ショートカットおよび `Esc` ハンドラーを登録 |
 | `src/frontend/js/main.js` | 更新 | 起動時の `initGotoLine()` 初期化呼び出しを追加 |
-| `src/frontend/help.html` | 更新 | ショートカット一覧の「テキスト編集」カテゴリに `Ctrl + G` を追記 |
+| `src/frontend/help.html` | 更新 | ショートカット一覧に `Ctrl + G` を追記、および指定行ジャンプ直下に補足説明（右寄せ）を追加 |
 | `docs/SHORTCUTS.md` | 更新 | ショートカット一覧に `Ctrl + G` を追記 |
 | `docs/USER_GUIDE.md` | 更新 | ユーザーガイドに指定行ジャンプ機能の説明を追記 |
 

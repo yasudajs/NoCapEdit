@@ -141,6 +141,7 @@ const DICT = {
                 deleteLine: "行の削除",
                 insertTimestamp: "現在日時の挿入",
                 gotoLine: "指定行へのジャンプ",
+                gotoLineSub: "※ -値: 行末からの行数へジャンプ、:指定: 指定列へカーソル移動",
                 openFind: "検索パネルを開く",
                 openReplace: "検索・置換パネルを開く",
                 findNextMatch: "次のマッチへ移動",
