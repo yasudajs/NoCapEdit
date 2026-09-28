@@ -864,7 +864,7 @@ Section Install
   WriteRegStr SHCTX "Software\Classes\.ini\OpenWithProgids" "NoCapEdit.Document" ""
   WriteRegStr SHCTX "Software\Classes\.conf\OpenWithProgids" "NoCapEdit.Document" ""
   WriteRegStr SHCTX "Software\Classes\.cfg\OpenWithProgids" "NoCapEdit.Document" ""
-  WriteRegStr SHCTX "Software\Classes\.env\OpenWithProgids" "NoCapEdit.Document"
+  WriteRegStr SHCTX "Software\Classes\.env\OpenWithProgids" "NoCapEdit.Document" ""
 
   ; 右クリックメニュー（「NoCapEdit で開く」）の登録
   ${If} $ContextMenuCheckboxState != 0
