@@ -20,6 +20,12 @@ const DICT = {
                 initFailed: "初期化エラー: {error}"
             }
         },
+        ruler: {
+            marker: {
+                tooltip: "{col}桁目マーカー (ドラッグで移動、クリックで削除)",
+                maxReached: "マーカーの上限（{max}個）に達しています"
+            }
+        },
         settings: {
             folder: {
                 hint: {

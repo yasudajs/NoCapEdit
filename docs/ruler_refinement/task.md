@@ -22,31 +22,31 @@
 - [x] 仕様書（`spec.md`）の確認・必要に応じた更新
 
 ### コード修正・改善
-- [ ] 🔴 **マーカーtitleのi18n化**:
-  - [ ] `src/frontend/i18n.js`: `DICT` 内にネストオブジェクト構造で `ruler.marker.tooltip` / `ruler.marker.max_reached` を追加（日・英）
-  - [ ] `src/frontend/js/ui/ruler.js`: `t(...)` を使用したツールチップ・警告ログの実装
-- [ ] 🟡 **ルーラートラック幅の動的化**:
-  - [ ] `src/frontend/js/ui/ruler.js`: `renderRulerTicks()` 内で JS により動的に幅を設定（`Math.ceil(totalCols * charWidth) + 10`）
-  - [ ] `src/frontend/style.css`: `.ruler-track` から固定値 `width: 10000px` を削除し `min-width: 100%` を設定
-- [ ] 🟡 **CSSマジックナンバー解消**:
-  - [ ] `src/frontend/style.css`: `--ruler-height: 26px` の導入と `.ruler-container` / `.ruler-guides-overlay` への適用
-- [ ] 🟡 **`applyRuler` 名前の重複解消**:
-  - [ ] `src/frontend/js/ui/ruler.js`: `setRulerVisibility` にリネーム
-  - [ ] `src/frontend/js/ui/editor.js`: エイリアスインポートの解消と呼び出し箇所の更新
-- [ ] 🟢 **フォントファミリー変更時の同期連動**:
-  - [ ] `src/frontend/js/ui/theme.js`: `applyFontFamily()` 内で `syncRulerMetrics()` を呼び出し
+- [x] 🔴 **マーカーtitleのi18n化**:
+  - [x] `src/frontend/i18n.js`: `DICT` 内にネストオブジェクト構造で `ruler.marker.tooltip` / `ruler.marker.max_reached` を追加（日・英）
+  - [x] `src/frontend/js/ui/ruler.js`: `t(...)` を使用したツールチップ・警告ログの実装
+- [x] 🟡 **ルーラートラック幅の動的化**:
+  - [x] `src/frontend/js/ui/ruler.js`: `renderRulerTicks()` 内で JS により動的に幅を設定（`Math.ceil(totalCols * charWidth) + 10`）
+  - [x] `src/frontend/style.css`: `.ruler-track` から固定値 `width: 10000px` を削除し `min-width: 100%` を設定
+- [x] 🟡 **CSSマジックナンバー解消**:
+  - [x] `src/frontend/style.css`: `--ruler-height: 26px` の導入と `.ruler-container` / `.ruler-guides-overlay` への適用
+- [x] 🟡 **`applyRuler` 名前の重複解消**:
+  - [x] `src/frontend/js/ui/ruler.js`: `setRulerVisibility` にリネーム
+  - [x] `src/frontend/js/ui/editor.js`: エイリアスインポートの解消と呼び出し箇所の更新
+- [x] 🟢 **フォントファミリー変更時の同期連動**:
+  - [x] `src/frontend/js/ui/theme.js`: `applyFontFamily()` 内で `syncRulerMetrics()` を呼び出し
 
 ### 検証・テスト
-- [ ] `cargo test` の実行・全パス確認
-- [ ] アプリビルド（`npm run build`）
-- [ ] マーカーツールチップのi18n表示確認
-- [ ] フォントサイズ 72px 時の目盛り描画・スクロール確認
-- [ ] CSS変数によるルーラー高さと縦破線の連動確認
-- [ ] 等幅フォントファミリー変更時の文字幅追従確認
-- [ ] タブ切替時のルーラー状態（ON/OFFおよびマーカー配置）復元確認
+- [x] `cargo test` の実行・全パス確認
+- [x] アプリビルド（`npm run build`）
+- [x] マーカーツールチップのi18n表示確認
+- [x] フォントサイズ 72px 時の目盛り描画・スクロール確認
+- [x] CSS変数によるルーラー高さと縦破線の連動確認
+- [x] 等幅フォントファミリー変更時の文字幅追従確認
+- [x] タブ切替時のルーラー状態（ON/OFFおよびマーカー配置）復元確認
 
 ### 報告・ドキュメント
-- [ ] ウォークスルー（`docs/ruler_refinement/walkthrough.md`）の作成
-- [ ] 変更履歴（`docs/history.md`）に Ver 0.2.26 の追記
-- [ ] 実装コード・ドキュメントのコミット＆プッシュ
+- [x] ウォークスルー（`docs/ruler_refinement/walkthrough.md`）の作成
+- [x] 変更履歴（`docs/history.md`）に Ver 0.2.26 の追記
+- [x] 実装コード・ドキュメントのコミット＆プッシュ
 - [ ] ユーザーへの完了報告・確認要請

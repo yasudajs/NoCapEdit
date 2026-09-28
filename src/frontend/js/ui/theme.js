@@ -2,6 +2,7 @@ import { t } from '../../i18n.js';
 import { appState, elements, DEFAULT_MONOSPACE_FONTS } from '../state.js';
 import { invoke, ensureTauriApi } from '../core/tauri.js';
 import { updateStatus } from './tabs.js';
+import { syncRulerMetrics } from './ruler.js';
 
 export function applyThemeUI(theme) {
     document.body.classList.remove('light-theme', 'soft-dark-theme');
@@ -124,5 +125,6 @@ export function applyFontFamily() {
     } else {
         document.documentElement.style.setProperty('--editor-font-family', `"${appState.fontFamily}", ${DEFAULT_MONOSPACE_FONTS}`);
     }
+    syncRulerMetrics();
 }
 

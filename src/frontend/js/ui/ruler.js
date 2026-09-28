@@ -1,3 +1,4 @@
+import { t } from '../../i18n.js';
 import { appState, elements } from '../state.js';
 import { getEditorView } from './codemirror.js';
 import { getCurrentTab } from './tabs.js';
@@ -164,7 +165,7 @@ function onRulerClick(e) {
         tab.rulerMarkers.splice(existingIndex, 1);
     } else {
         if (tab.rulerMarkers.length >= MAX_MARKERS) {
-            console.warn(`[Ruler] マーカーの上限（${MAX_MARKERS}個）に達しています`);
+            console.warn(`[Ruler] ${t('ruler.marker.maxReached', { max: MAX_MARKERS })}`);
             return;
         }
         tab.rulerMarkers.push(col);
@@ -188,6 +189,9 @@ export function renderRulerTicks() {
 
     const fragment = document.createDocumentFragment();
     const totalCols = DEFAULT_RULER_COLS;
+
+    // ルーラートラック幅を全目盛り＋余白分に動的設定（極大フォントでも途切れないようにする）
+    elements.rulerTrack.style.width = `${Math.ceil(totalCols * charWidth) + 10}px`;
 
     elements.rulerTrack.innerHTML = '';
 
@@ -260,7 +264,7 @@ export function renderMarkersAndGuides() {
         marker.dataset.col = String(col);
         marker.style.left = `${xInTrack}px`;
         marker.textContent = '▼';
-        marker.title = `${col}桁目マーカー (ドラッグで移動、クリックで削除)`;
+        marker.title = t('ruler.marker.tooltip', { col });
         elements.rulerTrack.appendChild(marker);
 
         // エディタ本文上の縦破線ガイド（マーカー先端のX座標と完全一致、文字と文字の間に垂直に伸びる）
@@ -313,7 +317,7 @@ function setupMarkerDrag(marker, initialCol, baseLeft, guide) {
 
                 const newMarkerLeft = Math.round(col * charWidth);
                 marker.style.left = `${newMarkerLeft}px`;
-                marker.title = `${col}桁目マーカー (ドラッグで移動、クリックで削除)`;
+                marker.title = t('ruler.marker.tooltip', { col });
 
                 if (guide) {
                     guide.style.left = `${Math.round(baseLeft + newMarkerLeft - currentScrollLeft)}px`;
@@ -430,10 +434,10 @@ export function syncRulerMetrics() {
 }
 
 /**
- * ルーラーの表示・非表示を適用
+ * ルーラーの表示・非表示を適用（DOMの表示切替）
  * @param {boolean} enable
  */
-export function applyRuler(enable) {
+export function setRulerVisibility(enable) {
     if (!elements.rulerContainer || !elements.rulerGuidesOverlay) {
         initRuler();
     }

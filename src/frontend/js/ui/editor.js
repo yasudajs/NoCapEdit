@@ -5,7 +5,7 @@ import { renderTabs, updateTabStatus } from './tabs.js';
 import { autoSave } from '../core/fileSystem.js';
 import { getContent, setContent, getCursorMetrics, getSelection, setSelection, replaceRange, focusEditor, getEditorState, updateWrap, updateLineNumbers, getEditorView, insertTimestampCommand, resyncEditorPosition } from './codemirror.js';
 import { isFindWidgetOpen, updateMatches } from './findReplace.js';
-import { applyRuler as setRulerVisible, updateRulerCursor, syncRulerMetrics } from './ruler.js';
+import { setRulerVisibility, updateRulerCursor, syncRulerMetrics } from './ruler.js';
 
 export { resyncEditorPosition };
 
@@ -188,7 +188,7 @@ export function toggleLineNumbers() {
  * @param {boolean} enable - ルーラーを表示するかどうか
  */
 export function applyRuler(enable) {
-    setRulerVisible(enable);
+    setRulerVisibility(enable);
 }
 
 export function toggleRuler() {
