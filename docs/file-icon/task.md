@@ -15,7 +15,7 @@
     - [x] `tauri.conf.json`
     - [x] `nsis/installer.nsi`
     - [x] `docs/DEVELOPMENT.md`
-  - [ ] `docs/spec.md` にファイルアイコン仕様・レジストリ仕様を追記
+  - [x] `docs/spec.md` にファイルアイコン仕様・レジストリ仕様を追記
 
 - [ ] **フェーズ 3: アイコンリソース作成**
   - [ ] `icons/document.png`（マスター高解像度 PNG 512x512）の作成

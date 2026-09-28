@@ -4,7 +4,7 @@
 - アプリ名: NoCapEdit
 - 略称: nce
 - 文書目的: 製品の仕様範囲と判断基準を定義する
-- 対象バージョン: Windows向け 0.2.x (次期バージョン: 0.2.21)
+- 対象バージョン: Windows向け 0.2.x (次期バージョン: 0.2.22)
 - 最終更新日: 2026-09-28
 
 > [!NOTE]
@@ -200,11 +200,24 @@ NoCapEdit は、起動直後からすぐに書き始められ、ファイル名�
     - 範囲選択をしていない場合: `Ln X, Col Y | Z chars | Font xx pt | LH x xx` （Zは文字数）
     - 範囲選択をしている場合: `Ln X, Col Y | S / Z chars | Font xx pt | LH x xx` （Sは選択範囲の文字数、Zは全体文字数）
 
-### 4.6 独自拡張子（.nctx）とOS関連付け・単一ウィンドウ動作（シングルインスタンス）
+### 4.6 独自拡張子（.nctx）・主要拡張子のOS関連付け、ファイル専用アイコン、単一ウィンドウ動作（シングルインスタンス）
 - **ファイル保存と拡張子**:
   - ファイル保存（別名保存）ダイアログでは、デフォルトを `.nctx` (NoCap Text) としつつ、`.txt`（一般テキスト）、`.ncmd`（Markdown）も選択可能とする。
-- **OSファイル関連付け**:
-  - インストール時に `.nctx` 拡張子をアプリに関連付け、OS上でダブルクリックした際に NoCapEdit で開けるようにする。
+- **ファイル専用アイコン（document.ico）とアプリアイコンの分離**:
+  - **アプリアイコン**: `NoCapEdit.exe` 本体、デスクトップショートカット、スタートメニュー、タスクバー等では従来の丸い NoCapEdit アプリアイコン（赤丸＋帽子＋青E）を使用する。
+  - **ファイル専用アイコン**: NoCapEdit に関連付けられたファイル（`.txt`, `.nctx`, `.csv`, `.py` 等）には、専用のドキュメントアイコン（右上の角が折れた白い紙の文書＋罫線＋左上に NoCapEdit の丸いロゴを配置）を表示する。
+  - Windows 用マルチサイズ ICO（16x16, 24x24, 32x32, 48x48, 64x64, 128x128, 256x256）としてビルド・同梱され、`$INSTDIR\document.ico` として配置される。
+- **OSファイル関連付けとレジストリ登録（NSISインストーラー）**:
+  - **全関連付けファイルへの自動適用**: `Software\Classes\Applications\NoCapEdit.exe\DefaultIcon` に `document.ico` を登録することにより、エクスプローラーでユーザーが「プログラムから開く > 常にこのアプリを使って開く」で NoCapEdit を選択したすべてのファイルに対して、自動的に専用ファイルアイコンが表示される。
+  - **共通ドキュメント ProgID（`NoCapEdit.Document`）**: `Software\Classes\NoCapEdit.Document` を定義し、`DefaultIcon` に `document.ico`、`shell\open\command` に実行ファイルパスを指定。
+  - **主要対応拡張子の登録（SupportedTypes / Capabilities）**:
+    - テキスト・文書系: `.txt`, `.text`, `.nctx`, `.ncmd`, `.md`, `.markdown`
+    - データ系: `.csv`, `.tsv`, `.json`, `.jsonl`, `.xml`, `.yaml`, `.yml`
+    - Web・フロントエンド系: `.html`, `.htm`, `.css`, `.scss`, `.js`, `.mjs`, `.ts`, `.tsx`, `.jsx`
+    - プログラミング言語系: `.py`, `.pyw`, `.java`, `.c`, `.h`, `.cpp`, `.hpp`, `.cs`, `.rs`, `.go`, `.php`, `.rb`, `.lua`, `.sh`, `.bash`, `.ps1`, `.sql`
+    - ログ・一時ファイル・設定系: `.log`, `.tmp`, `.temp`, `.bak`, `.ini`, `.conf`, `.cfg`, `.env`
+    - 上記拡張子を `Applications\NoCapEdit.exe\SupportedTypes` に登録し、「プログラムから開く」の推奨候補に表示させる。また Windows の「既定のアプリ」画面（`Capabilities\FileAssociations`）にも登録。
+  - **アンインストール**: 関連付けしたレジストリキーおよび `document.ico` を確実に削除し、`SHChangeNotify`（`SHCNE_ASSOCCHANGED`）でアイコンキャッシュを更新する。
 - **単一ウィンドウ動作（シングルインスタンス）**:
   - アプリは常に単一のメインウィンドウでのみ動作する（多重起動の防止）。
   - Tauri 公式の `tauri-plugin-single-instance` を採用し、OSネイティブのプロセス間通信（Windows: 名前付きパイプ、macOS/Linux: UNIXドメインソケット）によって安全に制御する。TCPポートを使用しないため、セキュリティ警告やポート競合は発生しない。
