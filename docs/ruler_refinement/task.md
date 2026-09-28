@@ -13,13 +13,13 @@
 ### 準備・バージョン管理
 - [x] 作業ブランチ `feature/ruler-refinement` の作成
 - [x] ドキュメントを `docs/wip/ruler_refinement/` から `docs/ruler_refinement/` へ移動・コミット・プッシュ
-- [ ] バージョン番号の更新（`0.2.26` / 5ファイル）
-  - [ ] `Cargo.toml`
-  - [ ] `package.json`
-  - [ ] `tauri.conf.json`
-  - [ ] `nsis/installer.nsi`
-  - [ ] `docs/DEVELOPMENT.md`
-- [ ] 仕様書（`spec.md`）の確認・必要に応じた更新
+- [x] バージョン番号の更新（`0.2.26` / 5ファイル）
+  - [x] `Cargo.toml`
+  - [x] `package.json`
+  - [x] `tauri.conf.json`
+  - [x] `nsis/installer.nsi`
+  - [x] `docs/DEVELOPMENT.md`
+- [x] 仕様書（`spec.md`）の確認・必要に応じた更新
 
 ### コード修正・改善
 - [ ] 🔴 **マーカーtitleのi18n化**:
