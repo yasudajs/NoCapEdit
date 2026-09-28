@@ -126,7 +126,7 @@ const DICT = {
             categories: {
                 view: "表示",
                 edit: "テキスト編集",
-                findReplace: "検索・置換",
+                findReplace: "検索・置換・移動",
                 fontAndLineHeight: "フォントサイズ・行間",
                 file: "ファイル・タブ操作",
                 settings: "設定画面の操作",
@@ -140,13 +140,15 @@ const DICT = {
                 duplicateLine: "行の上下複製",
                 deleteLine: "行の削除",
                 insertTimestamp: "現在日時の挿入",
+                gotoLine: "指定行へのジャンプ",
+                gotoLineSub: "※ -値: 行末からの行数へジャンプ、:指定: 指定列へカーソル移動",
                 openFind: "検索パネルを開く",
                 openReplace: "検索・置換パネルを開く",
                 findNextMatch: "次のマッチへ移動",
                 findPrevMatch: "前のマッチへ移動",
                 toggleMatchCase: "大文字/小文字区別の切り替え",
                 replaceAll: "すべて置換",
-                closeFind: "検索・置換パネルを閉じる",
+                closeFind: "検索・置換・移動パネルを閉じる",
                 indent: "インデント挿入",
                 unindent: "インデント削除",
                 openFile: "ファイルを開く",
@@ -178,6 +180,16 @@ const DICT = {
             }
         },
         ui: {
+            goto: {
+                placeholder: "行番号 (例: 15, -5, 10:5)",
+                range: "1 〜 {max}",
+                jump: "ジャンプ",
+                close: "閉じる (Esc)",
+                error: {
+                    range: "1 〜 {max} 行の範囲で指定してください",
+                    invalid: "有効な行番号を入力してください"
+                }
+            },
             find: {
                 placeholder: "検索",
                 replacePlaceholder: "置換",

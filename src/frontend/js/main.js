@@ -10,6 +10,7 @@ import { toggleSettingsDialog, closeSettingsDialog, openSettingsDialog, onThemeC
 import { applyThemeUI, loadSystemFonts, applyFontFamily, setShouldOpenFontPicker } from './ui/theme.js';
 import { setupKeyboardShortcuts } from './ui/shortcuts.js';
 import { initFindReplace } from './ui/findReplace.js';
+import { initGotoLine } from './ui/gotoLine.js';
 import { checkNewVersion } from './core/updater.js';
 
 function registerCloseHandler() {
@@ -334,6 +335,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         initElements();
         initFindReplace();
+        initGotoLine();
         initRuler();
         if (typeof applyI18nToDOM === 'function') {
             applyI18nToDOM();

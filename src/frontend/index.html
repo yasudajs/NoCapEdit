@@ -46,6 +46,19 @@
             <!-- 縦ガイド線オーバーレイ -->
             <div id="rulerGuidesOverlay" class="ruler-guides-overlay hidden"></div>
 
+            <!-- 指定行ジャンプウィジェット -->
+            <div id="gotoLineWidget" class="goto-line-widget hidden">
+                <div class="goto-row">
+                    <div class="input-with-range">
+                        <input type="text" id="gotoInput" class="goto-input" placeholder="行番号 (例: 15, -5, 10:5)" data-i18n-placeholder="ui.goto.placeholder" autocomplete="off" spellcheck="false">
+                        <span id="gotoRangeHint" class="goto-range-hint">1 〜 1</span>
+                    </div>
+                    <button id="gotoJumpBtn" class="action-btn" title="ジャンプ (Enter)" data-i18n="ui.goto.jump">ジャンプ</button>
+                    <button id="closeGotoBtn" class="icon-btn" title="閉じる (Esc)" data-i18n-title="ui.goto.close">✕</button>
+                </div>
+                <div id="gotoErrorMsg" class="goto-error-msg hidden"></div>
+            </div>
+
             <!-- 検索・置換ウィジェット -->
             <div id="findReplaceWidget" class="find-replace-widget hidden">
                 <div class="find-row">

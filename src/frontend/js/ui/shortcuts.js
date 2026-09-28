@@ -3,6 +3,7 @@ import { triggerManualSave, openFileDialog } from '../core/fileSystem.js';
 import { switchTabByOffset, createNewTab, closeTab } from './tabs.js';
 import { toggleSettingsDialog } from './settings.js';
 import { openFind, openReplace, closeFind, isFindWidgetOpen } from './findReplace.js';
+import { toggleGoto, closeGoto, isGotoOpen } from './gotoLine.js';
 import { appState } from '../state.js';
 import { appWindow } from '../core/tauri.js';
 import { t } from '../../i18n.js';
@@ -35,11 +36,16 @@ export function setupKeyboardShortcuts() {
             return;
         }
 
-        // Esc キーで検索バーを閉じる
+        // Esc キーで検索バーまたは行ジャンプバーを閉じる
         if (e.key === 'Escape' || e.code === 'Escape') {
             if (isFindWidgetOpen()) {
                 e.preventDefault();
                 closeFind();
+                return;
+            }
+            if (isGotoOpen()) {
+                e.preventDefault();
+                closeGoto();
                 return;
             }
         }
@@ -147,6 +153,11 @@ export function setupKeyboardShortcuts() {
             else if (e.key === ',' || e.code === 'Comma') {
                 e.preventDefault();
                 toggleSettingsDialog();
+            }
+            // 指定行ジャンプを開く: "g" / "G" キー
+            else if (e.key === 'g' || e.key === 'G' || e.code === 'KeyG') {
+                e.preventDefault();
+                toggleGoto();
             }
             // 検索バーを開く: "f" / "F" キー
             else if (e.key === 'f' || e.key === 'F' || e.code === 'KeyF') {

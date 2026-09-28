@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title data-i18n="help.title">ショートカット一覧</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="style.css">
     <style>
         html, body {
@@ -48,6 +49,14 @@
         .shortcut-desc {
             display: flex;
             align-items: center;
+        }
+        .shortcut-note {
+            grid-column: 1 / -1;
+            text-align: right;
+            font-size: 13.5px;
+            color: var(--text-primary, #d4d4d4);
+            margin-top: -4px;
+            margin-bottom: 4px;
         }
         .help-footer {
             margin-top: 24px;
@@ -120,7 +129,7 @@
         <div class="shortcut-key">Shift + Tab</div>
     </div>
 
-    <h2 class="category" data-i18n="help.categories.findReplace">検索・置換</h2>
+    <h2 class="category" data-i18n="help.categories.findReplace">検索・置換・移動</h2>
     <div class="shortcut-list">
         <div class="shortcut-desc" data-i18n="help.shortcuts.openFind">検索パネルを開く</div>
         <div class="shortcut-key">Ctrl + F</div>
@@ -140,7 +149,11 @@
         <div class="shortcut-desc" data-i18n="help.shortcuts.replaceAll">すべて置換</div>
         <div class="shortcut-key">Alt + A</div>
 
-        <div class="shortcut-desc" data-i18n="help.shortcuts.closeFind">検索・置換パネルを閉じる</div>
+        <div class="shortcut-desc" data-i18n="help.shortcuts.gotoLine">指定行へのジャンプ</div>
+        <div class="shortcut-key">Ctrl + G</div>
+        <div class="shortcut-note" data-i18n="help.shortcuts.gotoLineSub">※ -値: 行末からの行数へジャンプ、:指定: 指定列へカーソル移動</div>
+
+        <div class="shortcut-desc" data-i18n="help.shortcuts.closeFind">検索・置換・移動パネルを閉じる</div>
         <div class="shortcut-key">Esc</div>
     </div>
 

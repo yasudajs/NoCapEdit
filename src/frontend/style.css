@@ -1071,3 +1071,81 @@ body.ruler-marker-dragging * {
     color: var(--bg-primary);
 }
 
+/* 指定行ジャンプウィジェット (右上フロートカード) */
+.goto-line-widget {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    z-index: 500;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 12px;
+    min-width: 290px;
+}
+
+.goto-line-widget.hidden {
+    display: none;
+}
+
+.goto-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.input-with-range {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    position: relative;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    transition: border-color 0.2s ease;
+}
+
+.input-with-range:focus-within {
+    border-color: var(--accent);
+}
+
+.input-with-range.error {
+    border-color: var(--status-error) !important;
+}
+
+.goto-input {
+    flex: 1;
+    padding: 5px 8px;
+    background-color: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 12px;
+    outline: none;
+    min-width: 140px;
+}
+
+.goto-range-hint {
+    font-size: 11px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    padding-right: 8px;
+    user-select: none;
+}
+
+.goto-error-msg {
+    font-size: 11px;
+    color: var(--status-error);
+    padding: 0 2px;
+    line-height: 1.3;
+}
+
+.goto-error-msg.hidden {
+    display: none;
+}
+
+
