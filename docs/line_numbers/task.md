@@ -1,0 +1,41 @@
+# タスクリスト: 行番号表示機能 (Line Numbers)
+
+- [x] 作業ブランチの作成 (`feature/line-numbers`) <!-- id: 0 -->
+- [x] ドキュメントの移動 (`docs/wip/line_numbers/` → `docs/line_numbers/`) とコミット <!-- id: 1 -->
+- [ ] 内部バージョン番号の更新 (`0.2.24`) <!-- id: 2 -->
+  - [ ] `Cargo.toml`
+  - [ ] `package.json`
+  - [ ] `tauri.conf.json`
+  - [ ] `nsis/installer.nsi`
+  - [ ] `docs/DEVELOPMENT.md`
+- [ ] 仕様書 (`docs/spec.md`) およびショートカット一覧 (`docs/SHORTCUTS.md`) の更新 <!-- id: 3 -->
+- [ ] バックエンド (Rust) の実装 <!-- id: 4 -->
+  - [ ] `src/settings.rs`: `AppSettings` および `SettingsResponse` に `line_numbers` 追加（デフォルト: `false`）
+  - [ ] `src/commands.rs`: `get_settings()` で `line_numbers` 返却
+- [ ] フロントエンドの実装 <!-- id: 5 -->
+  - [ ] `src/frontend/style.css`: 各テーマにガター用CSS変数（`--gutter-bg`, `--gutter-text`, `--gutter-border`, `--gutter-active-text`）を追加
+  - [ ] `src/frontend/i18n.js`: 設定用テキスト・ヘルプカテゴリ（「表示」「フォントサイズ・行間」等）の追加
+  - [ ] `src/frontend/index.html`: 設定ドックに行番号セレクトボックスを追加（デフォルト: 無効）
+  - [ ] `src/frontend/help.html`: カテゴリ再編成（「表示」「テキスト編集」「検索・置換」「フォントサイズ・行間」）と `Alt + L` 追記
+  - [ ] `src/frontend/js/state.js`: `appState.lineNumbers`（初期値 `false`）および DOM要素キャッシュ追加
+  - [ ] `src/frontend/js/core/settingsManager.js`: 設定保存ペイロードに `line_numbers` 追加
+  - [ ] `src/frontend/js/ui/codemirror.js`: `lineNumbers` 拡張、Compartment、動的更新関数、ガタースタイル追加、JSDoc更新 (`initCodeMirror` / `getDefaultExtensions`)
+  - [ ] `src/frontend/js/ui/editor.js`: `applyLineNumbers()` および `toggleLineNumbers()` 実装
+  - [ ] `src/frontend/js/ui/shortcuts.js`: `Alt + L` ショートカット登録（`toggleLineNumbers` 呼び出し）
+  - [ ] `src/frontend/js/ui/settings.js`: 設定ドック開閉・保存・キーボードナビゲーション連動
+  - [ ] `src/frontend/js/main.js`: 初期化・設定適用・イベントリスナー登録
+  - [ ] `src/frontend/js/ui/tabs.js`: タブ新規作成時（`tab.lineNumbers` 初期化）・切り替え時（状態復元）の実装
+- [ ] 検証とテスト <!-- id: 6 -->
+  - [ ] ビルド確認 (`npm run build`, `cargo check`)
+  - [ ] 起動時の初期状態確認（デフォルトOFF）
+  - [ ] `Alt + L` でのタブ個別トグル動作確認
+  - [ ] 複数タブ切り替え時の状態復元確認
+  - [ ] 設定ドックでのデフォルト変更および再起動後の永続化確認
+  - [ ] 折り返し行およびズーム・行間変更との連動確認
+  - [ ] Dark / Soft Dark / Light テーマでの配色・CSS変数適用確認
+  - [ ] `F1` ヘルプ画面のカテゴリ構成・表示確認
+  - [ ] JSDocコメントの確認
+- [ ] 完了ドキュメントと履歴の更新 <!-- id: 7 -->
+  - [ ] `docs/line_numbers/walkthrough.md` の作成
+  - [ ] `docs/history.md` に `0.2.24` の変更履歴を追記
+  - [ ] コミット＆プッシュ
