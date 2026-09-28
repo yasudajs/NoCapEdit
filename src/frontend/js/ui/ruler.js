@@ -11,35 +11,40 @@ let cachedGutterOffset = 0;
 
 /**
  * 等幅フォントの半角1文字幅（px）を取得
+ * エディタ本文（.cm-content）と同一のCSSコンテキストで半角文字 '0' を直接実測
  * @returns {number}
  */
 export function getCharWidth() {
     const view = getEditorView();
-    if (view && view.defaultCharacterWidth > 0) {
-        cachedCharWidth = view.defaultCharacterWidth;
-        return cachedCharWidth;
+    if (view && view.dom) {
+        const content = view.dom.querySelector('.cm-content');
+        if (content) {
+            const span = document.createElement('span');
+            span.style.visibility = 'hidden';
+            span.style.position = 'absolute';
+            span.style.pointerEvents = 'none';
+            span.textContent = '0';
+            content.appendChild(span);
+            const width = span.getBoundingClientRect().width;
+            content.removeChild(span);
+            if (width > 0) {
+                cachedCharWidth = width;
+                return cachedCharWidth;
+            }
+        }
     }
 
     if (cachedCharWidth > 0) {
         return cachedCharWidth;
     }
 
-    // フォールバック計測
-    const span = document.createElement('span');
-    span.style.fontFamily = getComputedStyle(document.documentElement).getPropertyValue('--editor-font-family') || 'monospace';
-    span.style.fontSize = getComputedStyle(document.documentElement).getPropertyValue('--editor-font-size') || '20px';
-    span.style.visibility = 'hidden';
-    span.style.position = 'absolute';
-    span.textContent = '0';
-    document.body.appendChild(span);
-    const width = span.getBoundingClientRect().width || 12;
-    document.body.removeChild(span);
-    cachedCharWidth = width;
-    return cachedCharWidth;
+    return 12;
 }
 
 /**
- * 行番号ガターおよびエディタ本文パディングの左オフセット幅（px）を取得
+ * テキスト本文の1文字目左端座標（px）を取得
+ * view.coordsAtPos(0) または .cm-line の実際の描画左端座標から算出し、
+ * 0桁目の目盛り線を1文字目の左端と完全に一致させる
  * @returns {number}
  */
 export function getGutterOffset() {
@@ -48,10 +53,21 @@ export function getGutterOffset() {
         const container = elements.editor.closest('.editor-container') || elements.editor;
         const containerRect = container.getBoundingClientRect();
 
-        const content = view.dom.querySelector('.cm-content');
-        if (content) {
-            const contentRect = content.getBoundingClientRect();
-            const offset = contentRect.left - containerRect.left;
+        // 1. view.coordsAtPos(0) による1文字目の描画左端座標
+        const pos0 = view.coordsAtPos(0);
+        if (pos0) {
+            const offset = pos0.left - containerRect.left + currentScrollLeft;
+            if (offset > 0) {
+                cachedGutterOffset = offset;
+                return cachedGutterOffset;
+            }
+        }
+
+        // 2. .cm-line の左端座標（content の padding 適用後の文字開始位置）
+        const firstLine = view.dom.querySelector('.cm-line');
+        if (firstLine) {
+            const lineRect = firstLine.getBoundingClientRect();
+            const offset = lineRect.left - containerRect.left + currentScrollLeft;
             if (offset > 0) {
                 cachedGutterOffset = offset;
                 return cachedGutterOffset;
@@ -59,7 +75,7 @@ export function getGutterOffset() {
         }
     }
 
-    // フォールバック計算
+    // フォールバック計算（ガター幅 + 16px padding）
     let fallback = 16;
     if (view && view.dom) {
         const gutters = view.dom.querySelector('.cm-gutters');
@@ -165,6 +181,9 @@ function onRulerClick(e) {
 
 /**
  * ルーラーの目盛り（短・中・長）を描画
+ * - 0桁目: 1文字目の左端
+ * - 1〜9桁目: 各文字と文字の境界
+ * - 10桁目: 10文字目の右端境界（長目盛り＋数字「10」）
  */
 export function renderRulerTicks() {
     if (!elements.rulerTrack) return;
@@ -175,16 +194,16 @@ export function renderRulerTicks() {
     const fragment = document.createDocumentFragment();
     const totalCols = DEFAULT_RULER_COLS;
 
-    // 既存の目盛り・数字・マーカーをクリア
     elements.rulerTrack.innerHTML = '';
 
-    // 0桁目の境界線（先頭文字の左端）
+    // 0桁目の境界線（1文字目の左端）
     const startTick = document.createElement('div');
     startTick.className = 'ruler-tick long';
     startTick.style.left = '0px';
     fragment.appendChild(startTick);
 
     for (let i = 1; i <= totalCols; i++) {
+        // 各文字の右境界位置（文字と文字の間）
         const left = Math.round(i * charWidth);
 
         const tick = document.createElement('div');
@@ -213,11 +232,11 @@ export function renderRulerTicks() {
 
 /**
  * マーカー（▼）と縦ガイド線を描画
+ * 文字と文字の間の目盛り線位置にピタリと配置
  */
 export function renderMarkersAndGuides() {
     if (!elements.rulerTrack || !elements.rulerGuidesOverlay || !elements.rulerTrackWrapper) return;
 
-    // 既存のマーカー要素とガイド線要素をクリア
     elements.rulerTrack.querySelectorAll('.ruler-marker').forEach(el => el.remove());
     elements.rulerGuidesOverlay.innerHTML = '';
 
@@ -240,7 +259,7 @@ export function renderMarkersAndGuides() {
     tab.rulerMarkers.forEach(col => {
         const xInTrack = Math.round(col * charWidth);
 
-        // ルーラー上のマーカー（▼）
+        // ルーラー上のマーカー（▼）: 文字と文字の間の目盛り線の真上
         const marker = document.createElement('div');
         marker.className = 'ruler-marker';
         marker.dataset.col = String(col);
@@ -249,7 +268,7 @@ export function renderMarkersAndGuides() {
         marker.title = `${col}桁目マーカー (クリックで削除)`;
         elements.rulerTrack.appendChild(marker);
 
-        // エディタ本文上の縦破線ガイド（マーカー先端のX座標と完全一致）
+        // エディタ本文上の縦破線ガイド（マーカー先端のX座標と完全一致、文字と文字の間に垂直に伸びる）
         const guide = document.createElement('div');
         guide.className = 'ruler-guide-line';
         guide.dataset.col = String(col);
@@ -281,7 +300,6 @@ export function updateRulerCursor() {
 
     if (coords && elements.rulerTrackWrapper) {
         const trackRect = elements.rulerTrackWrapper.getBoundingClientRect();
-        // coords.left（キャレットの画面X座標）から trackWrapper の左端を引いた位置
         const cursorX = coords.left - trackRect.left;
         elements.rulerCursor.style.left = `${Math.round(cursorX)}px`;
         elements.rulerCursor.classList.remove('hidden');
@@ -301,7 +319,6 @@ export function syncRulerScroll(scrollLeft) {
         elements.rulerTrack.style.transform = `translateX(-${scrollLeft}px)`;
     }
 
-    // ガイド線の水平位置をスクロール量に合わせて更新
     if (elements.rulerGuidesOverlay && elements.rulerTrackWrapper) {
         const container = elements.editor?.closest('.editor-container') || elements.editor;
         if (!container) return;
@@ -320,7 +337,6 @@ export function syncRulerScroll(scrollLeft) {
         });
     }
 
-    // スクロール時もカーソルインジケーターを再同期
     updateRulerCursor();
 }
 
@@ -328,7 +344,7 @@ export function syncRulerScroll(scrollLeft) {
  * フォント変更、ズーム、行番号ON/OFF等に伴うメトリクスの再同期
  */
 export function syncRulerMetrics() {
-    cachedCharWidth = 0; // キャッシュクリア
+    cachedCharWidth = 0; // キャッシュクリアして正確に再実測
     const gutterOffset = getGutterOffset();
 
     if (elements.rulerGutterSpacer) {
