@@ -12,13 +12,13 @@
 ### 準備・バージョン管理
 - [x] 作業ブランチ `feature/ruler` の作成
 - [x] ドキュメントを `docs/wip/ruler/` から `docs/ruler/` へ移動・コミット・プッシュ
-- [ ] バージョン番号の更新（`0.2.25` / 5ファイル）
-  - [ ] `Cargo.toml`
-  - [ ] `package.json`
-  - [ ] `tauri.conf.json`
-  - [ ] `nsis/installer.nsi`
-  - [ ] `docs/DEVELOPMENT.md`
-- [ ] 仕様書（`spec.md`）の最新化
+- [x] バージョン番号の更新（`0.2.25` / 5ファイル）
+  - [x] `Cargo.toml`
+  - [x] `package.json`
+  - [x] `tauri.conf.json`
+  - [x] `nsis/installer.nsi`
+  - [x] `docs/DEVELOPMENT.md`
+- [x] 仕様書（`spec.md`）の最新化
 
 ### バックエンド実装 (Rust)
 - [ ] `src/settings.rs`: `AppSettings` に `ruler: bool` 追加および単体テスト実装
