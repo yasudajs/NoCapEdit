@@ -167,7 +167,6 @@ const DICT = {
                 lineHeightInc: "行間を広げる",
                 lineHeightDec: "行間を狭める",
                 resetZoom: "フォントサイズ・行間のリセット",
-                toggleWordWrap: "行の折り返し切り替え",
                 openHelp: "ヘルプ画面を開く",
                 exitApp: "アプリを終了",
                 closeHelp: "ヘルプを閉じる"
@@ -278,9 +277,6 @@ const DICT = {
                     title: "お知らせ",
                     ok: "OK"
                 }
-            },
-            find: {
-                replacedCount: "{count} 件を置換しました"
             }
         }
     }
