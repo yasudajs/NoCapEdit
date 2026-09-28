@@ -24,6 +24,6 @@
 - [x] リンク・整合性・フォーマットの検証
 
 ## ドキュメント・履歴の作成
-- [ ] `docs/docs-refactoring/walkthrough.md` の作成
-- [ ] `docs/history.md` にバージョン `0.2.22` の変更履歴を追記
-- [ ] コミット＆プッシュおよびユーザーへの完了報告
+- [x] `docs/docs-refactoring/walkthrough.md` の作成
+- [x] `docs/history.md` にバージョン `0.2.23` の変更履歴を追記
+- [x] コミット＆プッシュおよびユーザーへの完了報告
