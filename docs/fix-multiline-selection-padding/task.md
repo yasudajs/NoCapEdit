@@ -11,13 +11,13 @@
 ## フェーズ 2: 実装作業の準備（※ユーザー承認・作業開始指示後に着手）
 - [x] 作業ブランチの作成 (`fix-multiline-selection-padding`)
 - [x] ドキュメントの配置移動 (`docs/wip/fix-multiline-selection-padding/` -> `docs/fix-multiline-selection-padding/`)
-- [ ] バージョン番号の更新（`0.2.28` -> `0.2.29`、5ファイル一括）
-  - [ ] `Cargo.toml`
-  - [ ] `package.json`
-  - [ ] `tauri.conf.json`
-  - [ ] `nsis/installer.nsi`
-  - [ ] `docs/DEVELOPMENT.md`
-- [ ] `docs/spec.md` の更新
+- [x] バージョン番号の更新（`0.2.28` -> `0.2.29`、5ファイル一括）
+  - [x] `Cargo.toml`
+  - [x] `package.json`
+  - [x] `tauri.conf.json`
+  - [x] `nsis/installer.nsi`
+  - [x] `docs/DEVELOPMENT.md`
+- [x] `docs/spec.md` の更新
 
 ---
 
