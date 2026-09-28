@@ -9,12 +9,12 @@
 - [ ] **フェーズ 2: 実装作業の開始（ユーザーの「作業開始」指示後）**
   - [x] `master` から作業用ブランチ `feature/file-icon` を作成
   - [x] `docs/wip/file-icon/` を `docs/file-icon/` へ移動・コミット＆プッシュ
-  - [ ] バージョン管理 5 ファイルのバージョン番号を `0.2.22` に更新
-    - [ ] `Cargo.toml`
-    - [ ] `package.json`
-    - [ ] `tauri.conf.json`
-    - [ ] `nsis/installer.nsi`
-    - [ ] `docs/DEVELOPMENT.md`
+  - [x] バージョン管理 5 ファイルのバージョン番号を `0.2.22` に更新
+    - [x] `Cargo.toml`
+    - [x] `package.json`
+    - [x] `tauri.conf.json`
+    - [x] `nsis/installer.nsi`
+    - [x] `docs/DEVELOPMENT.md`
   - [ ] `docs/spec.md` にファイルアイコン仕様・レジストリ仕様を追記
 
 - [ ] **フェーズ 3: アイコンリソース作成**
