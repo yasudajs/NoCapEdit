@@ -17,9 +17,9 @@
     - [x] `docs/DEVELOPMENT.md`
   - [x] `docs/spec.md` にファイルアイコン仕様・レジストリ仕様を追記
 
-- [ ] **フェーズ 3: アイコンリソース作成**
-  - [ ] `icons/document.png`（マスター高解像度 PNG 512x512）の作成
-  - [ ] `icons/document.ico`（マルチサイズ ICO: 16, 24, 32, 48, 64, 128, 256）の作成
+- [x] **フェーズ 3: アイコンリソース作成**
+  - [x] `icons/document.png`（マスター高解像度 PNG 512x512）の作成
+  - [x] `icons/document.ico`（マルチサイズ ICO: 16, 24, 32, 48, 64, 128, 256）の作成
 
 - [ ] **フェーズ 4: インストーラー・関連付けの実装**
   - [ ] `nsis/installer.nsi` の改修
