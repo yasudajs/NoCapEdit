@@ -36,7 +36,7 @@ export function updateEditorMetrics() {
     }
 
     const metrics = getCursorMetrics(appState.charCountMode || 'with_newline');
-    updateRulerCursor(metrics.col);
+    updateRulerCursor();
 
     let charDisplay = '';
     if (metrics.isSelected) {

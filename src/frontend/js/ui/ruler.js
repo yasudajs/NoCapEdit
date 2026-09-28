@@ -30,7 +30,7 @@ export function getCharWidth() {
     span.style.fontSize = getComputedStyle(document.documentElement).getPropertyValue('--editor-font-size') || '20px';
     span.style.visibility = 'hidden';
     span.style.position = 'absolute';
-    span.textContent = 'M';
+    span.textContent = '0';
     document.body.appendChild(span);
     const width = span.getBoundingClientRect().width || 12;
     document.body.removeChild(span);
@@ -44,24 +44,30 @@ export function getCharWidth() {
  */
 export function getGutterOffset() {
     const view = getEditorView();
-    let offset = 16; // cm-content のデフォルト左パディング
+    if (view && view.dom && elements.editor) {
+        const container = elements.editor.closest('.editor-container') || elements.editor;
+        const containerRect = container.getBoundingClientRect();
 
-    if (view && view.dom) {
-        const gutters = view.dom.querySelector('.cm-gutters');
-        if (gutters) {
-            offset += gutters.offsetWidth;
-        }
         const content = view.dom.querySelector('.cm-content');
         if (content) {
-            const style = window.getComputedStyle(content);
-            const paddingLeft = parseFloat(style.paddingLeft);
-            if (!isNaN(paddingLeft)) {
-                offset = (gutters ? gutters.offsetWidth : 0) + paddingLeft;
+            const contentRect = content.getBoundingClientRect();
+            const offset = contentRect.left - containerRect.left;
+            if (offset > 0) {
+                cachedGutterOffset = offset;
+                return cachedGutterOffset;
             }
         }
     }
 
-    cachedGutterOffset = offset;
+    // フォールバック計算
+    let fallback = 16;
+    if (view && view.dom) {
+        const gutters = view.dom.querySelector('.cm-gutters');
+        if (gutters && gutters.offsetWidth > 0) {
+            fallback = gutters.offsetWidth + 16;
+        }
+    }
+    cachedGutterOffset = fallback;
     return cachedGutterOffset;
 }
 
@@ -86,6 +92,16 @@ export function initRuler() {
         if (!isRulerActive()) return;
         syncRulerMetrics();
     });
+
+    // エディタ領域のサイズ変動（行番号ガター幅変化、フォント変更等）を検知して自動同期
+    if (window.ResizeObserver && elements.editor) {
+        const ro = new ResizeObserver(() => {
+            if (isRulerActive()) {
+                syncRulerMetrics();
+            }
+        });
+        ro.observe(elements.editor);
+    }
 }
 
 /**
@@ -125,8 +141,8 @@ function onRulerClick(e) {
     }
 
     // トラック内でのX座標から桁を計算
-    const rect = elements.rulerTrackWrapper.getBoundingClientRect();
-    const xInTrack = e.clientX - rect.left + currentScrollLeft;
+    const trackRect = elements.rulerTrackWrapper.getBoundingClientRect();
+    const xInTrack = e.clientX - trackRect.left + currentScrollLeft;
     const col = Math.round(xInTrack / charWidth);
 
     if (col < 1) return;
@@ -159,8 +175,14 @@ export function renderRulerTicks() {
     const fragment = document.createDocumentFragment();
     const totalCols = DEFAULT_RULER_COLS;
 
-    // 既存の目盛り・数字・マーカー・カーソルを退避・クリア
+    // 既存の目盛り・数字・マーカーをクリア
     elements.rulerTrack.innerHTML = '';
+
+    // 0桁目の境界線（先頭文字の左端）
+    const startTick = document.createElement('div');
+    startTick.className = 'ruler-tick long';
+    startTick.style.left = '0px';
+    fragment.appendChild(startTick);
 
     for (let i = 1; i <= totalCols; i++) {
         const left = Math.round(i * charWidth);
@@ -185,11 +207,6 @@ export function renderRulerTicks() {
         fragment.appendChild(tick);
     }
 
-    // カーソルインジケーターをTrackに再配置
-    if (elements.rulerCursor) {
-        elements.rulerTrack.appendChild(elements.rulerCursor);
-    }
-
     elements.rulerTrack.appendChild(fragment);
     renderMarkersAndGuides();
 }
@@ -198,7 +215,7 @@ export function renderRulerTicks() {
  * マーカー（▼）と縦ガイド線を描画
  */
 export function renderMarkersAndGuides() {
-    if (!elements.rulerTrack || !elements.rulerGuidesOverlay) return;
+    if (!elements.rulerTrack || !elements.rulerGuidesOverlay || !elements.rulerTrackWrapper) return;
 
     // 既存のマーカー要素とガイド線要素をクリア
     elements.rulerTrack.querySelectorAll('.ruler-marker').forEach(el => el.remove());
@@ -210,8 +227,13 @@ export function renderMarkersAndGuides() {
     }
 
     const charWidth = getCharWidth();
-    const gutterOffset = getGutterOffset();
     if (charWidth <= 0) return;
+
+    const container = elements.editor?.closest('.editor-container') || elements.editor;
+    if (!container) return;
+    const containerRect = container.getBoundingClientRect();
+    const trackRect = elements.rulerTrackWrapper.getBoundingClientRect();
+    const baseLeft = trackRect.left - containerRect.left;
 
     const guideFragment = document.createDocumentFragment();
 
@@ -227,11 +249,11 @@ export function renderMarkersAndGuides() {
         marker.title = `${col}桁目マーカー (クリックで削除)`;
         elements.rulerTrack.appendChild(marker);
 
-        // エディタ本文上の縦破線ガイド
+        // エディタ本文上の縦破線ガイド（マーカー先端のX座標と完全一致）
         const guide = document.createElement('div');
         guide.className = 'ruler-guide-line';
         guide.dataset.col = String(col);
-        guide.style.left = `${gutterOffset + xInTrack - currentScrollLeft}px`;
+        guide.style.left = `${Math.round(baseLeft + xInTrack - currentScrollLeft)}px`;
         guideFragment.appendChild(guide);
     });
 
@@ -239,26 +261,33 @@ export function renderMarkersAndGuides() {
 }
 
 /**
- * カーソル追従インジケーターの位置を更新
- * @param {number} col - 1-indexedの列番号
+ * カーソル追従インジケーターの位置を更新（全角・半角・タブ混在でも画面上のキャレット真上に完全一致）
  */
-export function updateRulerCursor(col) {
+export function updateRulerCursor() {
     if (!elements.rulerCursor) return;
     if (!isRulerActive()) {
         elements.rulerCursor.classList.add('hidden');
         return;
     }
 
-    const charWidth = getCharWidth();
-    if (charWidth <= 0 || !col || col < 1) {
+    const view = getEditorView();
+    if (!view || !elements.rulerTrackWrapper) {
         elements.rulerCursor.classList.add('hidden');
         return;
     }
 
-    // カーソルの位置: col - 1 文字目の右端 = (col - 1) * charWidth
-    const left = Math.round((col - 1) * charWidth);
-    elements.rulerCursor.style.left = `${left}px`;
-    elements.rulerCursor.classList.remove('hidden');
+    const head = view.state.selection.main.head;
+    const coords = view.coordsAtPos(head);
+
+    if (coords && elements.rulerTrackWrapper) {
+        const trackRect = elements.rulerTrackWrapper.getBoundingClientRect();
+        // coords.left（キャレットの画面X座標）から trackWrapper の左端を引いた位置
+        const cursorX = coords.left - trackRect.left;
+        elements.rulerCursor.style.left = `${Math.round(cursorX)}px`;
+        elements.rulerCursor.classList.remove('hidden');
+    } else {
+        elements.rulerCursor.classList.add('hidden');
+    }
 }
 
 /**
@@ -273,18 +302,26 @@ export function syncRulerScroll(scrollLeft) {
     }
 
     // ガイド線の水平位置をスクロール量に合わせて更新
-    if (elements.rulerGuidesOverlay) {
+    if (elements.rulerGuidesOverlay && elements.rulerTrackWrapper) {
+        const container = elements.editor?.closest('.editor-container') || elements.editor;
+        if (!container) return;
+        const containerRect = container.getBoundingClientRect();
+        const trackRect = elements.rulerTrackWrapper.getBoundingClientRect();
+        const baseLeft = trackRect.left - containerRect.left;
         const charWidth = getCharWidth();
-        const gutterOffset = getGutterOffset();
+
         const guides = elements.rulerGuidesOverlay.querySelectorAll('.ruler-guide-line');
         guides.forEach(guide => {
             const col = parseInt(guide.dataset.col, 10);
             if (!isNaN(col)) {
                 const xInTrack = Math.round(col * charWidth);
-                guide.style.left = `${gutterOffset + xInTrack - scrollLeft}px`;
+                guide.style.left = `${Math.round(baseLeft + xInTrack - scrollLeft)}px`;
             }
         });
     }
+
+    // スクロール時もカーソルインジケーターを再同期
+    updateRulerCursor();
 }
 
 /**
@@ -295,11 +332,12 @@ export function syncRulerMetrics() {
     const gutterOffset = getGutterOffset();
 
     if (elements.rulerGutterSpacer) {
-        elements.rulerGutterSpacer.style.width = `${gutterOffset}px`;
+        elements.rulerGutterSpacer.style.width = `${Math.max(0, Math.round(gutterOffset))}px`;
     }
 
     renderRulerTicks();
     syncRulerScroll(currentScrollLeft);
+    updateRulerCursor();
 }
 
 /**
