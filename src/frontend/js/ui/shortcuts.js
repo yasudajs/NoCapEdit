@@ -1,4 +1,4 @@
-import { increaseLineHeight, decreaseLineHeight, zoomIn, zoomOut, resetZoomAndLineHeight, toggleWordWrap } from './editor.js';
+import { increaseLineHeight, decreaseLineHeight, zoomIn, zoomOut, resetZoomAndLineHeight, toggleWordWrap, toggleLineNumbers } from './editor.js';
 import { triggerManualSave, openFileDialog } from '../core/fileSystem.js';
 import { switchTabByOffset, createNewTab, closeTab } from './tabs.js';
 import { toggleSettingsDialog } from './settings.js';
@@ -75,6 +75,15 @@ export function setupKeyboardShortcuts() {
             if (e.key === 'z' || e.key === 'Z' || e.code === 'KeyZ') {
                 e.preventDefault();
                 toggleWordWrap();
+                return;
+            }
+        }
+
+        // 行番号の表示切り替え: Alt + L
+        if (e.altKey && !e.ctrlKey && !e.shiftKey) {
+            if (e.key === 'l' || e.key === 'L' || e.code === 'KeyL') {
+                e.preventDefault();
+                toggleLineNumbers();
                 return;
             }
         }

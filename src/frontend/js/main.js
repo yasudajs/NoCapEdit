@@ -3,7 +3,7 @@ import { appState, elements, initElements } from './state.js';
 import { invoke, appWindow, listen, ensureTauriApi } from './core/tauri.js';
 import { createNewTab, updateStatus, renderTabs, setupTabScrollWheel } from './ui/tabs.js';
 import { openExistingFile, openFiles, persistAllTabsBeforeExit } from './core/fileSystem.js';
-import { updateEditorMetrics, onEditorInput, applyFontSize, applyLineHeight, applyWordWrap, resyncEditorPosition } from './ui/editor.js';
+import { updateEditorMetrics, onEditorInput, applyFontSize, applyLineHeight, applyWordWrap, applyLineNumbers, resyncEditorPosition } from './ui/editor.js';
 import { initCodeMirror } from './ui/codemirror.js';
 import { toggleSettingsDialog, closeSettingsDialog, openSettingsDialog, onThemeChange, onFontFamilyChange, saveSettings, setupSettingsNavigation } from './ui/settings.js';
 import { applyThemeUI, loadSystemFonts, applyFontFamily, setShouldOpenFontPicker } from './ui/theme.js';
@@ -76,6 +76,7 @@ async function init() {
         appState.saveMode = settings.save_mode || 'auto';
         appState.charCountMode = settings.char_count_mode || 'with_newline';
         appState.wordWrap = settings.word_wrap !== undefined ? settings.word_wrap : true;
+        appState.lineNumbers = settings.line_numbers !== undefined ? settings.line_numbers : false;
 
         if (elements.fontSizeSelectModal) {
             elements.fontSizeSelectModal.value = String(appState.fontSize);
@@ -94,6 +95,9 @@ async function init() {
         }
         if (elements.wordWrapSelectModal) {
             elements.wordWrapSelectModal.value = String(appState.wordWrap);
+        }
+        if (elements.lineNumbersSelectModal) {
+            elements.lineNumbersSelectModal.value = String(appState.lineNumbers);
         }
 
         // アプリケーションタイトルの動的設定
@@ -118,6 +122,7 @@ async function init() {
         applyFontFamily();
         applyLineHeight();
         applyWordWrap(appState.wordWrap);
+        applyLineNumbers(appState.lineNumbers);
 
         // 前回の適用フォントが default 以外の場合、一覧をロードする前にモーダルドロップダウンに項目を追加しておく
         if (appState.fontFamily !== 'default' && elements.fontFamilySelectModal) {
@@ -133,6 +138,7 @@ async function init() {
             initCodeMirror(elements.editor, {
                 placeholder: t('editor.placeholder'),
                 wordWrap: appState.wordWrap,
+                lineNumbers: appState.lineNumbers,
                 tabBehavior: appState.tabBehavior,
                 onDocChange: () => onEditorInput(),
                 onSelectionChange: () => updateEditorMetrics(),
@@ -260,6 +266,11 @@ function setupUIEventListeners() {
     }
     if (elements.wordWrapSelectModal) {
         elements.wordWrapSelectModal.addEventListener('change', async (e) => {
+            await saveSettings();
+        });
+    }
+    if (elements.lineNumbersSelectModal) {
+        elements.lineNumbersSelectModal.addEventListener('change', async (e) => {
             await saveSettings();
         });
     }

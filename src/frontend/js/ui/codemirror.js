@@ -1,4 +1,4 @@
-import { EditorView, keymap, placeholder as cmPlaceholder, drawSelection, dropCursor } from '@codemirror/view';
+import { EditorView, keymap, placeholder as cmPlaceholder, drawSelection, dropCursor, lineNumbers } from '@codemirror/view';
 import { EditorState, Compartment } from '@codemirror/state';
 import {
     defaultKeymap, history, historyKeymap,
@@ -19,6 +19,7 @@ let pendingImeResync = false;
 
 // 動的設定変更用 Compartments
 export const wrapCompartment = new Compartment();
+export const lineNumbersCompartment = new Compartment();
 export const indentCompartment = new Compartment();
 export const themeCompartment = new Compartment();
 export const languageCompartment = new Compartment();
@@ -128,6 +129,22 @@ export const baseTheme = EditorView.theme({
         opacity: "0.6",
         fontStyle: "normal",
     },
+    // ガター（行番号領域）スタイル
+    ".cm-gutters": {
+        backgroundColor: "var(--gutter-bg)",
+        color: "var(--gutter-text)",
+        borderRight: "1px solid var(--gutter-border)",
+        userSelect: "none",
+    },
+    ".cm-gutterElement": {
+        padding: "0 8px 0 12px",
+        minWidth: "20px",
+        textAlign: "right",
+    },
+    ".cm-activeLineGutter": {
+        color: "var(--gutter-active-text)",
+        fontWeight: "bold",
+    },
     // 検索・選択マッチのハイライトスタイル
     ".cm-selectionMatch": {
         backgroundColor: "var(--search-match-bg)",
@@ -229,12 +246,14 @@ export function getIndentExtension(tabBehavior = 'tab') {
  * 共通の拡張機能（Extensions）を取得
  * @param {Object} [options]
  * @param {boolean} [options.wordWrap=true]
+ * @param {boolean} [options.lineNumbers=false]
  * @param {string} [options.tabBehavior='tab']
  * @param {import('@codemirror/language').LanguageSupport|Array} [options.languageSupport=[]]
  * @returns {Array}
  */
 export function getDefaultExtensions(options = {}) {
     const wrap = options.wordWrap !== undefined ? options.wordWrap : true;
+    const lineNumbersEnabled = options.lineNumbers !== undefined ? options.lineNumbers : false;
     const tabBehavior = options.tabBehavior || 'tab';
     const languageSupport = options.languageSupport || [];
 
@@ -248,6 +267,7 @@ export function getDefaultExtensions(options = {}) {
         highlightSelectionMatches(),
         themeCompartment.of(baseTheme),
         wrapCompartment.of(wrap ? EditorView.lineWrapping : []),
+        lineNumbersCompartment.of(lineNumbersEnabled ? lineNumbers() : []),
         indentCompartment.of(getIndentExtension(tabBehavior)),
         keymap.of([
             ...customEditorKeymap,
@@ -304,6 +324,7 @@ export async function updateLanguageForFileName(view, fileName) {
  * @param {string} [options.initialContent=''] - 初期テキスト
  * @param {string} [options.placeholder=''] - プレースホルダー文字列
  * @param {boolean} [options.wordWrap=true] - 折り返し初期状態
+ * @param {boolean} [options.lineNumbers=false] - 行番号初期状態
  * @param {string} [options.tabBehavior='tab'] - インデント挙動
  * @param {EditorState} [options.state] - 初期 EditorState
  * @param {Function} [options.onDocChange] - ドキュメント変更時コールバック
@@ -328,6 +349,7 @@ export function initCodeMirror(parentEl, options = {}) {
 
     const state = options.state || createTabState(options.initialContent || '', {
         wordWrap: options.wordWrap,
+        lineNumbers: options.lineNumbers,
         tabBehavior: options.tabBehavior,
     });
 
@@ -381,6 +403,17 @@ export function updateWrap(enable) {
     if (!editorView) return;
     editorView.dispatch({
         effects: wrapCompartment.reconfigure(enable ? EditorView.lineWrapping : [])
+    });
+}
+
+/**
+ * 行番号（Line Numbers）の動的更新
+ * @param {boolean} enable
+ */
+export function updateLineNumbers(enable) {
+    if (!editorView) return;
+    editorView.dispatch({
+        effects: lineNumbersCompartment.reconfigure(enable ? lineNumbers() : [])
     });
 }
 

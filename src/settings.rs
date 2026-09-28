@@ -33,6 +33,8 @@ pub struct AppSettings {
     pub char_count_mode: String,
     #[serde(default = "default_word_wrap")]
     pub word_wrap: bool,
+    #[serde(default = "default_line_numbers")]
+    pub line_numbers: bool,
 }
 
 fn default_theme() -> String {
@@ -67,6 +69,10 @@ fn default_word_wrap() -> bool {
     true
 }
 
+fn default_line_numbers() -> bool {
+    false
+}
+
 #[derive(Debug, Serialize)]
 pub struct SettingsResponse {
     pub home_folder: String,
@@ -78,6 +84,7 @@ pub struct SettingsResponse {
     pub save_mode: String,
     pub char_count_mode: String,
     pub word_wrap: bool,
+    pub line_numbers: bool,
     pub is_first_launch: bool,
     pub home_folder_exists: bool,
     pub app_version: String,
@@ -141,6 +148,7 @@ impl Default for AppSettings {
             save_mode: default_save_mode(),
             char_count_mode: default_char_count_mode(),
             word_wrap: default_word_wrap(),
+            line_numbers: default_line_numbers(),
         }
     }
 }

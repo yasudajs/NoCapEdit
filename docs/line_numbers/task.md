@@ -9,22 +9,22 @@
   - [x] `nsis/installer.nsi`
   - [x] `docs/DEVELOPMENT.md`
 - [x] 仕様書 (`docs/spec.md`) およびショートカット一覧 (`docs/SHORTCUTS.md`) の更新 <!-- id: 3 -->
-- [ ] バックエンド (Rust) の実装 <!-- id: 4 -->
-  - [ ] `src/settings.rs`: `AppSettings` および `SettingsResponse` に `line_numbers` 追加（デフォルト: `false`）
-  - [ ] `src/commands.rs`: `get_settings()` で `line_numbers` 返却
-- [ ] フロントエンドの実装 <!-- id: 5 -->
-  - [ ] `src/frontend/style.css`: 各テーマにガター用CSS変数（`--gutter-bg`, `--gutter-text`, `--gutter-border`, `--gutter-active-text`）を追加
-  - [ ] `src/frontend/i18n.js`: 設定用テキスト・ヘルプカテゴリ（「表示」「フォントサイズ・行間」等）の追加
-  - [ ] `src/frontend/index.html`: 設定ドックに行番号セレクトボックスを追加（デフォルト: 無効）
-  - [ ] `src/frontend/help.html`: カテゴリ再編成（「表示」「テキスト編集」「検索・置換」「フォントサイズ・行間」）と `Alt + L` 追記
-  - [ ] `src/frontend/js/state.js`: `appState.lineNumbers`（初期値 `false`）および DOM要素キャッシュ追加
-  - [ ] `src/frontend/js/core/settingsManager.js`: 設定保存ペイロードに `line_numbers` 追加
-  - [ ] `src/frontend/js/ui/codemirror.js`: `lineNumbers` 拡張、Compartment、動的更新関数、ガタースタイル追加、JSDoc更新 (`initCodeMirror` / `getDefaultExtensions`)
-  - [ ] `src/frontend/js/ui/editor.js`: `applyLineNumbers()` および `toggleLineNumbers()` 実装
-  - [ ] `src/frontend/js/ui/shortcuts.js`: `Alt + L` ショートカット登録（`toggleLineNumbers` 呼び出し）
-  - [ ] `src/frontend/js/ui/settings.js`: 設定ドック開閉・保存・キーボードナビゲーション連動
-  - [ ] `src/frontend/js/main.js`: 初期化・設定適用・イベントリスナー登録
-  - [ ] `src/frontend/js/ui/tabs.js`: タブ新規作成時（`tab.lineNumbers` 初期化）・切り替え時（状態復元）の実装
+- [x] バックエンド (Rust) の実装 <!-- id: 4 -->
+  - [x] `src/settings.rs`: `AppSettings` および `SettingsResponse` に `line_numbers` 追加（デフォルト: `false`）
+  - [x] `src/commands.rs`: `get_settings()` で `line_numbers` 返却
+- [x] フロントエンドの実装 <!-- id: 5 -->
+  - [x] `src/frontend/style.css`: 各テーマにガター用CSS変数（`--gutter-bg`, `--gutter-text`, `--gutter-border`, `--gutter-active-text`）を追加
+  - [x] `src/frontend/i18n.js`: 設定用テキスト・ヘルプカテゴリ（「表示」「フォントサイズ・行間」等）の追加
+  - [x] `src/frontend/index.html`: 設定ドックに行番号セレクトボックスを追加（デフォルト: 無効）
+  - [x] `src/frontend/help.html`: カテゴリ再編成（「表示」「テキスト編集」「検索・置換」「フォントサイズ・行間」）と `Alt + L` 追記
+  - [x] `src/frontend/js/state.js`: `appState.lineNumbers`（初期値 `false`）および DOM要素キャッシュ追加
+  - [x] `src/frontend/js/core/settingsManager.js`: 設定保存ペイロードに `line_numbers` 追加
+  - [x] `src/frontend/js/ui/codemirror.js`: `lineNumbers` 拡張、Compartment、動的更新関数、ガタースタイル追加、JSDoc更新 (`initCodeMirror` / `getDefaultExtensions`)
+  - [x] `src/frontend/js/ui/editor.js`: `applyLineNumbers()` および `toggleLineNumbers()` 実装
+  - [x] `src/frontend/js/ui/shortcuts.js`: `Alt + L` ショートカット登録（`toggleLineNumbers` 呼び出し）
+  - [x] `src/frontend/js/ui/settings.js`: 設定ドック開閉・保存・キーボードナビゲーション連動
+  - [x] `src/frontend/js/main.js`: 初期化・設定適用・イベントリスナー登録
+  - [x] `src/frontend/js/ui/tabs.js`: タブ新規作成時（`tab.lineNumbers` 初期化）・切り替え時（状態復元）の実装
 - [ ] 検証とテスト <!-- id: 6 -->
   - [ ] ビルド確認 (`npm run build`, `cargo check`)
   - [ ] 起動時の初期状態確認（デフォルトOFF）
