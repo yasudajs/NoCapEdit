@@ -64,11 +64,12 @@ export function getGutterOffset() {
             }
         }
 
-        // 2. .cm-line の左端座標（content の padding 適用後の文字開始位置）
+        // 2. .cm-line の左端座標（line の paddingLeft 適用後の文字開始位置）
         const firstLine = view.dom.querySelector('.cm-line');
         if (firstLine) {
             const lineRect = firstLine.getBoundingClientRect();
-            const offset = lineRect.left - containerRect.left + currentScrollLeft;
+            const paddingLeft = parseFloat(window.getComputedStyle(firstLine).paddingLeft) || 0;
+            const offset = lineRect.left + paddingLeft - containerRect.left + currentScrollLeft;
             if (offset > 0) {
                 cachedGutterOffset = offset;
                 return cachedGutterOffset;
