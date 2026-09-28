@@ -20,6 +20,8 @@ Ver 0.2.23 に向けて、肥大化・重複・記述粒度のバラつきが生
   - 「5.1 将来の拡張候補」に残っていた実装済みの「既存ファイルを開く機能」を削除しました。
   - 冒頭リンクの別環境絶対パス（`c:/work/...`）を相対リンクへ修正しました。
   - ショートカット無効化における `F5`（現在日時挿入）の記述を明瞭化しました。
+- **ショートカット記述の `SHORTCUTS.md` への参照一元化**:
+  - 行操作、検索・置換、フォントサイズ・行間ズーム、折り返しトグル、無効化キー等について、個別のキー一覧表の重複記述を廃止し、[SHORTCUTS.md](SHORTCUTS.md) への参照に集約しました。これにより仕様書がさらにスリム化され、キーボード操作の二重管理を防止しました。
 - **目次リンクの新設**:
   - 仕様書冒頭に見出しリンク目次を新設し、必要な仕様へ迅速にジャンプできるようにしました。
 
@@ -37,7 +39,7 @@ Ver 0.2.23 に向けて、肥大化・重複・記述粒度のバラつきが生
 
 | ファイル | 変更内容 |
 |---|---|
-| [spec.md](file:///d:/antigravity/NoCapEdit/docs/spec.md) | 目次追加、過密セクションの分割（4.4〜4.6）、内部設計移管、矛盾解消 |
+| [spec.md](file:///d:/antigravity/NoCapEdit/docs/spec.md) | 目次追加、過密セクションの分割（4.4〜4.6）、SHORTCUTS.md への参照一元化、内部設計移管、矛盾解消 |
 | [ARCHITECTURE.md](file:///d:/antigravity/NoCapEdit/docs/ARCHITECTURE.md) | 目次追加、定数管理方針・IPC連携・アイコン/NSIS関連付け設計の集約 |
 | [history.md](file:///d:/antigravity/NoCapEdit/docs/history.md) | Ver 0.2.23 の改定履歴を追記 |
 | [DEVELOPMENT.md](file:///d:/antigravity/NoCapEdit/docs/DEVELOPMENT.md) | バージョン表記を 0.2.23 に更新 |
