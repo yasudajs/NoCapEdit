@@ -8,7 +8,7 @@
 - [ ] フェーズ2: 実装作業の開始（※ユーザーの開始指示後に着手） <!-- id: 4 -->
   - [x] 作業ブランチ `feature/fix-i18n-duplicate-keys` の作成 <!-- id: 5 -->
   - [x] ドキュメントの本番格上げ（`docs/wip/` から `docs/fix_i18n_duplicate_keys/` へ移動・コミット・プッシュ） <!-- id: 6 -->
-  - [ ] バージョン番号を 0.2.27 に更新（5ファイル: Cargo.toml, package.json, tauri.conf.json, installer.nsi, DEVELOPMENT.md） <!-- id: 7 -->
+  - [x] バージョン番号を 0.2.27 に更新（5ファイル: Cargo.toml, package.json, tauri.conf.json, installer.nsi, DEVELOPMENT.md） <!-- id: 7 -->
   - [ ] `docs/spec.md` を最新版に更新 <!-- id: 8 -->
   - [ ] `src/frontend/i18n.js` の重複キー定義（2箇所）の削除 <!-- id: 9 -->
   - [ ] 自動スクリプトによる全辞書キー重複・欠落ゼロの検証 <!-- id: 10 -->
