@@ -10,6 +10,14 @@ NoCapEdit v0.2系のバージョンアップおよび仕様変更の履歴です
 
 ## 改定履歴一覧
 
+### Ver 0.2.21 | 2026-09-28 | yasudajs
+- **文字列選択時のハイライト重複（二重表示）解消**
+  - **ブラウザ標準 selection とのエディタ選択二重描画を解消**: CodeMirror 6 の `drawSelection()`（`.cm-selectionBackground`）とブラウザネイティブの `::selection` が重複して描画され、文字部分と行間部分で濃淡の段差が生じていた問題を修正。`codemirror.js` および `style.css` から `::selection` への背景色強制指定を削除し、均一な水色1色の選択背景表示に統一
+  - **同一キーワードの黄色ハイライト機能を維持**: 単語選択時に文書内の他の同一単語を黄色で強調表示する `highlightSelectionMatches`（`.cm-selectionMatch`）の動作はそのまま維持
+  - 仕様書 (`docs/spec.md`) にテキスト選択および単語一致ハイライト仕様を明記
+
+---
+
 ### Ver 0.2.20 | 2026-09-15 | yasudajs
 - **マルチディスプレイ移動時の日本語IMEインライン入力位置ずれ修正**
   - **ウィンドウ移動・DPI変更時のキャレット座標自動再同期**: マルチディスプレイ環境でウィンドウを別ディスプレイ領域へ移動した際、Windows の IME（TSF）がキャレット位置を見失い画面左上に候補枠が飛んでしまう不具合を解消。Tauri の `tauri://move`, `tauri://scale-change`, `tauri://resize` イベントを150msデバウンスで監視し、移動停止時にエディタのフォーカスおよびキャレット座標を自動再同期（`resyncEditorPosition`）する仕組みを導入
