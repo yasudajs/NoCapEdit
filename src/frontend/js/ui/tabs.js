@@ -3,7 +3,7 @@ import { appState, elements } from '../state.js';
 import { incrementUnsavedTabCounter } from '../state.js';
 import { generateTabId, getFileNameFromPath, isAutoCreatedFileName } from '../utils/helpers.js';
 import { ensureTauriApi } from '../core/tauri.js';
-import { updateEditorMetrics, applyWordWrap, applyLineNumbers } from './editor.js';
+import { updateEditorMetrics, applyWordWrap, applyLineNumbers, applyRuler } from './editor.js';
 import { autoSave, shouldDeleteEmptyFile, persistTabWithRecovery } from '../core/fileSystem.js';
 import { getContent, setContent, getSelection, setSelection, focusEditor, createTabState, getEditorState, setEditorState } from './codemirror.js';
 
@@ -121,6 +121,8 @@ export async function createNewTab() {
             editorState: createTabState('', { wordWrap: appState.wordWrap, lineNumbers: appState.lineNumbers, tabBehavior: appState.tabBehavior }),
             wordWrap: appState.wordWrap,
             lineNumbers: appState.lineNumbers,
+            ruler: appState.ruler,
+            rulerMarkers: [],
             isDirty: false,
             isSaving: false,
             savePromise: null,
@@ -164,6 +166,7 @@ export async function switchTab(tabId) {
         if (tab) {
             const wrapState = tab.wordWrap !== undefined ? tab.wordWrap : appState.wordWrap;
             const lineNumbersState = tab.lineNumbers !== undefined ? tab.lineNumbers : appState.lineNumbers;
+            const rulerState = tab.ruler !== undefined ? tab.ruler : appState.ruler;
 
             if (!tab.editorState) {
                 tab.editorState = createTabState(tab.content || '', {
@@ -177,6 +180,7 @@ export async function switchTab(tabId) {
 
             applyWordWrap(wrapState);
             applyLineNumbers(lineNumbersState);
+            applyRuler(rulerState);
             renderTabs();
             updateEditorMetrics();
             updateTabStatus(tab);

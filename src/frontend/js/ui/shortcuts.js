@@ -1,4 +1,4 @@
-import { increaseLineHeight, decreaseLineHeight, zoomIn, zoomOut, resetZoomAndLineHeight, toggleWordWrap, toggleLineNumbers } from './editor.js';
+import { increaseLineHeight, decreaseLineHeight, zoomIn, zoomOut, resetZoomAndLineHeight, toggleWordWrap, toggleLineNumbers, toggleRuler } from './editor.js';
 import { triggerManualSave, openFileDialog } from '../core/fileSystem.js';
 import { switchTabByOffset, createNewTab, closeTab } from './tabs.js';
 import { toggleSettingsDialog } from './settings.js';
@@ -84,6 +84,15 @@ export function setupKeyboardShortcuts() {
             if (e.key === 'l' || e.key === 'L' || e.code === 'KeyL') {
                 e.preventDefault();
                 toggleLineNumbers();
+                return;
+            }
+        }
+
+        // ルーラーの表示切り替え: Alt + R
+        if (e.altKey && !e.ctrlKey && !e.shiftKey) {
+            if (e.key === 'r' || e.key === 'R' || e.code === 'KeyR') {
+                e.preventDefault();
+                toggleRuler();
                 return;
             }
         }

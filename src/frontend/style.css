@@ -39,6 +39,15 @@
     --gutter-text: #666666;
     --gutter-border: #222222;
     --gutter-active-text: #f0f0f0;
+
+    /* ルーラー・縦ガイド線 */
+    --ruler-bg: #0c0c0c;
+    --ruler-text: #777777;
+    --ruler-tick: #444444;
+    --ruler-border: #222222;
+    --ruler-guide: rgba(255, 255, 255, 0.25);
+    --ruler-marker: #5a9fd4;
+    --ruler-cursor: #f48771;
 }
 
 body.light-theme {
@@ -61,6 +70,15 @@ body.light-theme {
     --gutter-text: #888888;
     --gutter-border: #dcdcdc;
     --gutter-active-text: #1a1a1a;
+
+    /* ルーラー・縦ガイド線 */
+    --ruler-bg: #f3f3f3;
+    --ruler-text: #666666;
+    --ruler-tick: #bbbbbb;
+    --ruler-border: #dcdcdc;
+    --ruler-guide: rgba(0, 0, 0, 0.25);
+    --ruler-marker: #0066cc;
+    --ruler-cursor: #d9383a;
 }
 
 body.soft-dark-theme {
@@ -81,6 +99,15 @@ body.soft-dark-theme {
     --gutter-text: #7a828e;
     --gutter-border: #3a3a3a;
     --gutter-active-text: #d4d4d4;
+
+    /* ルーラー・縦ガイド線 */
+    --ruler-bg: #2F343E;
+    --ruler-text: #8892a0;
+    --ruler-tick: #4a5160;
+    --ruler-border: #3a3a3a;
+    --ruler-guide: rgba(255, 255, 255, 0.25);
+    --ruler-marker: #5a9fd4;
+    --ruler-cursor: #f48771;
 }
 
 body {
@@ -327,10 +354,145 @@ body {
 /* エディタコンテナ */
 .editor-container {
     display: flex;
+    flex-direction: column;
     flex: 1;
     overflow: hidden;
     background-color: var(--bg-primary);
     position: relative;
+}
+
+/* ルーラーコンテナ */
+.ruler-container {
+    display: flex;
+    height: 26px;
+    background-color: var(--ruler-bg);
+    border-bottom: 1px solid var(--ruler-border);
+    user-select: none;
+    flex-shrink: 0;
+    overflow: hidden;
+    position: relative;
+    font-family: var(--editor-font-family, monospace);
+}
+
+.ruler-container.hidden {
+    display: none !important;
+}
+
+.ruler-gutter-spacer {
+    flex-shrink: 0;
+    width: 0px;
+    background-color: var(--gutter-bg);
+    border-right: 1px solid var(--gutter-border);
+}
+
+.ruler-track-wrapper {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    height: 100%;
+    cursor: pointer;
+}
+
+.ruler-track {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 10000px;
+    pointer-events: auto;
+}
+
+/* 目盛りスタイル */
+.ruler-tick {
+    position: absolute;
+    bottom: 0;
+    width: 1px;
+    background-color: var(--ruler-tick);
+    pointer-events: none;
+}
+
+.ruler-tick.short {
+    height: 4px;
+}
+
+.ruler-tick.medium {
+    height: 7px;
+    opacity: 0.8;
+}
+
+.ruler-tick.long {
+    height: 11px;
+    background-color: var(--ruler-text);
+}
+
+.ruler-number {
+    position: absolute;
+    top: 1px;
+    font-size: 10px;
+    line-height: 1;
+    color: var(--ruler-text);
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+
+/* ▼ マーカー */
+.ruler-marker {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    font-size: 10px;
+    line-height: 1;
+    color: var(--ruler-marker);
+    cursor: pointer;
+    font-weight: bold;
+    z-index: 5;
+    padding: 0 4px;
+    transition: transform 0.1s ease;
+}
+
+.ruler-marker:hover {
+    color: var(--accent-hover);
+    transform: translateX(-50%) scale(1.2);
+}
+
+/* カーソル追従インジケーター */
+.ruler-cursor {
+    position: absolute;
+    bottom: 0;
+    width: 2px;
+    height: 100%;
+    background-color: var(--ruler-cursor);
+    pointer-events: none;
+    z-index: 4;
+}
+
+.ruler-cursor.hidden {
+    display: none !important;
+}
+
+/* 縦ガイド線オーバーレイ */
+.ruler-guides-overlay {
+    position: absolute;
+    top: 26px; /* ルーラーの高さ分 */
+    bottom: 0;
+    left: 0;
+    right: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 3;
+}
+
+.ruler-guides-overlay.hidden {
+    display: none !important;
+}
+
+.ruler-guide-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 0;
+    border-left: 1px dashed var(--ruler-guide);
+    pointer-events: none;
 }
 
 /* テキストエディタコンテナ */

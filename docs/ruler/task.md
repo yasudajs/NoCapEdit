@@ -26,22 +26,22 @@
 - [x] `cargo test` の実行・全パス確認
 
 ### フロントエンド実装
-- [ ] `src/frontend/i18n.js`: ルーラー関連の翻訳キー追加（日・英）
-- [ ] `src/frontend/index.html`: ルーラーバーコンテナ、設定ドック項目追加
-- [ ] `src/frontend/style.css`: ルーラー、目盛り、マーカー、カーソルインジケーター、縦破線ガイド線スタイル追加
-- [ ] `src/frontend/help.html`: ヘルプ画面「表示」カテゴリに `Alt + R` 追記
-- [ ] `src/frontend/js/state.js`: `appState.ruler` 追加
-- [ ] `src/frontend/js/core/settingsManager.js`: 設定保存ペイロードに `ruler` 追加
-- [ ] `src/frontend/js/ui/ruler.js`: ルーラー生成・目盛り・マーカー・ガイド線・スクロール同期の新規モジュール作成
-- [ ] `src/frontend/js/ui/editor.js`: `applyRuler`, `toggleRuler` 実装およびメトリクス更新連携
-- [ ] `src/frontend/js/ui/tabs.js`: タブごとのルーラー表示状態およびマーカー配置の保持・復元
-- [ ] `src/frontend/js/ui/shortcuts.js`: `Alt + R` キーバインド登録
-- [ ] `src/frontend/js/ui/settings.js`: 設定ドックでのルーラー表示切り替えハンドラ
-- [ ] `src/frontend/js/main.js`: 起動時の初期化連携
+- [x] `src/frontend/i18n.js`: ルーラー関連の翻訳キー追加（日・英）
+- [x] `src/frontend/index.html`: ルーラーバーコンテナ、設定ドック項目追加
+- [x] `src/frontend/style.css`: ルーラー、目盛り、マーカー、カーソルインジケーター、縦破線ガイド線スタイル追加
+- [x] `src/frontend/help.html`: ヘルプ画面「表示」カテゴリに `Alt + R` 追記
+- [x] `src/frontend/js/state.js`: `appState.ruler` 追加
+- [x] `src/frontend/js/core/settingsManager.js`: 設定保存ペイロードに `ruler` 追加
+- [x] `src/frontend/js/ui/ruler.js`: ルーラー生成・目盛り・マーカー・ガイド線・スクロール同期の新規モジュール作成
+- [x] `src/frontend/js/ui/editor.js`: `applyRuler`, `toggleRuler` 実装およびメトリクス更新連携
+- [x] `src/frontend/js/ui/tabs.js`: タブごとのルーラー表示状態およびマーカー配置の保持・復元
+- [x] `src/frontend/js/ui/shortcuts.js`: `Alt + R` キーバインド登録
+- [x] `src/frontend/js/ui/settings.js`: 設定ドックでのルーラー表示切り替えハンドラ
+- [x] `src/frontend/js/main.js`: 起動時の初期化連携
 
 ### 検証・テスト
-- [ ] `cargo test` の再実行・パス確認
-- [ ] アプリビルド・起動確認
+- [x] `cargo test` の再実行・パス確認
+- [x] アプリビルド・起動確認
 - [ ] ルーラー表示・目盛り・数字配置の確認
 - [ ] カーソル追従インジケーターの動作確認
 - [ ] マーカー追加・削除（上限10個）および縦破線ガイド線の表示確認
