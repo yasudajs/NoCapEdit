@@ -57,7 +57,8 @@
 | `src/frontend/js/ui/findReplace.js` | 更新 | `openFind` / `openReplace` 時に行ジャンプバーを閉じる排他制御を追加 |
 | `src/frontend/js/ui/shortcuts.js` | 更新 | `Ctrl + G` ショートカットおよび `Esc` ハンドラーを登録 |
 | `src/frontend/js/main.js` | 更新 | 起動時の `initGotoLine()` 初期化呼び出しを追加 |
-| `src/frontend/help.html` | 更新 | 「検索・置換・移動」カテゴリに `Ctrl + G` を配置し、直下に補足説明（右寄せ）を追加。閉じる操作の表記を統一 |
+| `src/frontend/public/` | **新規** | `favicon.ico` / `favicon.png` を配置し、Viteビルドで `src/dist` 直下に確実にコピーされるよう構成 |
+| `src/frontend/help.html` | 更新 | 「検索・置換・移動」カテゴリに `Ctrl + G` を配置し、直下に補足説明（右寄せ）を追加。ファビコンリンクの追加および閉じる操作の表記を統一 |
 | `docs/SHORTCUTS.md` | 更新 | 「検索・置換・移動」カテゴリを新設し、`Ctrl + G` を追記 |
 | `docs/USER_GUIDE.md` | 更新 | ユーザーガイドに指定行ジャンプ機能の説明を追記 |
 
