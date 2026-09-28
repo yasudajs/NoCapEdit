@@ -2,13 +2,13 @@
 
 - [x] 作業ブランチの作成 (`feature/line-numbers`) <!-- id: 0 -->
 - [x] ドキュメントの移動 (`docs/wip/line_numbers/` → `docs/line_numbers/`) とコミット <!-- id: 1 -->
-- [ ] 内部バージョン番号の更新 (`0.2.24`) <!-- id: 2 -->
-  - [ ] `Cargo.toml`
-  - [ ] `package.json`
-  - [ ] `tauri.conf.json`
-  - [ ] `nsis/installer.nsi`
-  - [ ] `docs/DEVELOPMENT.md`
-- [ ] 仕様書 (`docs/spec.md`) およびショートカット一覧 (`docs/SHORTCUTS.md`) の更新 <!-- id: 3 -->
+- [x] 内部バージョン番号の更新 (`0.2.24`) <!-- id: 2 -->
+  - [x] `Cargo.toml`
+  - [x] `package.json`
+  - [x] `tauri.conf.json`
+  - [x] `nsis/installer.nsi`
+  - [x] `docs/DEVELOPMENT.md`
+- [x] 仕様書 (`docs/spec.md`) およびショートカット一覧 (`docs/SHORTCUTS.md`) の更新 <!-- id: 3 -->
 - [ ] バックエンド (Rust) の実装 <!-- id: 4 -->
   - [ ] `src/settings.rs`: `AppSettings` および `SettingsResponse` に `line_numbers` 追加（デフォルト: `false`）
   - [ ] `src/commands.rs`: `get_settings()` で `line_numbers` 返却
