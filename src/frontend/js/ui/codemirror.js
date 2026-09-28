@@ -642,3 +642,34 @@ export function getSelectionText() {
     return editorView.state.doc.sliceString(mainSel.from, mainSel.to);
 }
 
+/**
+ * 現在のドキュメントの総行数を取得
+ * @returns {number}
+ */
+export function getTotalLines() {
+    if (!editorView) return 1;
+    return editorView.state.doc.lines;
+}
+
+/**
+ * 指定された行と列にキャレットを移動し、エディタ中央へスクロール
+ * @param {number} lineNum - 1始まりの行番号
+ * @param {number} [colNum=1] - 1始まりの列番号
+ * @returns {boolean} 成功したかどうか
+ */
+export function gotoLineAndColumn(lineNum, colNum = 1) {
+    if (!editorView) return false;
+    const doc = editorView.state.doc;
+    const totalLines = doc.lines;
+    const safeLine = Math.max(1, Math.min(lineNum, totalLines));
+    const lineInfo = doc.line(safeLine);
+    const colOffset = Math.max(0, Math.min((colNum || 1) - 1, lineInfo.length));
+    const targetPos = lineInfo.from + colOffset;
+
+    editorView.dispatch({
+        selection: { anchor: targetPos, head: targetPos },
+        effects: EditorView.scrollIntoView(targetPos, { y: 'center' }),
+    });
+    return true;
+}
+

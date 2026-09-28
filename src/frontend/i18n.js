@@ -140,6 +140,7 @@ const DICT = {
                 duplicateLine: "行の上下複製",
                 deleteLine: "行の削除",
                 insertTimestamp: "現在日時の挿入",
+                gotoLine: "指定行へのジャンプ",
                 openFind: "検索パネルを開く",
                 openReplace: "検索・置換パネルを開く",
                 findNextMatch: "次のマッチへ移動",
@@ -178,6 +179,16 @@ const DICT = {
             }
         },
         ui: {
+            goto: {
+                placeholder: "行番号 (例: 15, -5, 10:5)",
+                range: "1 〜 {max}",
+                jump: "ジャンプ",
+                close: "閉じる (Esc)",
+                error: {
+                    range: "1 〜 {max} 行の範囲で指定してください",
+                    invalid: "有効な行番号を入力してください"
+                }
+            },
             find: {
                 placeholder: "検索",
                 replacePlaceholder: "置換",

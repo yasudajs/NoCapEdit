@@ -16,6 +16,7 @@ import {
 import { t } from '../../i18n.js';
 import { updateEditorMetrics } from './editor.js';
 import { updateStatus } from './tabs.js';
+import { closeGoto } from './gotoLine.js';
 
 let elements = {
     widget: null,
@@ -71,6 +72,7 @@ export function isFindWidgetOpen() {
  * 検索パネルを開く (Ctrl+F)
  */
 export function openFind() {
+    closeGoto();
     if (!elements.widget) return;
 
     elements.widget.classList.remove('hidden');
@@ -92,6 +94,7 @@ export function openFind() {
  * 検索・置換パネルを開く (Ctrl+H)
  */
 export function openReplace() {
+    closeGoto();
     if (!elements.widget) return;
 
     elements.widget.classList.remove('hidden');
