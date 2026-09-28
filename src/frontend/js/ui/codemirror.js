@@ -111,11 +111,11 @@ export const baseTheme = EditorView.theme({
         overflow: "auto",
     },
     ".cm-content": {
-        padding: "16px",
+        padding: "16px 0",
         caretColor: "var(--accent)",
     },
     ".cm-line": {
-        padding: "0",
+        padding: "0 16px",
     },
     ".cm-cursor, .cm-dropCursor": {
         borderLeftColor: "var(--accent, #4daafc)",

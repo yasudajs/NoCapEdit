@@ -22,22 +22,22 @@
 ---
 
 ## フェーズ 3: 実装作業
-- [ ] `src/frontend/style.css` の更新（`.cm-content`, `.cm-line` の padding 設定）
-- [ ] `src/frontend/js/ui/codemirror.js` の更新（`baseTheme` の padding 設定）
-- [ ] `src/frontend/js/ui/ruler.js` の補強（`getGutterOffset` フォールバック計算の安全対策）
+- [x] `src/frontend/style.css` の更新（`.cm-content`, `.cm-line` の padding 設定）
+- [x] `src/frontend/js/ui/codemirror.js` の更新（`baseTheme` の padding 設定）
+- [x] `src/frontend/js/ui/ruler.js` の補強（`getGutterOffset` フォールバック計算の安全対策）
 
 ---
 
 ## フェーズ 4: 動作検証
-- [ ] 複数行選択時の描画検証（行頭余白の選択色非表示、左端揃い、右端余白の確認）
-- [ ] 行番号表示ON/OFF時の選択描画検証
-- [ ] ルーラー目盛り・縦ガイド線・カーソル位置の整合性検証
-- [ ] ビルド検証 (`npm run build`)
+- [x] 複数行選択時の描画検証（行頭余白の選択色非表示、左端揃い、右端余白の確認）
+- [x] 行番号表示ON/OFF時の選択描画検証
+- [x] ルーラー目盛り・縦ガイド線・カーソル位置の整合性検証
+- [x] ビルド検証 (`npm run build`, `cargo check`, `cargo test`)
 
 ---
 
 ## フェーズ 5: 完了報告・クリーンアップ準備
-- [ ] ウォークスルー (`docs/fix-multiline-selection-padding/walkthrough.md`) の作成
-- [ ] 変更履歴 (`docs/history.md`) の更新
-- [ ] コミット＆プッシュの実施
+- [x] ウォークスルー (`docs/fix-multiline-selection-padding/walkthrough.md`) の作成
+- [x] 変更履歴 (`docs/history.md`) の更新
+- [x] コミット＆プッシュの実施
 - [ ] ユーザーへの結果報告とマージ・クリーンアップ指示の確認

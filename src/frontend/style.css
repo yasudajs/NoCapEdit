@@ -577,12 +577,12 @@ body.ruler-marker-dragging * {
 }
 
 .editor .cm-content {
-    padding: 16px;
+    padding: 16px 0;
     caret-color: var(--accent);
 }
 
 .editor .cm-line {
-    padding: 0;
+    padding: 0 16px;
 }
 
 .editor .cm-cursor {
