@@ -35,6 +35,8 @@ pub struct AppSettings {
     pub word_wrap: bool,
     #[serde(default = "default_line_numbers")]
     pub line_numbers: bool,
+    #[serde(default = "default_ruler")]
+    pub ruler: bool,
 }
 
 fn default_theme() -> String {
@@ -73,6 +75,10 @@ fn default_line_numbers() -> bool {
     false
 }
 
+fn default_ruler() -> bool {
+    false
+}
+
 #[derive(Debug, Serialize)]
 pub struct SettingsResponse {
     pub home_folder: String,
@@ -85,6 +91,7 @@ pub struct SettingsResponse {
     pub char_count_mode: String,
     pub word_wrap: bool,
     pub line_numbers: bool,
+    pub ruler: bool,
     pub is_first_launch: bool,
     pub home_folder_exists: bool,
     pub app_version: String,
@@ -149,6 +156,7 @@ impl Default for AppSettings {
             char_count_mode: default_char_count_mode(),
             word_wrap: default_word_wrap(),
             line_numbers: default_line_numbers(),
+            ruler: default_ruler(),
         }
     }
 }
@@ -193,5 +201,22 @@ mod tests {
         let json_true = r#"{"home_folder":"C:\\temp","line_numbers":true}"#;
         let parsed_true: AppSettings = serde_json::from_str(json_true).unwrap();
         assert_eq!(parsed_true.line_numbers, true);
+    }
+
+    #[test]
+    fn test_ruler_default_and_deserialize() {
+        // デフォルト値は false
+        let s = AppSettings::default();
+        assert_eq!(s.ruler, false);
+
+        // JSONからrulerが欠落していてもfalseにフォールバック
+        let json_missing = r#"{"home_folder":"C:\\temp"}"#;
+        let parsed: AppSettings = serde_json::from_str(json_missing).unwrap();
+        assert_eq!(parsed.ruler, false);
+
+        // JSONでtrueが指定されている場合はtrueとしてパース
+        let json_true = r#"{"home_folder":"C:\\temp","ruler":true}"#;
+        let parsed_true: AppSettings = serde_json::from_str(json_true).unwrap();
+        assert_eq!(parsed_true.ruler, true);
     }
 }

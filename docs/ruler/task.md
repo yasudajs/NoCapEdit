@@ -21,9 +21,9 @@
 - [x] 仕様書（`spec.md`）の最新化
 
 ### バックエンド実装 (Rust)
-- [ ] `src/settings.rs`: `AppSettings` に `ruler: bool` 追加および単体テスト実装
-- [ ] `src/commands.rs`: `AppSettingsPayload` に `ruler: bool` 追加
-- [ ] `cargo test` の実行・全パス確認
+- [x] `src/settings.rs`: `AppSettings` に `ruler: bool` 追加および単体テスト実装
+- [x] `src/commands.rs`: `AppSettingsPayload` に `ruler: bool` 追加
+- [x] `cargo test` の実行・全パス確認
 
 ### フロントエンド実装
 - [ ] `src/frontend/i18n.js`: ルーラー関連の翻訳キー追加（日・英）
