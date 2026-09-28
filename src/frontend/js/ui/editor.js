@@ -3,7 +3,7 @@ import { appState, elements } from '../state.js';
 import { MAX_FONT_SIZE, MIN_FONT_SIZE, MAX_LINE_HEIGHT, MIN_LINE_HEIGHT, LINE_HEIGHT_STEP, AUTOSAVE_DELAY_MS } from '../state.js';
 import { renderTabs, updateTabStatus } from './tabs.js';
 import { autoSave } from '../core/fileSystem.js';
-import { getContent, setContent, getCursorMetrics, getSelection, setSelection, replaceRange, focusEditor, getEditorState, updateWrap, getEditorView, insertTimestampCommand, resyncEditorPosition } from './codemirror.js';
+import { getContent, setContent, getCursorMetrics, getSelection, setSelection, replaceRange, focusEditor, getEditorState, updateWrap, updateLineNumbers, getEditorView, insertTimestampCommand, resyncEditorPosition } from './codemirror.js';
 import { isFindWidgetOpen, updateMatches } from './findReplace.js';
 
 export { resyncEditorPosition };
@@ -158,6 +158,25 @@ export function toggleWordWrap() {
     tab.wordWrap = newWrap;
     applyWordWrap(newWrap);
     console.log(`[WordWrap] タブ "${tab.fileName}" の折り返しを ${newWrap ? 'ON' : 'OFF'} に切り替えました`);
+}
+
+/**
+ * エディタの行番号表示設定を適用する
+ * @param {boolean} enable - 行番号を表示するかどうか
+ */
+export function applyLineNumbers(enable) {
+    updateLineNumbers(enable);
+}
+
+export function toggleLineNumbers() {
+    if (!appState.currentTab) return;
+    const tab = appState.tabs.find(t => t.id === appState.currentTab);
+    if (!tab) return;
+    const currentLineNumbers = tab.lineNumbers !== undefined ? tab.lineNumbers : appState.lineNumbers;
+    const newLineNumbers = !currentLineNumbers;
+    tab.lineNumbers = newLineNumbers;
+    applyLineNumbers(newLineNumbers);
+    console.log(`[LineNumbers] タブ "${tab.fileName}" の行番号表示を ${newLineNumbers ? 'ON' : 'OFF'} に切り替えました`);
 }
 
 export function getIndentString() {

@@ -3,7 +3,7 @@ import { appState, elements } from '../state.js';
 import { incrementUnsavedTabCounter } from '../state.js';
 import { generateTabId, getFileNameFromPath, isAutoCreatedFileName } from '../utils/helpers.js';
 import { ensureTauriApi } from '../core/tauri.js';
-import { updateEditorMetrics, applyWordWrap } from './editor.js';
+import { updateEditorMetrics, applyWordWrap, applyLineNumbers } from './editor.js';
 import { autoSave, shouldDeleteEmptyFile, persistTabWithRecovery } from '../core/fileSystem.js';
 import { getContent, setContent, getSelection, setSelection, focusEditor, createTabState, getEditorState, setEditorState } from './codemirror.js';
 
@@ -118,7 +118,9 @@ export async function createNewTab() {
             filePath: filePath,
             content: '',
             encoding: 'UTF-8',
-            editorState: createTabState('', { wordWrap: appState.wordWrap, tabBehavior: appState.tabBehavior }),
+            editorState: createTabState('', { wordWrap: appState.wordWrap, lineNumbers: appState.lineNumbers, tabBehavior: appState.tabBehavior }),
+            wordWrap: appState.wordWrap,
+            lineNumbers: appState.lineNumbers,
             isDirty: false,
             isSaving: false,
             savePromise: null,
@@ -160,14 +162,21 @@ export async function switchTab(tabId) {
         const tab = appState.tabs.find(t => t.id === tabId);
 
         if (tab) {
+            const wrapState = tab.wordWrap !== undefined ? tab.wordWrap : appState.wordWrap;
+            const lineNumbersState = tab.lineNumbers !== undefined ? tab.lineNumbers : appState.lineNumbers;
+
             if (!tab.editorState) {
-                tab.editorState = createTabState(tab.content || '');
+                tab.editorState = createTabState(tab.content || '', {
+                    wordWrap: wrapState,
+                    lineNumbers: lineNumbersState,
+                    tabBehavior: appState.tabBehavior
+                });
             }
             setEditorState(tab.editorState);
             focusEditor();
 
-            const wrapState = tab.wordWrap !== undefined ? tab.wordWrap : appState.wordWrap;
             applyWordWrap(wrapState);
+            applyLineNumbers(lineNumbersState);
             renderTabs();
             updateEditorMetrics();
             updateTabStatus(tab);

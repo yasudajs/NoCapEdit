@@ -118,14 +118,17 @@ const DICT = {
         help: {
             title: "ショートカット一覧",
             categories: {
+                view: "表示",
                 edit: "テキスト編集",
                 findReplace: "検索・置換",
+                fontAndLineHeight: "フォントサイズ・行間",
                 file: "ファイル・タブ操作",
-                view: "表示・ズーム",
                 settings: "設定画面の操作",
                 other: "その他"
             },
             shortcuts: {
+                toggleWordWrap: "行の折り返し切り替え",
+                toggleLineNumbers: "行番号の表示切り替え",
                 moveLine: "行の上下移動",
                 duplicateLine: "行の上下複製",
                 deleteLine: "行の削除",
@@ -152,12 +155,12 @@ const DICT = {
                 settingsClose: "設定を閉じてエディタに戻る",
                 switchTab: "次のタブへ切り替え",
                 switchTabPrev: "前のタブへ切り替え",
-                zoomIn: "ズームイン (拡大)",
-                zoomOut: "ズームアウト (縮小)",
-                resetZoom: "ズーム・行間のリセット",
-                toggleWordWrap: "行の折り返し切り替え",
+                zoomIn: "フォントを大きく (拡大)",
+                zoomOut: "フォントを小さく (縮小)",
                 lineHeightInc: "行間を広げる",
                 lineHeightDec: "行間を狭める",
+                resetZoom: "フォントサイズ・行間のリセット",
+                toggleWordWrap: "行の折り返し切り替え",
                 openHelp: "ヘルプ画面を開く",
                 exitApp: "アプリを終了",
                 closeHelp: "ヘルプを閉じる"
@@ -192,6 +195,7 @@ const DICT = {
                 saveMode: "保存モードを変更",
                 charCount: "文字数カウント方法を変更",
                 wordWrap: "行の折り返しを変更",
+                lineNumbers: "行番号の表示を変更",
                 theme: "テーマを変更"
             },
             dialog: {
@@ -237,6 +241,11 @@ const DICT = {
                         label: "行の折り返し:",
                         on: "有効（折り返す）",
                         off: "無効（折り返さない）"
+                    },
+                    lineNumbers: {
+                        label: "行番号の表示:",
+                        off: "無効（表示しない）",
+                        on: "有効（表示する）"
                     },
                     theme: {
                         label: "テーマ:",

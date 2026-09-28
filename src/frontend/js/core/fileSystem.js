@@ -286,6 +286,7 @@ export async function openExistingFile(filePath, suppressStatus = false) {
 
         const editorState = createTabState(content, {
             wordWrap: appState.wordWrap,
+            lineNumbers: appState.lineNumbers,
             tabBehavior: appState.tabBehavior,
             languageSupport: languageSupport,
         });
@@ -303,6 +304,8 @@ export async function openExistingFile(filePath, suppressStatus = false) {
             firstTab.content = content;
             firstTab.encoding = encoding;
             firstTab.editorState = editorState;
+            firstTab.wordWrap = appState.wordWrap;
+            firstTab.lineNumbers = appState.lineNumbers;
             firstTab.isDirty = false;
             firstTab.isSaving = false;
             firstTab.savePromise = null;
@@ -318,6 +321,8 @@ export async function openExistingFile(filePath, suppressStatus = false) {
                 content: content,
                 encoding: encoding,
                 editorState: editorState,
+                wordWrap: appState.wordWrap,
+                lineNumbers: appState.lineNumbers,
                 isDirty: false,
                 isSaving: false,
                 savePromise: null,
