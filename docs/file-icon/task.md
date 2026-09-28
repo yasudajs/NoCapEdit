@@ -42,3 +42,12 @@
   - [x] `docs/file-icon/walkthrough.md`（ウォークスルー）の作成
   - [x] `docs/history.md` に `Ver 0.2.22` の変更履歴を追記
   - [x] コミット＆プッシュおよびユーザーへの確認依頼
+
+- [x] **フェーズ 7: 詳細表示用アイコン（案A: WPSスタイル）の最適化**
+  - [x] 16x16, 24x24, 32x32 用の案A（WPSスタイル: 用紙＋左寄り大ロゴ）画像生成
+  - [x] マルチ解像度 `icons/document.ico` の再合成（小サイズ: 案A、大サイズ: 現行デザイン）
+  - [x] `docs/spec.md` に解像度別アイコンデザイン仕様を追記
+  - [x] `cargo tauri build` によるインストーラーの再生成・動作確認
+  - [x] `docs/file-icon/walkthrough.md` および `docs/history.md` の更新
+  - [x] コミット＆プッシュおよび完了報告
+
