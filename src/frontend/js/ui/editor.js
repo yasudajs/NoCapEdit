@@ -5,6 +5,7 @@ import { renderTabs, updateTabStatus } from './tabs.js';
 import { autoSave } from '../core/fileSystem.js';
 import { getContent, setContent, getCursorMetrics, getSelection, setSelection, replaceRange, focusEditor, getEditorState, updateWrap, updateLineNumbers, getEditorView, insertTimestampCommand, resyncEditorPosition } from './codemirror.js';
 import { isFindWidgetOpen, updateMatches } from './findReplace.js';
+import { applyRuler as setRulerVisible, updateRulerCursor, syncRulerMetrics } from './ruler.js';
 
 export { resyncEditorPosition };
 
@@ -35,6 +36,7 @@ export function updateEditorMetrics() {
     }
 
     const metrics = getCursorMetrics(appState.charCountMode || 'with_newline');
+    updateRulerCursor();
 
     let charDisplay = '';
     if (metrics.isSelected) {
@@ -108,6 +110,7 @@ export function applyFontSize() {
         document.documentElement.style.setProperty('--editor-font-size', `${appState.fontSize}px`);
     }
     updateEditorMetrics();
+    syncRulerMetrics();
 }
 
 export function applyLineHeight() {
@@ -166,6 +169,7 @@ export function toggleWordWrap() {
  */
 export function applyLineNumbers(enable) {
     updateLineNumbers(enable);
+    syncRulerMetrics();
 }
 
 export function toggleLineNumbers() {
@@ -177,6 +181,25 @@ export function toggleLineNumbers() {
     tab.lineNumbers = newLineNumbers;
     applyLineNumbers(newLineNumbers);
     console.log(`[LineNumbers] タブ "${tab.fileName}" の行番号表示を ${newLineNumbers ? 'ON' : 'OFF'} に切り替えました`);
+}
+
+/**
+ * エディタのルーラー表示設定を適用する
+ * @param {boolean} enable - ルーラーを表示するかどうか
+ */
+export function applyRuler(enable) {
+    setRulerVisible(enable);
+}
+
+export function toggleRuler() {
+    if (!appState.currentTab) return;
+    const tab = appState.tabs.find(t => t.id === appState.currentTab);
+    if (!tab) return;
+    const currentRuler = tab.ruler !== undefined ? tab.ruler : appState.ruler;
+    const newRuler = !currentRuler;
+    tab.ruler = newRuler;
+    applyRuler(newRuler);
+    console.log(`[Ruler] タブ "${tab.fileName}" のルーラー表示を ${newRuler ? 'ON' : 'OFF'} に切り替えました`);
 }
 
 export function getIndentString() {

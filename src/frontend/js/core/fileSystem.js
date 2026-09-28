@@ -306,6 +306,8 @@ export async function openExistingFile(filePath, suppressStatus = false) {
             firstTab.editorState = editorState;
             firstTab.wordWrap = appState.wordWrap;
             firstTab.lineNumbers = appState.lineNumbers;
+            firstTab.ruler = appState.ruler;
+            firstTab.rulerMarkers = [];
             firstTab.isDirty = false;
             firstTab.isSaving = false;
             firstTab.savePromise = null;
@@ -323,6 +325,8 @@ export async function openExistingFile(filePath, suppressStatus = false) {
                 editorState: editorState,
                 wordWrap: appState.wordWrap,
                 lineNumbers: appState.lineNumbers,
+                ruler: appState.ruler,
+                rulerMarkers: [],
                 isDirty: false,
                 isSaving: false,
                 savePromise: null,

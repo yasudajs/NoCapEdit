@@ -2,7 +2,7 @@ import { t } from '../../i18n.js';
 import { appState, elements, savedEditorCursor, setSavedEditorCursor, DEFAULT_MONOSPACE_FONTS } from '../state.js';
 import { invoke, openDialog, ensureTauriApi, appWindow, emit } from '../core/tauri.js';
 import { updateStatus, renderTabs, createNewTab, getCurrentTab, updateTabStatus } from './tabs.js';
-import { updateEditorMetrics, applyWordWrap, applyLineNumbers, applyFontSize, applyLineHeight } from './editor.js';
+import { updateEditorMetrics, applyWordWrap, applyLineNumbers, applyRuler, applyFontSize, applyLineHeight } from './editor.js';
 import { getSelection, setSelection, focusEditor, updateIndent } from './codemirror.js';
 import { autoSave, shouldDeleteEmptyFile } from '../core/fileSystem.js';
 import { applyThemeUI, applyFontFamily, loadSystemFonts } from './theme.js';
@@ -62,6 +62,9 @@ export function openSettingsDialog(isMissingFolder = false) {
     }
     if (elements.lineNumbersSelectModal) {
         elements.lineNumbersSelectModal.value = appState.lineNumbers ? 'true' : 'false';
+    }
+    if (elements.rulerSelectModal) {
+        elements.rulerSelectModal.value = appState.ruler ? 'true' : 'false';
     }
     if (elements.folderHint) {
         elements.folderHint.textContent = isMissingFolder
@@ -129,6 +132,7 @@ export function setupSettingsNavigation() {
                 elements.charCountModeSelectModal,
                 elements.wordWrapSelectModal,
                 elements.lineNumbersSelectModal,
+                elements.rulerSelectModal,
                 elements.themeSelectModal
             ].filter(el => el && !el.disabled && el.offsetParent !== null);
 
@@ -164,6 +168,7 @@ export async function saveSettings() {
     const charCountMode = elements.charCountModeSelectModal ? elements.charCountModeSelectModal.value : appState.charCountMode;
     const wordWrap = elements.wordWrapSelectModal ? (elements.wordWrapSelectModal.value === 'true') : appState.wordWrap;
     const lineNumbers = elements.lineNumbersSelectModal ? (elements.lineNumbersSelectModal.value === 'true') : appState.lineNumbers;
+    const ruler = elements.rulerSelectModal ? (elements.rulerSelectModal.value === 'true') : appState.ruler;
     const previousSaveMode = appState.saveMode;
 
     if (!homeFolder) {
@@ -182,6 +187,7 @@ export async function saveSettings() {
         appState.charCountMode = charCountMode;
         appState.wordWrap = wordWrap;
         appState.lineNumbers = lineNumbers;
+        appState.ruler = ruler;
 
         // 現在アクティブなタブの一時設定も更新して即時反映
         if (appState.currentTab) {
@@ -189,10 +195,12 @@ export async function saveSettings() {
             if (currentTab) {
                 currentTab.wordWrap = wordWrap;
                 currentTab.lineNumbers = lineNumbers;
+                currentTab.ruler = ruler;
             }
         }
         applyWordWrap(wordWrap);
         applyLineNumbers(lineNumbers);
+        applyRuler(ruler);
         applyFontSize();
         applyLineHeight();
         updateIndent(tabBehavior);

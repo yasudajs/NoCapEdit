@@ -365,6 +365,12 @@ export function initCodeMirror(parentEl, options = {}) {
         }
     });
 
+    if (options.onScroll) {
+        editorView.scrollDOM.addEventListener('scroll', (e) => {
+            options.onScroll(editorView.scrollDOM.scrollLeft, e);
+        });
+    }
+
     return editorView;
 }
 

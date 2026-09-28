@@ -33,8 +33,18 @@
 
         <!-- エディタエリア -->
         <div class="editor-container">
+            <!-- ルーラーバー -->
+            <div id="rulerContainer" class="ruler-container hidden">
+                <div id="rulerGutterSpacer" class="ruler-gutter-spacer"></div>
+                <div id="rulerTrackWrapper" class="ruler-track-wrapper">
+                    <div id="rulerTrack" class="ruler-track"></div>
+                    <div id="rulerCursor" class="ruler-cursor hidden"></div>
+                </div>
+            </div>
             <div id="emptyEditorNotice" class="empty-editor-notice hidden" data-i18n="editor.emptyNotice">＋ を押して新規タブを開いてください</div>
             <div id="editor" class="editor"></div>
+            <!-- 縦ガイド線オーバーレイ -->
+            <div id="rulerGuidesOverlay" class="ruler-guides-overlay hidden"></div>
 
             <!-- 検索・置換ウィジェット -->
             <div id="findReplaceWidget" class="find-replace-widget hidden">
@@ -164,6 +174,12 @@
                 <select id="lineNumbersSelectModal" class="settings-select" title="行番号の表示を変更" data-i18n-title="ui.tooltip.lineNumbers">
                     <option value="false" selected data-i18n="ui.dialog.settings.lineNumbers.off">無効（表示しない）</option>
                     <option value="true" data-i18n="ui.dialog.settings.lineNumbers.on">有効（表示する）</option>
+                </select>
+
+                <label for="rulerSelectModal" data-i18n="ui.dialog.settings.ruler.label">ルーラーの表示:</label>
+                <select id="rulerSelectModal" class="settings-select" title="ルーラーの表示を変更" data-i18n-title="ui.tooltip.ruler">
+                    <option value="false" selected data-i18n="ui.dialog.settings.ruler.off">無効（表示しない）</option>
+                    <option value="true" data-i18n="ui.dialog.settings.ruler.on">有効（表示する）</option>
                 </select>
 
                 <label for="themeSelectModal" data-i18n="ui.dialog.settings.theme.label">テーマ:</label>
