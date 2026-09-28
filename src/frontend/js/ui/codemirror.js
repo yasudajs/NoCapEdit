@@ -120,7 +120,7 @@ export const baseTheme = EditorView.theme({
         borderLeftColor: "var(--accent, #4daafc)",
         borderLeftWidth: "2px",
     },
-    "&.cm-focused .cm-selectionBackground, ::selection": {
+    "&.cm-focused .cm-selectionBackground": {
         backgroundColor: "var(--editor-selection-bg) !important",
     },
     ".cm-placeholder": {

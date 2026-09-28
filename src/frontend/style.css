@@ -393,8 +393,7 @@ body {
     border-left-width: 2px;
 }
 
-.editor .cm-selectionBackground,
-.editor .cm-editor ::selection {
+.editor .cm-selectionBackground {
     background-color: var(--editor-selection-bg) !important;
 }
 
