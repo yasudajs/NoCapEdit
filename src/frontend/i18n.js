@@ -126,7 +126,7 @@ const DICT = {
             categories: {
                 view: "表示",
                 edit: "テキスト編集",
-                findReplace: "検索・置換",
+                findReplace: "検索・置換・移動",
                 fontAndLineHeight: "フォントサイズ・行間",
                 file: "ファイル・タブ操作",
                 settings: "設定画面の操作",
@@ -148,7 +148,7 @@ const DICT = {
                 findPrevMatch: "前のマッチへ移動",
                 toggleMatchCase: "大文字/小文字区別の切り替え",
                 replaceAll: "すべて置換",
-                closeFind: "検索・置換パネルを閉じる",
+                closeFind: "検索・置換・移動パネルを閉じる",
                 indent: "インデント挿入",
                 unindent: "インデント削除",
                 openFile: "ファイルを開く",
