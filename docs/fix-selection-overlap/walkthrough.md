@@ -18,7 +18,7 @@
 - ブラウザ標準のネイティブ選択は CodeMirror のデフォルトの透明化（`background: transparent !important`）に任せるように整理。
 
 ### ③ バージョン番号の更新
-- 内部バージョンを `0.2.20` から `0.2.21` へ更新（4ファイル一括更新: `Cargo.toml`, `tauri.conf.json`, `nsis/installer.nsi`, `docs/DEVELOPMENT.md`、および `package.json`）。
+- 内部バージョンを `0.2.20` から `0.2.21` へ更新（5ファイル一括更新: `Cargo.toml`, `package.json`, `tauri.conf.json`, `nsis/installer.nsi`, `docs/DEVELOPMENT.md`）。
 
 ### ④ 仕様書・履歴ドキュメントの更新
 - `docs/spec.md`: テキスト選択表示および単語一致ハイライト仕様を追記。

@@ -18,9 +18,10 @@ NoCapEdit で文字列を選択した際、選択範囲の青色（水色）が�
 1. **ブランチ作成**: `master` から `feature/fix-selection-overlap` ブランチを作成
 2. **ドキュメント昇格**: `docs/wip/fix-selection-overlap/` を `docs/fix-selection-overlap/` へ移動してコミット＆プッシュ
 3. **バージョン番号の更新**:
-   - 内部バージョンを `0.2.20` から `0.2.21` へ更新（4ファイル一括）
+   - 内部バージョンを `0.2.20` から `0.2.21` へ更新（5ファイル一括）
      - `Cargo.toml`
-     - `src-tauri/tauri.conf.json`
+     - `package.json`
+     - `tauri.conf.json`
      - `nsis/installer.nsi`
      - `docs/DEVELOPMENT.md`
 4. **仕様書更新**: `docs/spec.md` の更新

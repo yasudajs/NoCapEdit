@@ -2,7 +2,7 @@
 
 - [x] 作業ブランチの作成 (`feature/fix-selection-overlap`)
 - [x] ドキュメントの昇格 (`docs/wip/fix-selection-overlap/` -> `docs/fix-selection-overlap/`) とコミット・プッシュ
-- [x] バージョン番号の更新 (`0.2.20` -> `0.2.21`, 4ファイル更新)
+- [x] バージョン番号の更新 (`0.2.20` -> `0.2.21`, 5ファイル更新)
 - [x] 仕様書 (`docs/spec.md`) の更新
 - [x] ソースコード修正
   - [x] `src/frontend/js/ui/codemirror.js`: `baseTheme` 内の `::selection` 削除
