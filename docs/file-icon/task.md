@@ -21,15 +21,15 @@
   - [x] `icons/document.png`（マスター高解像度 PNG 512x512）の作成
   - [x] `icons/document.ico`（マルチサイズ ICO: 16, 24, 32, 48, 64, 128, 256）の作成
 
-- [ ] **フェーズ 4: インストーラー・関連付けの実装**
-  - [ ] `nsis/installer.nsi` の改修
-    - [ ] `$INSTDIR\document.ico` のインストール処理追加
-    - [ ] 共通 ProgID（`NoCapEdit.Document`）および `DefaultIcon` 登録
-    - [ ] `Applications\NoCapEdit.exe\DefaultIcon` 登録（全関連付けファイルへの自動適用）
-    - [ ] `Applications\NoCapEdit.exe\SupportedTypes` 登録（Web・プログラミング言語系拡張子含む）
-    - [ ] 主要拡張子の Capabilities / FileAssociations 登録
-    - [ ] アンインストール時の `document.ico` 削除・レジストリ削除処理
-  - [ ] `wix/file-association.wxs` の `DefaultIcon` 指定更新
+- [x] **フェーズ 4: インストーラー・関連付けの実装**
+  - [x] `nsis/installer.nsi` の改修
+    - [x] `$INSTDIR\document.ico` のインストール処理追加
+    - [x] 共通 ProgID（`NoCapEdit.Document`）および `DefaultIcon` 登録
+    - [x] `Applications\NoCapEdit.exe\DefaultIcon` 登録（全関連付けファイルへの自動適用）
+    - [x] `Applications\NoCapEdit.exe\SupportedTypes` 登録（Web・プログラミング言語系拡張子含む）
+    - [x] 主要拡張子の Capabilities / FileAssociations 登録
+    - [x] アンインストール時の `document.ico` 削除・レジストリ削除処理
+  - [x] `wix/file-association.wxs` の `DefaultIcon` 指定更新
 
 - [ ] **フェーズ 5: ビルド＆動作検証**
   - [ ] フロントエンド・バックエンドのビルド確認
