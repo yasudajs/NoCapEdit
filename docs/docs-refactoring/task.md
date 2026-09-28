@@ -3,12 +3,12 @@
 ## 準備・ブランチ作成
 - [x] 作業用ブランチ `feature/docs-refactoring` の作成
 - [x] WIPドキュメントを `docs/wip/docs-refactoring/` から `docs/docs-refactoring/` へ移動・コミット＆プッシュ
-- [ ] バージョン番号の更新（`0.2.21` → `0.2.22`）※5ファイル更新
-  - [ ] `Cargo.toml`
-  - [ ] `package.json`
-  - [ ] `src-tauri/tauri.conf.json`
-  - [ ] `nsis/installer.nsi`
-  - [ ] `docs/DEVELOPMENT.md`
+- [x] バージョン番号の更新（`0.2.22` → `0.2.23`）※5ファイル更新
+  - [x] `Cargo.toml`
+  - [x] `package.json`
+  - [x] `src-tauri/tauri.conf.json`
+  - [x] `nsis/installer.nsi`
+  - [x] `docs/DEVELOPMENT.md`
 
 ## ドキュメント整理・リファクタリング
 - [ ] `docs/ARCHITECTURE.md` の改定
