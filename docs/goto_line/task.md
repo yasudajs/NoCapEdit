@@ -5,13 +5,13 @@
 - [x] 作業用ブランチ `feature/goto-line` の作成
 - [x] ドキュメントを `docs/wip/goto_line/` から `docs/goto_line/` へ移動
 - [x] 初回コミット & プッシュ (ドキュメント配置)
-- [ ] バージョン番号の更新 (0.2.28 - 5ファイル)
-  - [ ] `Cargo.toml`
-  - [ ] `package.json`
-  - [ ] `src-tauri/tauri.conf.json`
-  - [ ] `nsis/installer.nsi`
-  - [ ] `docs/DEVELOPMENT.md`
-- [ ] `docs/spec.md` の更新 (指定行ジャンプ機能の仕様追記、バージョン更新)
+- [x] バージョン番号の更新 (0.2.28 - 5ファイル)
+  - [x] `Cargo.toml`
+  - [x] `package.json`
+  - [x] `src-tauri/tauri.conf.json`
+  - [x] `nsis/installer.nsi`
+  - [x] `docs/DEVELOPMENT.md`
+- [x] `docs/spec.md` の更新 (指定行ジャンプ機能の仕様追記、バージョン更新)
 - [ ] 実装: 多言語リソースの追加 (`src/frontend/i18n.js`)
 - [ ] 実装: エディタジャンプ関数の追加 (`src/frontend/js/ui/codemirror.js`)
 - [ ] 実装: 行ジャンプUIマークアップの追加 (`src/frontend/index.html`)
