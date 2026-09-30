@@ -161,7 +161,7 @@ function getLineIndentInfo(lineText, tabSize, indentUnitWidth) {
 }
 
 /**
- * 空行のインデント深さを前後の非空行から補間
+ * 空行のインデント深さを前後の非空行から補間（VS Code準拠ロジック）
  * @param {import('@codemirror/state').Text} doc
  * @param {number} lineNumber
  * @param {number} tabSize
@@ -169,9 +169,9 @@ function getLineIndentInfo(lineText, tabSize, indentUnitWidth) {
  * @returns {number}
  */
 function resolveBlankLineIndent(doc, lineNumber, tabSize, indentUnitWidth) {
-    let prevLevel = 0;
-    let nextLevel = 0;
-    const maxLook = 30;
+    let prevLevel = -1;
+    let nextLevel = -1;
+    const maxLook = 100;
 
     for (let i = lineNumber - 1; i >= Math.max(1, lineNumber - maxLook); i--) {
         const l = doc.line(i);
@@ -191,10 +191,16 @@ function resolveBlankLineIndent(doc, lineNumber, tabSize, indentUnitWidth) {
         }
     }
 
-    if (prevLevel > 0 && nextLevel > 0) {
-        return Math.min(prevLevel, nextLevel);
+    if (prevLevel === -1 || nextLevel === -1) {
+        return 0;
     }
-    return Math.max(prevLevel, nextLevel);
+    if (prevLevel < nextLevel) {
+        return prevLevel + 1;
+    }
+    if (prevLevel === nextLevel) {
+        return prevLevel;
+    }
+    return nextLevel + 1;
 }
 
 /**
