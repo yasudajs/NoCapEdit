@@ -10,8 +10,8 @@
 - [ ] **フェーズ2: 実装作業**
   - [x] 作業用ブランチ作成 (`feature/tab-width-settings`)
   - [x] WIPドキュメントの昇格 (`docs/wip/tab-width-settings/` → `docs/tab-width-settings/`) およびコミット・プッシュ
-  - [ ] バージョン番号の更新 (`0.2.30` → `0.2.31`: 5ファイル)
-  - [ ] `docs/spec.md` の更新
+  - [x] バージョン番号の更新 (`0.2.30` → `0.2.31`: 5ファイル)
+  - [x] `docs/spec.md` の更新
   - [ ] バックエンド実装 (`src/settings.rs` のデフォルト値・サニタイズ・単体テスト)
   - [ ] フロントエンドUI・多言語化実装 (`src/frontend/index.html`, `src/frontend/i18n.js`)
   - [ ] CodeMirror / エディタ連携実装 (`codemirror.js`, `editor.js`, `settings.js`, `tabs.js`)
