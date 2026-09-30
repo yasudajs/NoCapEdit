@@ -379,7 +379,10 @@ export function updateRulerCursor() {
     if (coords && elements.rulerTrackWrapper) {
         const trackRect = elements.rulerTrackWrapper.getBoundingClientRect();
         const cursorX = coords.left - trackRect.left;
+        const charWidth = getCharWidth();
+
         elements.rulerCursor.style.left = `${Math.round(cursorX)}px`;
+        elements.rulerCursor.style.width = `${charWidth}px`;
         elements.rulerCursor.classList.remove('hidden');
     } else {
         elements.rulerCursor.classList.add('hidden');

@@ -10,9 +10,9 @@
     - [x] `nsis/installer.nsi`
     - [x] `docs/DEVELOPMENT.md`
   - [x] `docs/spec.md` を最新仕様に更新
-- [ ] **フェーズ3: 実装作業**
-  - [ ] `src/frontend/style.css` の `.ruler-cursor` スタイルを高さ1px・下端配置に修正
-  - [ ] `src/frontend/js/ui/ruler.js` の `updateRulerCursor()` で1文字幅を動的適用するよう修正
+- [x] **フェーズ3: 実装作業**
+  - [x] `src/frontend/style.css` の `.ruler-cursor` スタイルを高さ1px・下端配置に修正
+  - [x] `src/frontend/js/ui/ruler.js` の `updateRulerCursor()` で1文字幅を動的適用するよう修正
 - [ ] **フェーズ4: 検証・確認**
   - [ ] アプリを起動し、ルーラー下端1pxのアンダーライン表示を確認
   - [ ] 矢印キー移動、クリック、文字入力でのカーソル追従を確認

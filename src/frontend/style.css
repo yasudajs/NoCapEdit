@@ -485,8 +485,8 @@ body.ruler-marker-dragging * {
 .ruler-cursor {
     position: absolute;
     bottom: 0;
-    width: 2px;
-    height: 100%;
+    width: 0;
+    height: 1px;
     background-color: var(--ruler-cursor);
     pointer-events: none;
     z-index: 4;
