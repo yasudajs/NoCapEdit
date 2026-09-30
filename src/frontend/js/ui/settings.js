@@ -185,6 +185,11 @@ export async function saveSettings() {
     }
 
     try {
+        const wordWrapChanged = (appState.wordWrap !== wordWrap);
+        const lineNumbersChanged = (appState.lineNumbers !== lineNumbers);
+        const rulerChanged = (appState.ruler !== ruler);
+        const indentGuidesChanged = (appState.indentGuides !== indentGuides);
+
         appState.homeFolder = homeFolder;
         appState.savedFontSize = fontSize;
         appState.fontSize = fontSize;
@@ -198,20 +203,20 @@ export async function saveSettings() {
         appState.ruler = ruler;
         appState.indentGuides = indentGuides;
 
-        // 現在アクティブなタブの一時設定も更新して即時反映
+        // 現在アクティブなタブの一時設定は、設定ドックで明示的に変更された項目のみ更新して即時反映
         if (appState.currentTab) {
             const currentTab = getCurrentTab();
             if (currentTab) {
-                currentTab.wordWrap = wordWrap;
-                currentTab.lineNumbers = lineNumbers;
-                currentTab.ruler = ruler;
-                currentTab.indentGuides = indentGuides;
+                if (wordWrapChanged) currentTab.wordWrap = wordWrap;
+                if (lineNumbersChanged) currentTab.lineNumbers = lineNumbers;
+                if (rulerChanged) currentTab.ruler = ruler;
+                if (indentGuidesChanged) currentTab.indentGuides = indentGuides;
             }
         }
-        applyWordWrap(wordWrap);
-        applyLineNumbers(lineNumbers);
-        applyRuler(ruler);
-        applyIndentGuides(indentGuides);
+        if (wordWrapChanged) applyWordWrap(wordWrap);
+        if (lineNumbersChanged) applyLineNumbers(lineNumbers);
+        if (rulerChanged) applyRuler(ruler);
+        if (indentGuidesChanged) applyIndentGuides(indentGuides);
         applyFontSize();
         applyLineHeight();
         updateIndent(tabBehavior);
