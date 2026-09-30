@@ -1,15 +1,15 @@
 # 空白行におけるインデントガイド表示不具合の修正 タスクリスト
 
-- [ ] **フェーズ2: 実装作業の準備**
+- [x] **フェーズ2: 実装作業の準備**
   - [x] `master` ブランチから作業用ブランチ `indent_guide_blank_lines` を作成
   - [x] ドキュメントを `docs/wip/indent_guide_blank_lines/` から `docs/indent_guide_blank_lines/` へ移動し、コミット＆プッシュ
-  - [ ] バージョン番号の更新（`0.2.33` -> `0.2.34`、5ファイルセット）
-    - [ ] `Cargo.toml`
-    - [ ] `package.json`
-    - [ ] `tauri.conf.json`
-    - [ ] `nsis/installer.nsi`
-    - [ ] `docs/DEVELOPMENT.md`
-  - [ ] `docs/spec.md` を最新仕様に更新
+  - [x] バージョン番号の更新（`0.2.33` -> `0.2.34`、5ファイルセット）
+    - [x] `Cargo.toml`
+    - [x] `package.json`
+    - [x] `tauri.conf.json`
+    - [x] `nsis/installer.nsi`
+    - [x] `docs/DEVELOPMENT.md`
+  - [x] `docs/spec.md` を最新仕様に更新
 - [ ] **フェーズ3: 実装作業**
   - [ ] `src/frontend/js/ui/codemirror.js` の `resolveBlankLineIndent` をVS Code準拠のブロック補間アルゴリズムに修正
 - [ ] **フェーズ4: 検証・確認**
