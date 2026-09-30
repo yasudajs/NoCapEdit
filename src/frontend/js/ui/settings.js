@@ -49,7 +49,10 @@ export function openSettingsDialog(isMissingFolder = false) {
         elements.lineHeightSelectModal.value = Number(appState.savedLineHeight || appState.lineHeight || 1.5).toFixed(1);
     }
     if (elements.tabBehaviorSelectModal) {
-        elements.tabBehaviorSelectModal.value = appState.tabBehavior;
+        if (appState.tabBehavior === 'tab') {
+            appState.tabBehavior = 'tab4';
+        }
+        elements.tabBehaviorSelectModal.value = appState.tabBehavior || 'tab4';
     }
     if (elements.saveModeSelectModal) {
         elements.saveModeSelectModal.value = appState.saveMode || 'auto';

@@ -3,7 +3,7 @@ import { appState, elements } from '../state.js';
 import { incrementUnsavedTabCounter } from '../state.js';
 import { generateTabId, getFileNameFromPath, isAutoCreatedFileName } from '../utils/helpers.js';
 import { ensureTauriApi } from '../core/tauri.js';
-import { updateEditorMetrics, applyWordWrap, applyLineNumbers, applyRuler, applyIndentGuides } from './editor.js';
+import { updateEditorMetrics, applyWordWrap, applyLineNumbers, applyRuler, applyIndentGuides, applyIndent } from './editor.js';
 import { autoSave, shouldDeleteEmptyFile, persistTabWithRecovery } from '../core/fileSystem.js';
 import { getContent, setContent, getSelection, setSelection, focusEditor, createTabState, getEditorState, setEditorState } from './codemirror.js';
 
@@ -185,6 +185,7 @@ export async function switchTab(tabId) {
             applyLineNumbers(lineNumbersState);
             applyRuler(rulerState);
             applyIndentGuides(indentGuidesState);
+            applyIndent(appState.tabBehavior);
             renderTabs();
             updateEditorMetrics();
             updateTabStatus(tab);

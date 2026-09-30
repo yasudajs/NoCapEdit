@@ -7,7 +7,7 @@ const DEFAULT_THEME: &str = "dark";
 const DEFAULT_FONT_SIZE: u32 = 20;
 const DEFAULT_FONT_FAMILY: &str = "default";
 const DEFAULT_LINE_HEIGHT: f32 = 1.5;
-const DEFAULT_TAB_BEHAVIOR: &str = "tab";
+const DEFAULT_TAB_BEHAVIOR: &str = "tab4";
 const DEFAULT_SAVE_MODE: &str = "auto";
 
 // パス・ファイル関連設定
@@ -124,6 +124,13 @@ impl AppSettings {
         // 異常値防止: フロントエンドの選択可能範囲と一致させてサニタイズ
         settings.font_size = settings.font_size.clamp(8, 72);
         settings.line_height = settings.line_height.clamp(1.0, 3.0);
+        settings.tab_behavior = match settings.tab_behavior.as_str() {
+            "tab" | "tab4" => "tab4".to_string(),
+            "tab2" => "tab2".to_string(),
+            "space4" => "space4".to_string(),
+            "space2" => "space2".to_string(),
+            _ => DEFAULT_TAB_BEHAVIOR.to_string(),
+        };
 
         settings
     }
@@ -243,5 +250,49 @@ mod tests {
         let json_true = r#"{"home_folder":"C:\\temp","indent_guides":true}"#;
         let parsed_true: AppSettings = serde_json::from_str(json_true).unwrap();
         assert_eq!(parsed_true.indent_guides, true);
+    }
+
+    #[test]
+    fn test_tab_behavior_default_and_sanitize() {
+        // デフォルト値は "tab4"
+        let s = AppSettings::default();
+        assert_eq!(s.tab_behavior, "tab4");
+
+        // 過去バージョンの "tab" を "tab4" に正規化
+        let mut s_old = AppSettings {
+            tab_behavior: "tab".to_string(),
+            ..AppSettings::default()
+        };
+        s_old.tab_behavior = match s_old.tab_behavior.as_str() {
+            "tab" | "tab4" => "tab4".to_string(),
+            "tab2" => "tab2".to_string(),
+            "space4" => "space4".to_string(),
+            "space2" => "space2".to_string(),
+            _ => DEFAULT_TAB_BEHAVIOR.to_string(),
+        };
+        assert_eq!(s_old.tab_behavior, "tab4");
+
+        // "tab2", "space4", "space2" はそのまま保持
+        for valid in &["tab2", "space4", "space2", "tab4"] {
+            let sanitized = match *valid {
+                "tab" | "tab4" => "tab4".to_string(),
+                "tab2" => "tab2".to_string(),
+                "space4" => "space4".to_string(),
+                "space2" => "space2".to_string(),
+                _ => DEFAULT_TAB_BEHAVIOR.to_string(),
+            };
+            assert_eq!(sanitized, *valid);
+        }
+
+        // 不正値は "tab4" にフォールバック
+        let invalid = "invalid_behavior";
+        let fallback = match invalid {
+            "tab" | "tab4" => "tab4".to_string(),
+            "tab2" => "tab2".to_string(),
+            "space4" => "space4".to_string(),
+            "space2" => "space2".to_string(),
+            _ => DEFAULT_TAB_BEHAVIOR.to_string(),
+        };
+        assert_eq!(fallback, "tab4");
     }
 }
