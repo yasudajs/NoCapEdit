@@ -10,8 +10,8 @@
     - [x] `nsis/installer.nsi`
     - [x] `docs/DEVELOPMENT.md`
   - [x] `docs/spec.md` を最新仕様に更新
-- [ ] **フェーズ3: 実装作業**
-  - [ ] `src/frontend/js/ui/codemirror.js` の `resolveBlankLineIndent` をVS Code準拠のブロック補間アルゴリズムに修正
+- [x] **フェーズ3: 実装作業**
+  - [x] `src/frontend/js/ui/codemirror.js` の `resolveBlankLineIndent` をVS Code準拠のブロック補間アルゴリズムに修正
 - [ ] **フェーズ4: 検証・確認**
   - [ ] アプリを起動し、添付画像のコード例（Java）で4行目・11行目に2段目インデントガイドが表示されることを確認
   - [ ] 完全な空行およびスペースのみの行での表示を確認
