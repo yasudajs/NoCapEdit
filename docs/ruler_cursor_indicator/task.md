@@ -1,0 +1,30 @@
+# ルーラー カーソル位置インジケーター改善 タスクリスト
+
+- [ ] **フェーズ2: 実装作業の準備**
+  - [x] `master` ブランチから作業用ブランチ `ruler_cursor_indicator` を作成
+  - [x] ドキュメントを `docs/wip/ruler_cursor_indicator/` から `docs/ruler_cursor_indicator/` へ移動し、コミット＆プッシュ
+  - [ ] バージョン番号の更新（`0.2.32` -> `0.2.33`、5ファイルセット）
+    - [ ] `Cargo.toml`
+    - [ ] `package.json`
+    - [ ] `tauri.conf.json`
+    - [ ] `nsis/installer.nsi`
+    - [ ] `docs/DEVELOPMENT.md`
+  - [ ] `docs/spec.md` を最新仕様に更新
+- [ ] **フェーズ3: 実装作業**
+  - [ ] `src/frontend/style.css` の `.ruler-cursor` スタイルを高さ1px・下端配置に修正
+  - [ ] `src/frontend/js/ui/ruler.js` の `updateRulerCursor()` で1文字幅を動的適用するよう修正
+- [ ] **フェーズ4: 検証・確認**
+  - [ ] アプリを起動し、ルーラー下端1pxのアンダーライン表示を確認
+  - [ ] 矢印キー移動、クリック、文字入力でのカーソル追従を確認
+  - [ ] ズーム（フォントサイズ拡大・縮小）時にインジケーター幅が正確に連動することを確認
+  - [ ] カラーテーマ（Dark / Soft Dark / Light）での視認性を確認
+  - [ ] ルーラー表示/非表示（`Alt + R`）との連動を確認
+- [ ] **フェーズ5: レポート・履歴作成**
+  - [ ] `docs/ruler_cursor_indicator/walkthrough.md` を作成
+  - [ ] `docs/history.md` に Ver 0.2.33 の変更履歴を最上部に追記
+  - [ ] コミット＆プッシュ
+- [ ] **フェーズ6: 完了確認・クリーンアップ（ユーザー指示後）**
+  - [ ] 未コミット変更の確認
+  - [ ] `docs/ruler_cursor_indicator/` フォルダを削除してコミット＆プッシュ
+  - [ ] `master` ブランチへ切り替えて `--no-ff` マージ＆プッシュ
+  - [ ] 作業ブランチの削除
