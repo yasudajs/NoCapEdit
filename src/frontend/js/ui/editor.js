@@ -3,7 +3,7 @@ import { appState, elements } from '../state.js';
 import { MAX_FONT_SIZE, MIN_FONT_SIZE, MAX_LINE_HEIGHT, MIN_LINE_HEIGHT, LINE_HEIGHT_STEP, AUTOSAVE_DELAY_MS } from '../state.js';
 import { renderTabs, updateTabStatus } from './tabs.js';
 import { autoSave } from '../core/fileSystem.js';
-import { getContent, setContent, getCursorMetrics, getSelection, setSelection, replaceRange, focusEditor, getEditorState, updateWrap, updateLineNumbers, getEditorView, insertTimestampCommand, resyncEditorPosition } from './codemirror.js';
+import { getContent, setContent, getCursorMetrics, getSelection, setSelection, replaceRange, focusEditor, getEditorState, updateWrap, updateLineNumbers, updateIndentGuides, getEditorView, insertTimestampCommand, resyncEditorPosition } from './codemirror.js';
 import { isFindWidgetOpen, updateMatches } from './findReplace.js';
 import { setRulerVisibility, updateRulerCursor, syncRulerMetrics } from './ruler.js';
 
@@ -200,6 +200,25 @@ export function toggleRuler() {
     tab.ruler = newRuler;
     applyRuler(newRuler);
     console.log(`[Ruler] タブ "${tab.fileName}" のルーラー表示を ${newRuler ? 'ON' : 'OFF'} に切り替えました`);
+}
+
+/**
+ * エディタのインデントガイド表示設定を適用する
+ * @param {boolean} enable - インデントガイドを表示するかどうか
+ */
+export function applyIndentGuides(enable) {
+    updateIndentGuides(enable);
+}
+
+export function toggleIndentGuides() {
+    if (!appState.currentTab) return;
+    const tab = appState.tabs.find(t => t.id === appState.currentTab);
+    if (!tab) return;
+    const currentIndentGuides = tab.indentGuides !== undefined ? tab.indentGuides : appState.indentGuides;
+    const newIndentGuides = !currentIndentGuides;
+    tab.indentGuides = newIndentGuides;
+    applyIndentGuides(newIndentGuides);
+    console.log(`[IndentGuides] タブ "${tab.fileName}" のインデントガイド表示を ${newIndentGuides ? 'ON' : 'OFF'} に切り替えました`);
 }
 
 export function getIndentString() {

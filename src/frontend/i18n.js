@@ -136,6 +136,7 @@ const DICT = {
                 toggleWordWrap: "行の折り返し切り替え",
                 toggleLineNumbers: "行番号の表示切り替え",
                 toggleRuler: "ルーラーの表示切り替え",
+                toggleIndentGuides: "インデントガイドの表示切り替え",
                 moveLine: "行の上下移動",
                 duplicateLine: "行の上下複製",
                 deleteLine: "行の削除",
@@ -215,6 +216,7 @@ const DICT = {
                 wordWrap: "行の折り返しを変更",
                 lineNumbers: "行番号の表示を変更",
                 ruler: "ルーラーの表示を変更",
+                indentGuides: "インデントガイドの表示を変更",
                 theme: "テーマを変更"
             },
             dialog: {
@@ -268,6 +270,11 @@ const DICT = {
                     },
                     ruler: {
                         label: "ルーラーの表示:",
+                        off: "無効（表示しない）",
+                        on: "有効（表示する）"
+                    },
+                    indentGuides: {
+                        label: "インデントガイドの表示:",
                         off: "無効（表示しない）",
                         on: "有効（表示する）"
                     },

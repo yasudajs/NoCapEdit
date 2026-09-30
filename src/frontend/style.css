@@ -49,6 +49,9 @@
     --ruler-guide: rgba(255, 255, 255, 0.25);
     --ruler-marker: #5a9fd4;
     --ruler-cursor: #f48771;
+
+    /* インデントガイド (補助線) */
+    --indent-guide-color: rgba(255, 255, 255, 0.20);
 }
 
 body.light-theme {
@@ -80,6 +83,9 @@ body.light-theme {
     --ruler-guide: rgba(0, 0, 0, 0.25);
     --ruler-marker: #0066cc;
     --ruler-cursor: #d9383a;
+
+    /* インデントガイド (補助線) */
+    --indent-guide-color: rgba(0, 0, 0, 0.12);
 }
 
 body.soft-dark-theme {
@@ -109,6 +115,9 @@ body.soft-dark-theme {
     --ruler-guide: rgba(255, 255, 255, 0.25);
     --ruler-marker: #5a9fd4;
     --ruler-cursor: #f48771;
+
+    /* インデントガイド (補助線) */
+    --indent-guide-color: rgba(255, 255, 255, 0.14);
 }
 
 body {
@@ -510,6 +519,32 @@ body.ruler-marker-dragging * {
     width: 0;
     border-left: 1px dashed var(--ruler-guide);
     pointer-events: none;
+}
+
+/* インデントガイド (補助線) スタイル */
+.cm-line {
+    position: relative;
+}
+
+.cm-indent-guides {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+    pointer-events: none;
+    user-select: none;
+}
+
+.cm-indent-guide {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background-color: var(--indent-guide-color);
+    pointer-events: none;
+    user-select: none;
 }
 
 /* テキストエディタコンテナ */

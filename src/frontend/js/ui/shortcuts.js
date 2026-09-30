@@ -1,4 +1,4 @@
-import { increaseLineHeight, decreaseLineHeight, zoomIn, zoomOut, resetZoomAndLineHeight, toggleWordWrap, toggleLineNumbers, toggleRuler } from './editor.js';
+import { increaseLineHeight, decreaseLineHeight, zoomIn, zoomOut, resetZoomAndLineHeight, toggleWordWrap, toggleLineNumbers, toggleRuler, toggleIndentGuides } from './editor.js';
 import { triggerManualSave, openFileDialog } from '../core/fileSystem.js';
 import { switchTabByOffset, createNewTab, closeTab } from './tabs.js';
 import { toggleSettingsDialog } from './settings.js';
@@ -99,6 +99,15 @@ export function setupKeyboardShortcuts() {
             if (e.key === 'r' || e.key === 'R' || e.code === 'KeyR') {
                 e.preventDefault();
                 toggleRuler();
+                return;
+            }
+        }
+
+        // インデントガイドの表示切り替え: Alt + I
+        if (e.altKey && !e.ctrlKey && !e.shiftKey) {
+            if (e.key === 'i' || e.key === 'I' || e.code === 'KeyI') {
+                e.preventDefault();
+                toggleIndentGuides();
                 return;
             }
         }
