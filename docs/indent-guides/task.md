@@ -8,8 +8,8 @@
 - [ ] **フェーズ2: 実装作業の開始（承認後）**
   - [x] `master` ブランチから作業用ブランチ（`feature/indent-guides`）を作成
   - [x] ドキュメントを `docs/wip/indent-guides/` から `docs/indent-guides/` へ移動・コミット＆プッシュ
-  - [ ] バージョン番号の更新（`0.2.29` → `0.2.30`、5ファイル一括）
-  - [ ] `spec.md` を最新版に更新
+  - [x] バージョン番号の更新（`0.2.29` → `0.2.30`、5ファイル一括）
+  - [x] `spec.md` を最新版に更新
   - [ ] Rust側の設定拡張（`src/settings.rs`: `indent_guides` フィールド追加）
   - [ ] フロントエンド状態管理の更新（`state.js`, `settingsManager.js`）
   - [ ] 多言語対応（`i18n.js` に翻訳キー追加）
