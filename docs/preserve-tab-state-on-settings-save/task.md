@@ -12,10 +12,10 @@
   - [x] WIPドキュメントの昇格 (`docs/wip/preserve-tab-state-on-settings-save/` → `docs/preserve-tab-state-on-settings-save/`) およびコミット・プッシュ
   - [x] バージョン番号の更新 (`0.2.31` → `0.2.32`: 5ファイル)
   - [x] `docs/spec.md` の更新
-  - [ ] 設定ドック保存処理の差分変更検知の実装 (`src/frontend/js/ui/settings.js`)
-  - [ ] タブ幅変更時におけるインデントガイド即時再描画の実装 (`src/frontend/js/ui/codemirror.js`)
-  - [ ] 動作確認・自動テスト (`cargo test`, `npm run build`)
-  - [ ] ドキュメント更新・作業完了報告
-    - [ ] `docs/preserve-tab-state-on-settings-save/walkthrough.md` の作成
-    - [ ] `docs/history.md` に v0.2.32 の履歴を追記
-    - [ ] コミット＆プッシュ
+  - [x] 設定ドック保存処理の差分変更検知の実装 (`src/frontend/js/ui/settings.js`)
+  - [x] タブ幅変更時におけるインデントガイド即時再描画の実装 (`src/frontend/js/ui/codemirror.js`)
+  - [x] 動作確認・自動テスト (`cargo test`, `npm run build`)
+  - [x] ドキュメント更新・作業完了報告
+    - [x] `docs/preserve-tab-state-on-settings-save/walkthrough.md` の作成
+    - [x] `docs/history.md` に v0.2.32 の履歴を追記
+    - [x] コミット＆プッシュ

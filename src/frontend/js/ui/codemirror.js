@@ -206,7 +206,9 @@ export const indentGuidesPlugin = ViewPlugin.fromClass(class {
     }
 
     update(update) {
-        if (update.docChanged || update.viewportChanged) {
+        const tabSizeChanged = update.startState.tabSize !== update.state.tabSize;
+        const indentUnitChanged = update.startState.facet(indentUnit) !== update.state.facet(indentUnit);
+        if (update.docChanged || update.viewportChanged || tabSizeChanged || indentUnitChanged) {
             this.decorations = this.buildDecorations(update.view);
         }
     }
