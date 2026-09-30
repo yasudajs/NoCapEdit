@@ -3,7 +3,7 @@ import { appState, elements } from '../state.js';
 import { MAX_FONT_SIZE, MIN_FONT_SIZE, MAX_LINE_HEIGHT, MIN_LINE_HEIGHT, LINE_HEIGHT_STEP, AUTOSAVE_DELAY_MS } from '../state.js';
 import { renderTabs, updateTabStatus } from './tabs.js';
 import { autoSave } from '../core/fileSystem.js';
-import { getContent, setContent, getCursorMetrics, getSelection, setSelection, replaceRange, focusEditor, getEditorState, updateWrap, updateLineNumbers, updateIndentGuides, getEditorView, insertTimestampCommand, resyncEditorPosition } from './codemirror.js';
+import { getContent, setContent, getCursorMetrics, getSelection, setSelection, replaceRange, focusEditor, getEditorState, updateWrap, updateLineNumbers, updateIndentGuides, updateIndent, getEditorView, insertTimestampCommand, resyncEditorPosition } from './codemirror.js';
 import { isFindWidgetOpen, updateMatches } from './findReplace.js';
 import { setRulerVisibility, updateRulerCursor, syncRulerMetrics } from './ruler.js';
 
@@ -210,6 +210,14 @@ export function applyIndentGuides(enable) {
     updateIndentGuides(enable);
 }
 
+/**
+ * エディタのインデント設定（タブ幅・挙動）を適用する
+ * @param {string} tabBehavior - インデント挙動 ('tab4' | 'tab2' | 'space4' | 'space2')
+ */
+export function applyIndent(tabBehavior) {
+    updateIndent(tabBehavior);
+}
+
 export function toggleIndentGuides() {
     if (!appState.currentTab) return;
     const tab = appState.tabs.find(t => t.id === appState.currentTab);
@@ -225,6 +233,8 @@ export function getIndentString() {
     switch (appState.tabBehavior) {
         case 'space2': return '  ';
         case 'space4': return '    ';
+        case 'tab2':
+        case 'tab4':
         case 'tab':
         default:
             return '\t';

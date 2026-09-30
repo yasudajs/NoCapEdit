@@ -74,7 +74,7 @@ async function init() {
         appState.fontFamily = settings.font_family || 'default';
         appState.savedLineHeight = settings.line_height || 1.5;
         appState.lineHeight = appState.savedLineHeight;
-        appState.tabBehavior = settings.tab_behavior || 'tab';
+        appState.tabBehavior = (settings.tab_behavior === 'tab' || !settings.tab_behavior) ? 'tab4' : settings.tab_behavior;
         appState.saveMode = settings.save_mode || 'auto';
         appState.charCountMode = settings.char_count_mode || 'with_newline';
         appState.wordWrap = settings.word_wrap !== undefined ? settings.word_wrap : true;

@@ -12,9 +12,9 @@
   - [x] WIPドキュメントの昇格 (`docs/wip/tab-width-settings/` → `docs/tab-width-settings/`) およびコミット・プッシュ
   - [x] バージョン番号の更新 (`0.2.30` → `0.2.31`: 5ファイル)
   - [x] `docs/spec.md` の更新
-  - [ ] バックエンド実装 (`src/settings.rs` のデフォルト値・サニタイズ・単体テスト)
-  - [ ] フロントエンドUI・多言語化実装 (`src/frontend/index.html`, `src/frontend/i18n.js`)
-  - [ ] CodeMirror / エディタ連携実装 (`codemirror.js`, `editor.js`, `settings.js`, `tabs.js`)
+  - [x] バックエンド実装 (`src/settings.rs` のデフォルト値・サニタイズ・単体テスト)
+  - [x] フロントエンドUI・多言語化実装 (`src/frontend/index.html`, `src/frontend/i18n.js`)
+  - [x] CodeMirror / エディタ連携実装 (`codemirror.js`, `editor.js`, `settings.js`, `tabs.js`)
   - [ ] 動作確認・自動テスト (`cargo test`, `npm run build`)
   - [ ] ドキュメント更新・作業完了報告
     - [ ] `docs/tab-width-settings/walkthrough.md` の作成

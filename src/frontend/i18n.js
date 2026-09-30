@@ -244,9 +244,10 @@ const DICT = {
                     },
                     tabBehavior: {
                         label: "Tabキーの挙動:",
-                        tab: "タブ文字 (\\t)",
-                        space2: "スペース 2文字",
-                        space4: "スペース 4文字"
+                        tab4: "タブ文字 (4文字幅)",
+                        tab2: "タブ文字 (2文字幅)",
+                        space4: "スペース 4文字",
+                        space2: "スペース 2文字"
                     },
                     saveMode: {
                         label: "保存モード:",

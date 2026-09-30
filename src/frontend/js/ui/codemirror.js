@@ -17,6 +17,9 @@ let changeListeners = [];
 let selectionListeners = [];
 let pendingImeResync = false;
 
+// デフォルトタブサイズ
+export const DEFAULT_TAB_SIZE = 4;
+
 // 動的設定変更用 Compartments
 export const wrapCompartment = new Compartment();
 export const lineNumbersCompartment = new Compartment();
@@ -210,9 +213,9 @@ export const indentGuidesPlugin = ViewPlugin.fromClass(class {
 
     buildDecorations(view) {
         const builder = new RangeSetBuilder();
+        const tabSize = view.state.tabSize || DEFAULT_TAB_SIZE;
         const unitFacet = view.state.facet(indentUnit) || '    ';
-        const indentUnitWidth = unitFacet.length > 0 && unitFacet !== '\t' ? unitFacet.length : 4;
-        const tabSize = 4;
+        const indentUnitWidth = unitFacet.length > 0 && unitFacet !== '\t' ? unitFacet.length : tabSize;
 
         for (const { from, to } of view.visibleRanges) {
             let pos = from;
@@ -401,16 +404,21 @@ export const baseTheme = EditorView.theme({
 
 /**
  * インデント拡張を取得
- * @param {string} tabBehavior - 'tab' | 'space2' | 'space4'
+ * @param {string} tabBehavior - 'tab4' | 'tab2' | 'space4' | 'space2' | 'tab'
  * @returns {import('@codemirror/state').Extension}
  */
-export function getIndentExtension(tabBehavior = 'tab') {
+export function getIndentExtension(tabBehavior = 'tab4') {
     switch (tabBehavior) {
-        case 'space2': return indentUnit.of('  ');
-        case 'space4': return indentUnit.of('    ');
+        case 'space2':
+            return [indentUnit.of('  '), EditorState.tabSize.of(2)];
+        case 'space4':
+            return [indentUnit.of('    '), EditorState.tabSize.of(4)];
+        case 'tab2':
+            return [indentUnit.of('\t'), EditorState.tabSize.of(2)];
+        case 'tab4':
         case 'tab':
         default:
-            return indentUnit.of('\t');
+            return [indentUnit.of('\t'), EditorState.tabSize.of(DEFAULT_TAB_SIZE)];
     }
 }
 
@@ -419,7 +427,7 @@ export function getIndentExtension(tabBehavior = 'tab') {
  * @param {Object} [options]
  * @param {boolean} [options.wordWrap=true]
  * @param {boolean} [options.lineNumbers=false]
- * @param {string} [options.tabBehavior='tab']
+ * @param {string} [options.tabBehavior='tab4']
  * @param {import('@codemirror/language').LanguageSupport|Array} [options.languageSupport=[]]
  * @returns {Array}
  */
@@ -427,7 +435,7 @@ export function getDefaultExtensions(options = {}) {
     const wrap = options.wordWrap !== undefined ? options.wordWrap : true;
     const lineNumbersEnabled = options.lineNumbers !== undefined ? options.lineNumbers : false;
     const indentGuidesEnabled = options.indentGuides !== undefined ? options.indentGuides : false;
-    const tabBehavior = options.tabBehavior || 'tab';
+    const tabBehavior = options.tabBehavior || 'tab4';
     const languageSupport = options.languageSupport || [];
 
     const extensions = [
@@ -499,7 +507,7 @@ export async function updateLanguageForFileName(view, fileName) {
  * @param {string} [options.placeholder=''] - プレースホルダー文字列
  * @param {boolean} [options.wordWrap=true] - 折り返し初期状態
  * @param {boolean} [options.lineNumbers=false] - 行番号初期状態
- * @param {string} [options.tabBehavior='tab'] - インデント挙動
+ * @param {string} [options.tabBehavior='tab4'] - インデント挙動 ('tab4' | 'tab2' | 'space4' | 'space2')
  * @param {EditorState} [options.state] - 初期 EditorState
  * @param {Function} [options.onDocChange] - ドキュメント変更時コールバック
  * @param {Function} [options.onSelectionChange] - 選択範囲・カーソル変更時コールバック
@@ -611,7 +619,7 @@ export function updateIndentGuides(enable) {
 
 /**
  * インデント設定の動的更新
- * @param {string} tabBehavior - 'tab' | 'space2' | 'space4'
+ * @param {string} tabBehavior - 'tab4' | 'tab2' | 'space4' | 'space2'
  */
 export function updateIndent(tabBehavior) {
     if (!editorView) return;
