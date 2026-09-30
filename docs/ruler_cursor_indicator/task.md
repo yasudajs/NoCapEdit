@@ -1,15 +1,15 @@
 # ルーラー カーソル位置インジケーター改善 タスクリスト
 
-- [ ] **フェーズ2: 実装作業の準備**
+- [x] **フェーズ2: 実装作業の準備**
   - [x] `master` ブランチから作業用ブランチ `ruler_cursor_indicator` を作成
   - [x] ドキュメントを `docs/wip/ruler_cursor_indicator/` から `docs/ruler_cursor_indicator/` へ移動し、コミット＆プッシュ
-  - [ ] バージョン番号の更新（`0.2.32` -> `0.2.33`、5ファイルセット）
-    - [ ] `Cargo.toml`
-    - [ ] `package.json`
-    - [ ] `tauri.conf.json`
-    - [ ] `nsis/installer.nsi`
-    - [ ] `docs/DEVELOPMENT.md`
-  - [ ] `docs/spec.md` を最新仕様に更新
+  - [x] バージョン番号の更新（`0.2.32` -> `0.2.33`、5ファイルセット）
+    - [x] `Cargo.toml`
+    - [x] `package.json`
+    - [x] `tauri.conf.json`
+    - [x] `nsis/installer.nsi`
+    - [x] `docs/DEVELOPMENT.md`
+  - [x] `docs/spec.md` を最新仕様に更新
 - [ ] **フェーズ3: 実装作業**
   - [ ] `src/frontend/style.css` の `.ruler-cursor` スタイルを高さ1px・下端配置に修正
   - [ ] `src/frontend/js/ui/ruler.js` の `updateRulerCursor()` で1文字幅を動的適用するよう修正
