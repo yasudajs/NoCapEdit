@@ -285,7 +285,7 @@ export const baseTheme = EditorView.theme({
         top: "0",
         bottom: "0",
         width: "1px",
-        backgroundColor: "var(--indent-guide-color, rgba(255, 255, 255, 0.15))",
+        backgroundColor: "var(--indent-guide-color, rgba(255, 255, 255, 0.20))",
         pointerEvents: "none",
         userSelect: "none",
     },

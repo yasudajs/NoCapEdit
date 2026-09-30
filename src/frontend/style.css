@@ -51,7 +51,7 @@
     --ruler-cursor: #f48771;
 
     /* インデントガイド (補助線) */
-    --indent-guide-color: rgba(255, 255, 255, 0.15);
+    --indent-guide-color: rgba(255, 255, 255, 0.20);
 }
 
 body.light-theme {
