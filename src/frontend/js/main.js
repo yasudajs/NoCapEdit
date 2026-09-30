@@ -3,7 +3,7 @@ import { appState, elements, initElements } from './state.js';
 import { invoke, appWindow, listen, ensureTauriApi } from './core/tauri.js';
 import { createNewTab, updateStatus, renderTabs, setupTabScrollWheel } from './ui/tabs.js';
 import { openExistingFile, openFiles, persistAllTabsBeforeExit } from './core/fileSystem.js';
-import { updateEditorMetrics, onEditorInput, applyFontSize, applyLineHeight, applyWordWrap, applyLineNumbers, applyRuler, resyncEditorPosition } from './ui/editor.js';
+import { updateEditorMetrics, onEditorInput, applyFontSize, applyLineHeight, applyWordWrap, applyLineNumbers, applyRuler, applyIndentGuides, resyncEditorPosition } from './ui/editor.js';
 import { initCodeMirror } from './ui/codemirror.js';
 import { initRuler, syncRulerScroll } from './ui/ruler.js';
 import { toggleSettingsDialog, closeSettingsDialog, openSettingsDialog, onThemeChange, onFontFamilyChange, saveSettings, setupSettingsNavigation } from './ui/settings.js';
@@ -80,6 +80,7 @@ async function init() {
         appState.wordWrap = settings.word_wrap !== undefined ? settings.word_wrap : true;
         appState.lineNumbers = settings.line_numbers !== undefined ? settings.line_numbers : false;
         appState.ruler = settings.ruler !== undefined ? settings.ruler : false;
+        appState.indentGuides = settings.indent_guides !== undefined ? settings.indent_guides : false;
 
         if (elements.fontSizeSelectModal) {
             elements.fontSizeSelectModal.value = String(appState.fontSize);
@@ -104,6 +105,9 @@ async function init() {
         }
         if (elements.rulerSelectModal) {
             elements.rulerSelectModal.value = String(appState.ruler);
+        }
+        if (elements.indentGuidesSelectModal) {
+            elements.indentGuidesSelectModal.value = String(appState.indentGuides);
         }
 
         // アプリケーションタイトルの動的設定
@@ -130,6 +134,7 @@ async function init() {
         applyWordWrap(appState.wordWrap);
         applyLineNumbers(appState.lineNumbers);
         applyRuler(appState.ruler);
+        applyIndentGuides(appState.indentGuides);
 
         // 前回の適用フォントが default 以外の場合、一覧をロードする前にモーダルドロップダウンに項目を追加しておく
         if (appState.fontFamily !== 'default' && elements.fontFamilySelectModal) {
@@ -146,6 +151,7 @@ async function init() {
                 placeholder: t('editor.placeholder'),
                 wordWrap: appState.wordWrap,
                 lineNumbers: appState.lineNumbers,
+                indentGuides: appState.indentGuides,
                 tabBehavior: appState.tabBehavior,
                 onDocChange: () => onEditorInput(),
                 onSelectionChange: () => updateEditorMetrics(),
@@ -284,6 +290,11 @@ function setupUIEventListeners() {
     }
     if (elements.rulerSelectModal) {
         elements.rulerSelectModal.addEventListener('change', async (e) => {
+            await saveSettings();
+        });
+    }
+    if (elements.indentGuidesSelectModal) {
+        elements.indentGuidesSelectModal.addEventListener('change', async (e) => {
             await saveSettings();
         });
     }

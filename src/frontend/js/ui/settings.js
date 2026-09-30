@@ -2,7 +2,7 @@ import { t } from '../../i18n.js';
 import { appState, elements, savedEditorCursor, setSavedEditorCursor, DEFAULT_MONOSPACE_FONTS } from '../state.js';
 import { invoke, openDialog, ensureTauriApi, appWindow, emit } from '../core/tauri.js';
 import { updateStatus, renderTabs, createNewTab, getCurrentTab, updateTabStatus } from './tabs.js';
-import { updateEditorMetrics, applyWordWrap, applyLineNumbers, applyRuler, applyFontSize, applyLineHeight } from './editor.js';
+import { updateEditorMetrics, applyWordWrap, applyLineNumbers, applyRuler, applyIndentGuides, applyFontSize, applyLineHeight } from './editor.js';
 import { getSelection, setSelection, focusEditor, updateIndent } from './codemirror.js';
 import { autoSave, shouldDeleteEmptyFile } from '../core/fileSystem.js';
 import { applyThemeUI, applyFontFamily, loadSystemFonts } from './theme.js';
@@ -65,6 +65,9 @@ export function openSettingsDialog(isMissingFolder = false) {
     }
     if (elements.rulerSelectModal) {
         elements.rulerSelectModal.value = appState.ruler ? 'true' : 'false';
+    }
+    if (elements.indentGuidesSelectModal) {
+        elements.indentGuidesSelectModal.value = appState.indentGuides ? 'true' : 'false';
     }
     if (elements.folderHint) {
         elements.folderHint.textContent = isMissingFolder
@@ -133,6 +136,7 @@ export function setupSettingsNavigation() {
                 elements.wordWrapSelectModal,
                 elements.lineNumbersSelectModal,
                 elements.rulerSelectModal,
+                elements.indentGuidesSelectModal,
                 elements.themeSelectModal
             ].filter(el => el && !el.disabled && el.offsetParent !== null);
 
@@ -169,6 +173,7 @@ export async function saveSettings() {
     const wordWrap = elements.wordWrapSelectModal ? (elements.wordWrapSelectModal.value === 'true') : appState.wordWrap;
     const lineNumbers = elements.lineNumbersSelectModal ? (elements.lineNumbersSelectModal.value === 'true') : appState.lineNumbers;
     const ruler = elements.rulerSelectModal ? (elements.rulerSelectModal.value === 'true') : appState.ruler;
+    const indentGuides = elements.indentGuidesSelectModal ? (elements.indentGuidesSelectModal.value === 'true') : appState.indentGuides;
     const previousSaveMode = appState.saveMode;
 
     if (!homeFolder) {
@@ -188,6 +193,7 @@ export async function saveSettings() {
         appState.wordWrap = wordWrap;
         appState.lineNumbers = lineNumbers;
         appState.ruler = ruler;
+        appState.indentGuides = indentGuides;
 
         // 現在アクティブなタブの一時設定も更新して即時反映
         if (appState.currentTab) {
@@ -196,11 +202,13 @@ export async function saveSettings() {
                 currentTab.wordWrap = wordWrap;
                 currentTab.lineNumbers = lineNumbers;
                 currentTab.ruler = ruler;
+                currentTab.indentGuides = indentGuides;
             }
         }
         applyWordWrap(wordWrap);
         applyLineNumbers(lineNumbers);
         applyRuler(ruler);
+        applyIndentGuides(indentGuides);
         applyFontSize();
         applyLineHeight();
         updateIndent(tabBehavior);

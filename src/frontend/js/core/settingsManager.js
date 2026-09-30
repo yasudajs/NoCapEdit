@@ -20,7 +20,8 @@ export async function saveApplicationSettings() {
                 char_count_mode: appState.charCountMode,
                 word_wrap: appState.wordWrap,
                 line_numbers: appState.lineNumbers,
-                ruler: appState.ruler
+                ruler: appState.ruler,
+                indent_guides: appState.indentGuides
             }
         });
     } catch (error) {

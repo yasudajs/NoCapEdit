@@ -37,6 +37,8 @@ pub struct AppSettings {
     pub line_numbers: bool,
     #[serde(default = "default_ruler")]
     pub ruler: bool,
+    #[serde(default = "default_indent_guides")]
+    pub indent_guides: bool,
 }
 
 fn default_theme() -> String {
@@ -79,6 +81,10 @@ fn default_ruler() -> bool {
     false
 }
 
+fn default_indent_guides() -> bool {
+    false
+}
+
 #[derive(Debug, Serialize)]
 pub struct SettingsResponse {
     pub home_folder: String,
@@ -92,6 +98,7 @@ pub struct SettingsResponse {
     pub word_wrap: bool,
     pub line_numbers: bool,
     pub ruler: bool,
+    pub indent_guides: bool,
     pub is_first_launch: bool,
     pub home_folder_exists: bool,
     pub app_version: String,
@@ -157,6 +164,7 @@ impl Default for AppSettings {
             word_wrap: default_word_wrap(),
             line_numbers: default_line_numbers(),
             ruler: default_ruler(),
+            indent_guides: default_indent_guides(),
         }
     }
 }
@@ -218,5 +226,22 @@ mod tests {
         let json_true = r#"{"home_folder":"C:\\temp","ruler":true}"#;
         let parsed_true: AppSettings = serde_json::from_str(json_true).unwrap();
         assert_eq!(parsed_true.ruler, true);
+    }
+
+    #[test]
+    fn test_indent_guides_default_and_deserialize() {
+        // デフォルト値は false
+        let s = AppSettings::default();
+        assert_eq!(s.indent_guides, false);
+
+        // JSONからindent_guidesが欠落していてもfalseにフォールバック
+        let json_missing = r#"{"home_folder":"C:\\temp"}"#;
+        let parsed: AppSettings = serde_json::from_str(json_missing).unwrap();
+        assert_eq!(parsed.indent_guides, false);
+
+        // JSONでtrueが指定されている場合はtrueとしてパース
+        let json_true = r#"{"home_folder":"C:\\temp","indent_guides":true}"#;
+        let parsed_true: AppSettings = serde_json::from_str(json_true).unwrap();
+        assert_eq!(parsed_true.indent_guides, true);
     }
 }

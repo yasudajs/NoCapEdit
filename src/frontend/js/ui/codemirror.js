@@ -1,5 +1,5 @@
-import { EditorView, keymap, placeholder as cmPlaceholder, drawSelection, dropCursor, lineNumbers } from '@codemirror/view';
-import { EditorState, Compartment } from '@codemirror/state';
+import { EditorView, keymap, placeholder as cmPlaceholder, drawSelection, dropCursor, lineNumbers, ViewPlugin, Decoration, WidgetType } from '@codemirror/view';
+import { EditorState, Compartment, RangeSetBuilder } from '@codemirror/state';
 import {
     defaultKeymap, history, historyKeymap,
     indentWithTab,
@@ -20,6 +20,7 @@ let pendingImeResync = false;
 // 動的設定変更用 Compartments
 export const wrapCompartment = new Compartment();
 export const lineNumbersCompartment = new Compartment();
+export const indentGuidesCompartment = new Compartment();
 export const indentCompartment = new Compartment();
 export const themeCompartment = new Compartment();
 export const languageCompartment = new Compartment();
@@ -94,6 +95,157 @@ export const customEditorKeymap = [
 ];
 
 /**
+ * インデントガイド描画用ウィジェット
+ */
+class IndentGuideWidget extends WidgetType {
+    constructor(levels) {
+        super();
+        this.levels = levels;
+    }
+
+    eq(other) {
+        if (this.levels.length !== other.levels.length) return false;
+        for (let i = 0; i < this.levels.length; i++) {
+            if (this.levels[i] !== other.levels[i]) return false;
+        }
+        return true;
+    }
+
+    toDOM() {
+        const wrap = document.createElement('span');
+        wrap.className = 'cm-indent-guides';
+        wrap.setAttribute('aria-hidden', 'true');
+
+        for (const col of this.levels) {
+            const guide = document.createElement('span');
+            guide.className = 'cm-indent-guide';
+            guide.style.left = `calc(16px + ${col}ch)`;
+            wrap.appendChild(guide);
+        }
+        return wrap;
+    }
+
+    ignoreEvent() {
+        return true;
+    }
+}
+
+/**
+ * 行テキストからインデント深さ・空白行情報を算出
+ * @param {string} lineText
+ * @param {number} tabSize
+ * @param {number} indentUnitWidth
+ * @returns {{ level: number, isBlank: boolean }}
+ */
+function getLineIndentInfo(lineText, tabSize, indentUnitWidth) {
+    let col = 0;
+    let index = 0;
+    while (index < lineText.length) {
+        const ch = lineText[index];
+        if (ch === ' ') {
+            col += 1;
+            index += 1;
+        } else if (ch === '\t') {
+            col += tabSize - (col % tabSize);
+            index += 1;
+        } else {
+            break;
+        }
+    }
+    const isBlank = index === lineText.length;
+    const level = Math.floor(col / indentUnitWidth);
+    return { level, isBlank };
+}
+
+/**
+ * 空行のインデント深さを前後の非空行から補間
+ * @param {import('@codemirror/state').Text} doc
+ * @param {number} lineNumber
+ * @param {number} tabSize
+ * @param {number} indentUnitWidth
+ * @returns {number}
+ */
+function resolveBlankLineIndent(doc, lineNumber, tabSize, indentUnitWidth) {
+    let prevLevel = 0;
+    let nextLevel = 0;
+    const maxLook = 30;
+
+    for (let i = lineNumber - 1; i >= Math.max(1, lineNumber - maxLook); i--) {
+        const l = doc.line(i);
+        const info = getLineIndentInfo(l.text, tabSize, indentUnitWidth);
+        if (!info.isBlank) {
+            prevLevel = info.level;
+            break;
+        }
+    }
+
+    for (let i = lineNumber + 1; i <= Math.min(doc.lines, lineNumber + maxLook); i++) {
+        const l = doc.line(i);
+        const info = getLineIndentInfo(l.text, tabSize, indentUnitWidth);
+        if (!info.isBlank) {
+            nextLevel = info.level;
+            break;
+        }
+    }
+
+    if (prevLevel > 0 && nextLevel > 0) {
+        return Math.min(prevLevel, nextLevel);
+    }
+    return Math.max(prevLevel, nextLevel);
+}
+
+/**
+ * インデントガイド描画用 ViewPlugin
+ */
+export const indentGuidesPlugin = ViewPlugin.fromClass(class {
+    constructor(view) {
+        this.decorations = this.buildDecorations(view);
+    }
+
+    update(update) {
+        if (update.docChanged || update.viewportChanged) {
+            this.decorations = this.buildDecorations(update.view);
+        }
+    }
+
+    buildDecorations(view) {
+        const builder = new RangeSetBuilder();
+        const unitFacet = view.state.facet(indentUnit) || '    ';
+        const indentUnitWidth = unitFacet.length > 0 && unitFacet !== '\t' ? unitFacet.length : 4;
+        const tabSize = 4;
+
+        for (const { from, to } of view.visibleRanges) {
+            let pos = from;
+            while (pos <= to) {
+                const line = view.state.doc.lineAt(pos);
+                let { level, isBlank } = getLineIndentInfo(line.text, tabSize, indentUnitWidth);
+
+                if (isBlank) {
+                    level = resolveBlankLineIndent(view.state.doc, line.number, tabSize, indentUnitWidth);
+                }
+
+                if (level > 0) {
+                    const levels = [];
+                    for (let i = 0; i < level; i++) {
+                        levels.push(i * indentUnitWidth);
+                    }
+                    builder.add(line.from, line.from, Decoration.widget({
+                        widget: new IndentGuideWidget(levels),
+                        side: -1,
+                    }));
+                }
+
+                pos = line.to + 1;
+            }
+        }
+
+        return builder.finish();
+    }
+}, {
+    decorations: v => v.decorations
+});
+
+/**
  * 基本テーマ（CSS変数連動）
  */
 export const baseTheme = EditorView.theme({
@@ -116,6 +268,26 @@ export const baseTheme = EditorView.theme({
     },
     ".cm-line": {
         padding: "0 16px",
+        position: "relative",
+    },
+    ".cm-indent-guides": {
+        position: "absolute",
+        top: "0",
+        bottom: "0",
+        left: "0",
+        right: "0",
+        height: "100%",
+        pointerEvents: "none",
+        userSelect: "none",
+    },
+    ".cm-indent-guide": {
+        position: "absolute",
+        top: "0",
+        bottom: "0",
+        width: "1px",
+        backgroundColor: "var(--indent-guide-color, rgba(255, 255, 255, 0.15))",
+        pointerEvents: "none",
+        userSelect: "none",
     },
     ".cm-cursor, .cm-dropCursor": {
         borderLeftColor: "var(--accent, #4daafc)",
@@ -254,6 +426,7 @@ export function getIndentExtension(tabBehavior = 'tab') {
 export function getDefaultExtensions(options = {}) {
     const wrap = options.wordWrap !== undefined ? options.wordWrap : true;
     const lineNumbersEnabled = options.lineNumbers !== undefined ? options.lineNumbers : false;
+    const indentGuidesEnabled = options.indentGuides !== undefined ? options.indentGuides : false;
     const tabBehavior = options.tabBehavior || 'tab';
     const languageSupport = options.languageSupport || [];
 
@@ -268,6 +441,7 @@ export function getDefaultExtensions(options = {}) {
         themeCompartment.of(baseTheme),
         wrapCompartment.of(wrap ? EditorView.lineWrapping : []),
         lineNumbersCompartment.of(lineNumbersEnabled ? lineNumbers() : []),
+        indentGuidesCompartment.of(indentGuidesEnabled ? indentGuidesPlugin : []),
         indentCompartment.of(getIndentExtension(tabBehavior)),
         keymap.of([
             ...customEditorKeymap,
@@ -350,6 +524,7 @@ export function initCodeMirror(parentEl, options = {}) {
     const state = options.state || createTabState(options.initialContent || '', {
         wordWrap: options.wordWrap,
         lineNumbers: options.lineNumbers,
+        indentGuides: options.indentGuides,
         tabBehavior: options.tabBehavior,
     });
 
@@ -420,6 +595,17 @@ export function updateLineNumbers(enable) {
     if (!editorView) return;
     editorView.dispatch({
         effects: lineNumbersCompartment.reconfigure(enable ? lineNumbers() : [])
+    });
+}
+
+/**
+ * インデントガイド（Indent Guides）の動的更新
+ * @param {boolean} enable
+ */
+export function updateIndentGuides(enable) {
+    if (!editorView) return;
+    editorView.dispatch({
+        effects: indentGuidesCompartment.reconfigure(enable ? indentGuidesPlugin : [])
     });
 }
 
