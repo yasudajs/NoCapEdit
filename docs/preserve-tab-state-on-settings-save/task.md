@@ -10,8 +10,8 @@
 - [ ] **フェーズ2: 実装作業**
   - [x] 作業用ブランチ作成 (`fix/preserve-tab-state-on-save`)
   - [x] WIPドキュメントの昇格 (`docs/wip/preserve-tab-state-on-settings-save/` → `docs/preserve-tab-state-on-settings-save/`) およびコミット・プッシュ
-  - [ ] バージョン番号の更新 (`0.2.31` → `0.2.32`: 5ファイル)
-  - [ ] `docs/spec.md` の更新
+  - [x] バージョン番号の更新 (`0.2.31` → `0.2.32`: 5ファイル)
+  - [x] `docs/spec.md` の更新
   - [ ] 設定ドック保存処理の差分変更検知の実装 (`src/frontend/js/ui/settings.js`)
   - [ ] タブ幅変更時におけるインデントガイド即時再描画の実装 (`src/frontend/js/ui/codemirror.js`)
   - [ ] 動作確認・自動テスト (`cargo test`, `npm run build`)
