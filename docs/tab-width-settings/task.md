@@ -15,9 +15,9 @@
   - [x] バックエンド実装 (`src/settings.rs` のデフォルト値・サニタイズ・単体テスト)
   - [x] フロントエンドUI・多言語化実装 (`src/frontend/index.html`, `src/frontend/i18n.js`)
   - [x] CodeMirror / エディタ連携実装 (`codemirror.js`, `editor.js`, `settings.js`, `tabs.js`)
-  - [ ] 動作確認・自動テスト (`cargo test`, `npm run build`)
-  - [ ] ドキュメント更新・作業完了報告
-    - [ ] `docs/tab-width-settings/walkthrough.md` の作成
-    - [ ] `docs/history.md` に v0.2.31 の履歴を追記
-    - [ ] `docs/USER_GUIDE.md` の更新
-    - [ ] コミット＆プッシュ
+  - [x] 動作確認・自動テスト (`cargo test`, `npm run build`)
+  - [x] ドキュメント更新・作業完了報告
+    - [x] `docs/tab-width-settings/walkthrough.md` の作成
+    - [x] `docs/history.md` に v0.2.31 の履歴を追記
+    - [x] `docs/USER_GUIDE.md` の更新
+    - [x] コミット＆プッシュ
