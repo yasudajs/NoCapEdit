@@ -5,11 +5,11 @@
   - [x] 実装計画書（`implementation_plan.md`）の作成 <!-- id: phase1-plan -->
   - [x] ユーザー承認と作業開始指示の受領 <!-- id: phase1-approval -->
 
-- [ ] **フェーズ 2: 実装作業の開始準備** <!-- id: phase2-prep -->
+- [x] **フェーズ 2: 実装作業の開始準備** <!-- id: phase2-prep -->
   - [x] `master` ブランチから作業用ブランチ（`feature/ruler-gutter-margin`）の作成 <!-- id: phase2-branch -->
   - [x] 作業ドキュメントを `docs/wip/ruler-gutter-margin/` から `docs/ruler-gutter-margin/` へ移動・コミット＆プッシュ <!-- id: phase2-doc-move -->
-  - [ ] バージョン番号の更新（v2.12.0 → v2.12.1、管理5ファイル） <!-- id: phase2-version -->
-  - [ ] `spec.md` を最新版に更新 <!-- id: phase2-spec -->
+  - [x] バージョン番号の更新（v2.12.0 → v2.12.1、管理5ファイル） <!-- id: phase2-version -->
+  - [x] `spec.md` を最新版に更新 <!-- id: phase2-spec -->
 
 - [ ] **フェーズ 3: 実装** <!-- id: phase3-impl -->
   - [ ] `src/frontend/style.css` のスタイル定義更新（行数表示時の左余白 0px） <!-- id: phase3-css -->
