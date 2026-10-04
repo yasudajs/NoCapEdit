@@ -13,12 +13,12 @@
 - [x] ドキュメント更新コミット＆プッシュ
 
 ## 実装フェーズ
-- [ ] `src/frontend/i18n.js` に多言語テキストを追加
-- [ ] `src/frontend/js/core/fileSystem.js` の `saveTabAs` 改善および `triggerManualSaveAs` 関数の実装
-- [ ] `src/frontend/js/ui/shortcuts.js` に `Ctrl + Shift + S` のショートカットハンドラを追加
-- [ ] `src/frontend/help.html` にショートカット説明を追加
-- [ ] `docs/SHORTCUTS.md` の更新
-- [ ] 実装コミット＆プッシュ
+- [x] `src/frontend/i18n.js` に多言語テキストを追加
+- [x] `src/frontend/js/core/fileSystem.js` の `saveTabAs` 改善および `triggerManualSaveAs` 関数の実装
+- [x] `src/frontend/js/ui/shortcuts.js` に `Ctrl + Shift + S` のショートカットハンドラを追加
+- [x] `src/frontend/help.html` にショートカット説明を追加
+- [x] `docs/SHORTCUTS.md` の更新
+- [x] 実装コミット＆プッシュ
 
 ## 検証・テストフェーズ
 - [ ] 新規未保存タブでの「名前をつけて保存」動作確認（初期フォルダ・初期ファイル名・拡張子変更）

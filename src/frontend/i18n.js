@@ -108,7 +108,7 @@ const DICT = {
             status: {
                 saving: "保存中...",
                 saved: "保存済み",
-                savedAs: "別名で保存済み",
+                savedAs: "{fileName} として保存しました",
                 saveFailed: "保存失敗",
                 aborted: "処理を中止しました",
                 created: "{prefix}{fileName} を作成",
@@ -116,6 +116,12 @@ const DICT = {
                 opened: "{fileName} を開きました",
                 openBatch: "{count}件のファイルを開きました",
                 loadFailed: "ファイル読み込み失敗"
+            },
+            filter: {
+                nctx: "NoCapEdit Text (*.nctx)",
+                txt: "Text Files (*.txt)",
+                csv: "CSV Files (*.csv)",
+                all: "すべてのファイル (*.*)"
             },
             dialog: {
                 saveError: "保存に失敗しました。\n対象: {fileName}\n理由: {error}"
@@ -155,6 +161,7 @@ const DICT = {
                 unindent: "インデント削除",
                 openFile: "ファイルを開く",
                 save: "手動保存",
+                saveAs: "名前をつけて保存",
                 newTab: "新規タブ追加",
                 closeTab: "タブを閉じる",
                 openExplorer: "エクスプローラーを開く",
