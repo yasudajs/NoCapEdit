@@ -54,7 +54,7 @@
     --indent-guide-color: rgba(255, 255, 255, 0.20);
 
     /* 不可視文字 (空白・タブ・改行記号) */
-    --invisible-char-color: rgba(255, 255, 255, 0.30);
+    --invisible-char-color: rgba(255, 255, 255, 0.15);
 }
 
 body.light-theme {
@@ -91,7 +91,7 @@ body.light-theme {
     --indent-guide-color: rgba(0, 0, 0, 0.12);
 
     /* 不可視文字 (空白・タブ・改行記号) */
-    --invisible-char-color: rgba(0, 0, 0, 0.28);
+    --invisible-char-color: rgba(0, 0, 0, 0.13);
 }
 
 body.soft-dark-theme {
@@ -126,7 +126,7 @@ body.soft-dark-theme {
     --indent-guide-color: rgba(255, 255, 255, 0.14);
 
     /* 不可視文字 (空白・タブ・改行記号) */
-    --invisible-char-color: rgba(255, 255, 255, 0.28);
+    --invisible-char-color: rgba(255, 255, 255, 0.15);
 }
 
 body {
@@ -558,7 +558,7 @@ body.ruler-marker-dragging * {
 
 /* 不可視文字 (空白・タブ・改行記号) スタイル */
 .cm-invisible-space {
-    background-image: radial-gradient(circle at 50% 55%, var(--invisible-char-color) 20%, transparent 22%);
+    background-image: radial-gradient(circle at 50% 50%, var(--invisible-char-color) 1.2px, transparent 1.6px);
     background-position: center;
     background-repeat: no-repeat;
 }
@@ -574,10 +574,11 @@ body.ruler-marker-dragging * {
     top: 50%;
     transform: translate(-50%, -50%);
     color: var(--invisible-char-color);
-    font-size: 0.82em;
+    font-size: 0.72em;
     line-height: 1;
     pointer-events: none;
     user-select: none;
+    opacity: 0.85;
 }
 
 .cm-invisible-tab {
@@ -591,10 +592,11 @@ body.ruler-marker-dragging * {
     top: 50%;
     transform: translateY(-50%);
     color: var(--invisible-char-color);
-    font-size: 0.85em;
+    font-size: 0.75em;
     line-height: 1;
     pointer-events: none;
     user-select: none;
+    opacity: 0.85;
 }
 
 .cm-invisible-newline {
@@ -602,10 +604,11 @@ body.ruler-marker-dragging * {
     user-select: none;
     pointer-events: none;
     margin-left: 2px;
-    font-size: 0.85em;
+    font-size: 0.75em;
     line-height: 1;
     display: inline-block;
     vertical-align: middle;
+    opacity: 0.85;
 }
 
 /* テキストエディタコンテナ */
