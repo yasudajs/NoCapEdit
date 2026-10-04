@@ -40,6 +40,12 @@ NoCapEdit に Windows 標準の「名前をつけて保存」ダイアログ（C
   - 自動保存モード時: 以降の変更は新しく保存したファイルに対して自動保存
   - 手動保存モード時: 以降の `Ctrl + S` は新しく保存したファイルに対して上書き保存
 
+### 2.4 マウスカーソル最前面表示対策（ダイアログ背面隠れ防止）
+- **親ウィンドウ（HWND）の明示的紐付け**:
+  - Rust 側に `show_save_dialog` コマンドを実装し、`tauri::api::dialog::blocking::FileDialogBuilder::new().set_parent(&window)` を通じてメインウィンドウを親ウィンドウとして確実に設定。OS のウィンドウ階層（Z-order）を正常化し、マウスカーソルがダイアログの背面に潜り込む不具合を解消しました。
+- **キーイベント消化・フォーカス解放の待機**:
+  - `triggerManualSaveAs` において、`document.activeElement.blur()` によりエディタの入力キャプチャを解放し、微小な非同期遅延（50ms）を挟んでからダイアログを起動。Windows の「入力中にポインターを非表示にする」機能や WebView2 の入力中状態がダイアログに干渉しないよう安全策を講じました。
+
 ---
 
 ## 3. 変更ファイル一覧
@@ -52,8 +58,10 @@ NoCapEdit に Windows 標準の「名前をつけて保存」ダイアログ（C
 | `nsis/installer.nsi` | バージョンを `2.12.0` (`2.12.0.0`) に更新 |
 | `docs/DEVELOPMENT.md` | ポータブル版ビルドコマンドのバージョンを `v2.12.0` に更新 |
 | `docs/spec.md` | セクション 4.5 に「名前をつけて保存 (`Ctrl + Shift + S`)」の仕様を追記、バージョン更新 |
+| `src/commands.rs` | 親ウィンドウ紐付け保存ダイアログコマンド `show_save_dialog` を実装 |
+| `src/main.rs` | `show_save_dialog` コマンドをハンドラに登録 |
 | `src/frontend/i18n.js` | フィルター名（`fs.filter.*`）、保存完了通知（`fs.status.savedAs`）、ヘルプ説明（`help.shortcuts.saveAs`）のテキストを追加 |
-| `src/frontend/js/core/fileSystem.js` | `saveTabAs` の初期パス・フィルター・ステータス改善、および `triggerManualSaveAs` 関数の実装 |
+| `src/frontend/js/core/fileSystem.js` | `saveTabAs` を `show_save_dialog` 呼び出しに改善、キーイベント消化待機・フォーカス解放を追加、`triggerManualSaveAs` を実装 |
 | `src/frontend/js/ui/shortcuts.js` | `Ctrl + Shift + S` のキーハンドラを追加 |
 | `src/frontend/help.html` | ショートカット一覧の「ファイル・タブ操作」に「名前をつけて保存」を追加 |
 | `docs/SHORTCUTS.md` | 「テキスト編集」に `Ctrl + Shift + S` を追加 |

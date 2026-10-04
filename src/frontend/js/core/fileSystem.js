@@ -10,10 +10,6 @@ import { showSaveErrorDialog, showAlertDialog } from '../ui/dialogs.js';
 
 
 export async function saveTabAs(tab) {
-    if (!saveDialog) {
-        throw new Error(t('fs.error.noSaveDialog'));
-    }
-
     let defaultPath = tab.filePath;
     if (!defaultPath) {
         const timestampName = `${generateTimestamp()}.${FILE_EXT_NCTX}`;
@@ -32,10 +28,23 @@ export async function saveTabAs(tab) {
         { name: t('fs.filter.all'), extensions: ['*'] }
     ];
 
-    const targetPath = await saveDialog({
-        defaultPath,
-        filters
-    });
+    let targetPath = null;
+    try {
+        // 親ウィンドウを紐付けたRustカスタムコマンドを呼び出し（カーソル背面潜り込み防止）
+        targetPath = await invoke('show_save_dialog', {
+            defaultPath,
+            filters
+        });
+    } catch (e) {
+        console.warn('show_save_dialog invoke failed, fallback to saveDialog:', e);
+        if (saveDialog) {
+            targetPath = await saveDialog({
+                defaultPath,
+                filters
+            });
+        }
+    }
+
     if (!targetPath || typeof targetPath !== 'string') {
         return false;
     }
@@ -283,6 +292,12 @@ export async function triggerManualSaveAs() {
 
     const tab = appState.tabs.find(t => t.id === appState.currentTab);
     if (!tab) return;
+
+    // キー入力直後のポインタキャプチャや入力中カーソル非表示を確実に解除するため、フォーカスを外しイベント完了を待機
+    if (document.activeElement && typeof document.activeElement.blur === 'function') {
+        document.activeElement.blur();
+    }
+    await new Promise(resolve => setTimeout(resolve, 50));
 
     try {
         const saved = await saveTabAs(tab);

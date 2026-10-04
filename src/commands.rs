@@ -1,4 +1,4 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -286,6 +286,42 @@ pub fn apply_theme(window: tauri::Window, theme: String) -> Result<(), String> {
 #[tauri::command]
 pub fn is_debug() -> bool {
     cfg!(debug_assertions)
+}
+
+#[derive(Debug, Deserialize)]
+pub struct DialogFilterInput {
+    pub name: String,
+    pub extensions: Vec<String>,
+}
+
+#[tauri::command]
+pub fn show_save_dialog(
+    window: tauri::Window,
+    default_path: Option<String>,
+    filters: Vec<DialogFilterInput>,
+) -> Option<String> {
+    let mut builder = tauri::api::dialog::blocking::FileDialogBuilder::new().set_parent(&window);
+
+    if let Some(ref path_str) = default_path {
+        let p = Path::new(path_str);
+        if let Some(parent) = p.parent() {
+            if parent.exists() {
+                builder = builder.set_directory(parent);
+            }
+        }
+        if let Some(file_name) = p.file_name() {
+            if let Some(file_name_str) = file_name.to_str() {
+                builder = builder.set_file_name(file_name_str);
+            }
+        }
+    }
+
+    for filter in &filters {
+        let ext_refs: Vec<&str> = filter.extensions.iter().map(|s| s.as_str()).collect();
+        builder = builder.add_filter(&filter.name, &ext_refs);
+    }
+
+    builder.save_file().map(|p| p.to_string_lossy().to_string())
 }
 
 #[cfg(test)]

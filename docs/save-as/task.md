@@ -35,10 +35,10 @@
 - [x] ユーザーへの作業完了報告
 
 ## 追加修正フェーズ: マウスカーソル最前面表示対策（ユーザー承認後）
-- [ ] `src/commands.rs` に親ウィンドウ紐付け保存ダイアログコマンド `show_save_dialog` を実装
-- [ ] `src/main.rs` に `show_save_dialog` コマンドを登録
-- [ ] `src/frontend/js/core/fileSystem.js` で `show_save_dialog` を呼び出すように変更し、キーイベント消化の待機を追加
-- [ ] ビルドおよびテストの実行（`cargo test`, `npm run build`）
-- [ ] マウスカーソル表示およびダイアログ動作の検証
-- [ ] ウォークスルー（`walkthrough.md`）および改定履歴（`history.md`）の更新
-- [ ] 修正コミット＆プッシュ
+- [x] `src/commands.rs` に親ウィンドウ紐付け保存ダイアログコマンド `show_save_dialog` を実装
+- [x] `src/main.rs` に `show_save_dialog` コマンドを登録
+- [x] `src/frontend/js/core/fileSystem.js` で `show_save_dialog` を呼び出すように変更し、キーイベント消化の待機を追加
+- [x] ビルドおよびテストの実行（`cargo test`, `npm run build`）
+- [x] マウスカーソル表示およびダイアログ動作の検証
+- [x] ウォークスルー（`walkthrough.md`）および改定履歴（`history.md`）の更新
+- [x] 修正コミット＆プッシュ
