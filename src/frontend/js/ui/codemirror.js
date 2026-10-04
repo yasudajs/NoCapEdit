@@ -230,21 +230,25 @@ export const indentGuidesPlugin = ViewPlugin.fromClass(class {
             let pos = from;
             while (pos <= to) {
                 const line = view.state.doc.lineAt(pos);
-                let { level, isBlank } = getLineIndentInfo(line.text, tabSize, indentUnitWidth);
 
-                if (isBlank) {
-                    level = resolveBlankLineIndent(view.state.doc, line.number, tabSize, indentUnitWidth);
-                }
+                // 行頭が表示範囲に含まれている場合のみインデント計算および Widget 追加を実施
+                if (line.from >= from) {
+                    let { level, isBlank } = getLineIndentInfo(line.text, tabSize, indentUnitWidth);
 
-                if (level > 0) {
-                    const levels = [];
-                    for (let i = 0; i < level; i++) {
-                        levels.push(i * indentUnitWidth);
+                    if (isBlank) {
+                        level = resolveBlankLineIndent(view.state.doc, line.number, tabSize, indentUnitWidth);
                     }
-                    builder.add(line.from, line.from, Decoration.widget({
-                        widget: new IndentGuideWidget(levels),
-                        side: -1,
-                    }));
+
+                    if (level > 0) {
+                        const levels = [];
+                        for (let i = 0; i < level; i++) {
+                            levels.push(i * indentUnitWidth);
+                        }
+                        builder.add(line.from, line.from, Decoration.widget({
+                            widget: new IndentGuideWidget(levels),
+                            side: -1,
+                        }));
+                    }
                 }
 
                 pos = line.to + 1;
@@ -306,20 +310,24 @@ export const invisibleCharactersPlugin = ViewPlugin.fromClass(class {
             let pos = from;
             while (pos <= to) {
                 const line = doc.lineAt(pos);
-                const text = line.text;
-                for (let i = 0; i < text.length; i++) {
-                    const ch = text[i];
+                const start = Math.max(from, line.from);
+                const end = Math.min(to, line.to);
+
+                for (let p = start; p < end; p++) {
+                    const ch = line.text[p - line.from];
                     if (ch === ' ') {
-                        builder.add(line.from + i, line.from + i + 1, spaceDeco);
+                        builder.add(p, p + 1, spaceDeco);
                     } else if (ch === '\u3000') {
-                        builder.add(line.from + i, line.from + i + 1, fullwidthDeco);
+                        builder.add(p, p + 1, fullwidthDeco);
                     } else if (ch === '\t') {
-                        builder.add(line.from + i, line.from + i + 1, tabDeco);
+                        builder.add(p, p + 1, tabDeco);
                     }
                 }
-                if (line.number < docLines) {
+
+                if (line.to <= to && line.number < docLines) {
                     builder.add(line.to, line.to, newlineWidgetDeco);
                 }
+
                 pos = line.to + 1;
             }
         }
