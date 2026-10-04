@@ -12,8 +12,8 @@
 ### 1. 準備と環境設定
 - [x] `master` ブランチから作業用ブランチ（`fix/invisible-characters-long-line`）を作成
 - [x] ドキュメントを `docs/wip/invisible-characters-fix/` から `docs/invisible-characters-fix/` へ移動・コミット＆プッシュ
-- [ ] バージョン番号の更新（`v2.11.0` → `v2.11.1`: 5ファイルセット）
-- [ ] `docs/spec.md` のバージョン更新
+- [x] バージョン番号の更新（`v2.11.0` → `v2.11.1`: 5ファイルセット）
+- [x] `docs/spec.md` のバージョン更新
 
 ### 2. ソースコード修正
 - [ ] `src/frontend/js/ui/codemirror.js`: `invisibleCharactersPlugin` の走査範囲を `[from, to]` に限定
