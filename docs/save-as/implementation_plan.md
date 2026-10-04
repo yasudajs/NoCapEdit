@@ -42,18 +42,30 @@ NoCapEdit に Windows 標準の「名前をつけて保存」ダイアログ（C
   - 自動保存モード時: 以降の変更は新しく保存したファイルに対して自動保存される
   - 手動保存モード時: 以降の `Ctrl + S` は新しく保存したファイルに対して上書き保存される
 
+### 2.4 マウスカーソルの最前面表示対策（ダイアログ背面隠れ防止）
+- **課題**: フロントエンドの JS API（`dialog.save`）からダイアログを直接開くと、メインウィンドウとの親ウィンドウ関係（HWND）が明示されず、WebView2 とネイティブダイアログ間の描画競合によってマウスカーソルがダイアログの下（背面）に潜り込んでしまう。また、キー押下（keydown）直後にダイアログを開くと、OSの入力中カーソル非表示機能やWebView2のポインタキャプチャが解除されない問題が発生する。
+- **対策仕様**:
+  1. **Rust バックエンド側での親ウィンドウ紐付け (`show_save_dialog`)**:
+     - `tauri::api::dialog::blocking::FileDialogBuilder::new().set_parent(&window)` を用いたカスタムコマンドを実装し、メインウィンドウの HWND を親ウィンドウとして確実に設定。OS のウィンドウ階層（モーダル親子関係）と Z-order を正常化し、マウスカーソルが確実に最前面に描画されるようにする。
+  2. **フロントエンド側のキーイベント消化・フォーカス解放**:
+     - `Ctrl + Shift + S` のキー押下直後に `setTimeout` で微小遅延を挟み、キー入力イベントの完了を待ってからダイアログを起動。エディタのポインタキャプチャを安全に解放した状態でダイアログを表示する。
+
 ---
 
 ## 3. 影響範囲・変更予定ファイル
 
+### バックエンド (Rust)
+1. `src/commands.rs`
+   - 親ウィンドウを紐付けた保存ダイアログ表示コマンド `show_save_dialog` を追加
+2. `src/main.rs`
+   - `invoke_handler` に `commands::show_save_dialog` を登録
+
 ### フロントエンド
 1. `src/frontend/js/core/fileSystem.js`
-   - `saveTabAs(tab)` の初期パス（`defaultPath`）設定ロジックの改善（未保存時はホームフォルダ＋タイムスタンプファイル名）
-   - フィルター定義の更新（`nctx`, `txt`, `csv`, `*.*`）
-   - `triggerManualSaveAs()` 関数の新設（アクティブタブの内容同期、自動保存タイマー解除、`saveTabAs` 呼び出し、ステータス更新）
+   - `saveTabAs(tab)` で `dialog.save` の代わりに Rust コマンド `show_save_dialog` を呼び出すように変更
+   - `triggerManualSaveAs()` でキーイベント消化のための微小遅延・エディタフォーカス解放を追加
 2. `src/frontend/js/ui/shortcuts.js`
    - `Ctrl + Shift + S` のキーイベント検知を追加し、`triggerManualSaveAs()` を実行
-   - 既存の `if (e.shiftKey)` による一括リターン処理を、`Ctrl + Shift + S` を阻害しないように調整
 3. `src/frontend/i18n.js`
    - フィルター名、ステータス文言、ショートカット説明用の多言語テキスト追加
 4. `src/frontend/help.html`
