@@ -16,19 +16,19 @@
 - [x] `docs/spec.md` のバージョン更新
 
 ### 2. ソースコード修正
-- [ ] `src/frontend/js/ui/codemirror.js`: `invisibleCharactersPlugin` の走査範囲を `[from, to]` に限定
-- [ ] `src/frontend/js/ui/codemirror.js`: `indentGuidesPlugin` の Widget 重複登録防止ガードを追加
+- [x] `src/frontend/js/ui/codemirror.js`: `invisibleCharactersPlugin` の走査範囲を `[from, to]` に限定
+- [x] `src/frontend/js/ui/codemirror.js`: `indentGuidesPlugin` の Widget 重複登録防止ガードを追加
 
 ### 3. ビルドおよび動作確認
-- [ ] `cargo test` によるテスト実行（全件パス確認）
-- [ ] `npm run build` によるフロントエンドビルド確認
-- [ ] 実機検証 パターン1: 折り返し OFF（`Alt + Z`）での 5,000 文字超長大行スクロールテスト（例外なし・不可視文字表示維持）
-- [ ] 実機検証 パターン2: 折り返し ON での 25,000 文字超長大行スクロールテスト（例外なし・描画維持）
-- [ ] 実機検証 パターン3: 長大行末尾カーソル配置・改行記号（`↵`）表示テスト
-- [ ] 実機検証 パターン4: インデントガイド（`Alt + I`）と不可視文字（`Alt + W`）の同時有効化テスト
+- [x] `cargo test` によるテスト実行（全件パス確認）
+- [x] `npm run build` によるフロントエンドビルド確認
+- [x] 実機検証 パターン1: 折り返し OFF（`Alt + Z`）での 5,000 文字超長大行スクロールテスト（例外なし・不可視文字表示維持）
+- [x] 実機検証 パターン2: 折り返し ON での 25,000 文字超長大行スクロールテスト（例外なし・描画維持）
+- [x] 実機検証 パターン3: 長大行末尾カーソル配置・改行記号（`↵`）表示テスト
+- [x] 実機検証 パターン4: インデントガイド（`Alt + I`）と不可視文字（`Alt + W`）の同時有効化テスト
 
 ### 4. 完了報告とクリーンアップ準備
-- [ ] `docs/invisible-characters-fix/walkthrough.md` の作成
-- [ ] `docs/history.md` に変更履歴（`v2.11.1`）を最上部に追記
-- [ ] 実装およびドキュメントのコミット＆プッシュ
+- [x] `docs/invisible-characters-fix/walkthrough.md` の作成
+- [x] `docs/history.md` に変更履歴（`v2.11.1`）を最上部に追記
+- [x] 実装およびドキュメントのコミット＆プッシュ
 - [ ] ユーザーへの完了報告とマージ・クリーンアップ指示待ち
