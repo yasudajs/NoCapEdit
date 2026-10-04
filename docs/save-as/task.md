@@ -42,3 +42,11 @@
 - [x] マウスカーソル表示およびダイアログ動作の検証
 - [x] ウォークスルー（`walkthrough.md`）および改定履歴（`history.md`）の更新
 - [x] 修正コミット＆プッシュ
+
+## 再修正フェーズ: 入力中カーソル非表示の強制解除対策（ユーザー承認後）
+- [ ] `src/commands.rs` の `show_save_dialog` 内に Win32 `SetCursorPos` によるカーソル再表示強制処理を実装
+- [ ] `src/frontend/js/core/fileSystem.js` のキーイベント消化・呼び出し処理の適正化
+- [ ] ビルドおよびテストの実行（`cargo test`, `npm run build`）
+- [ ] 動作検証（OS設定がオンの状態でカーソルが表示されるか）
+- [ ] ウォークスルー（`walkthrough.md`）および改定履歴（`history.md`）の更新
+- [ ] 修正コミット＆プッシュ
