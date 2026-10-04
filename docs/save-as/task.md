@@ -1,0 +1,35 @@
+# タスクリスト: 「名前をつけて保存」機能の追加
+
+## 準備フェーズ（ユーザー承認後）
+- [x] 作業ブランチの作成 (`master` から作成)
+- [x] ドキュメントの配置移動 (`docs/wip/save-as/` → `docs/save-as/`)
+- [x] バージョン番号の更新（新機能追加のため MINOR アップデート: `v2.11.1` → `v2.12.0`）
+  - [x] `Cargo.toml`
+  - [x] `package.json`
+  - [x] `tauri.conf.json`
+  - [x] `nsis/installer.nsi`
+  - [x] `docs/DEVELOPMENT.md`
+- [x] 仕様書（`docs/spec.md`）の更新
+- [x] ドキュメント更新コミット＆プッシュ
+
+## 実装フェーズ
+- [ ] `src/frontend/i18n.js` に多言語テキストを追加
+- [ ] `src/frontend/js/core/fileSystem.js` の `saveTabAs` 改善および `triggerManualSaveAs` 関数の実装
+- [ ] `src/frontend/js/ui/shortcuts.js` に `Ctrl + Shift + S` のショートカットハンドラを追加
+- [ ] `src/frontend/help.html` にショートカット説明を追加
+- [ ] `docs/SHORTCUTS.md` の更新
+- [ ] 実装コミット＆プッシュ
+
+## 検証・テストフェーズ
+- [ ] 新規未保存タブでの「名前をつけて保存」動作確認（初期フォルダ・初期ファイル名・拡張子変更）
+- [ ] 既存ファイルタブでの「名前をつけて保存」動作確認（元ファイルの保持・新ファイルへの追従）
+- [ ] 新規フォルダ作成および別ドライブへの保存確認
+- [ ] ダイアログキャンセル時の挙動確認
+- [ ] ショートカットヘルプ画面（`F1`）の表示確認
+- [ ] 自動テスト（`cargo test` / `npm run build`）の実行
+
+## 完了報告フェーズ
+- [ ] `docs/save-as/walkthrough.md` の作成
+- [ ] `docs/history.md` にバージョン変更履歴を追記
+- [ ] 完了ドキュメントのコミット＆プッシュ
+- [ ] ユーザーへの作業完了報告
