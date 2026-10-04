@@ -41,12 +41,12 @@
 - [x] `docs/USER_GUIDE.md` に不可視文字表示機能の説明を追加
 
 ### 7. 検証・品質確認
-- [ ] `cargo test` によるテスト実行
-- [ ] フロントエンドビルド確認（`npm run build`）
-- [ ] 表示・挙動・テーマ切り替え・タブ切り替え等の動作確認
+- [x] `cargo test` によるテスト実行
+- [x] フロントエンドビルド確認（`npm run build`）
+- [x] 表示・挙動・テーマ切り替え・タブ切り替え等の動作確認
 
 ### 8. 完了報告とクリーンアップ準備
-- [ ] `docs/invisible-characters/walkthrough.md` の作成
-- [ ] `docs/history.md` に変更履歴（`v2.11.0`）を最上部に追記
-- [ ] 実装およびドキュメントのコミット＆プッシュ
+- [x] `docs/invisible-characters/walkthrough.md` の作成
+- [x] `docs/history.md` に変更履歴（`v2.11.0`）を最上部に追記
+- [x] 実装およびドキュメントのコミット＆プッシュ
 - [ ] ユーザーへの完了報告とマージ・クリーンアップ指示待ち
