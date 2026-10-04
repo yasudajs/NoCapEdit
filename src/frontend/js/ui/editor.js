@@ -3,7 +3,7 @@ import { appState, elements } from '../state.js';
 import { MAX_FONT_SIZE, MIN_FONT_SIZE, MAX_LINE_HEIGHT, MIN_LINE_HEIGHT, LINE_HEIGHT_STEP, AUTOSAVE_DELAY_MS } from '../state.js';
 import { renderTabs, updateTabStatus } from './tabs.js';
 import { autoSave } from '../core/fileSystem.js';
-import { getContent, setContent, getCursorMetrics, getSelection, setSelection, replaceRange, focusEditor, getEditorState, updateWrap, updateLineNumbers, updateIndentGuides, updateIndent, getEditorView, insertTimestampCommand, resyncEditorPosition } from './codemirror.js';
+import { getContent, setContent, getCursorMetrics, getSelection, setSelection, replaceRange, focusEditor, getEditorState, updateWrap, updateLineNumbers, updateIndentGuides, updateInvisibleCharacters, updateIndent, getEditorView, insertTimestampCommand, resyncEditorPosition } from './codemirror.js';
 import { isFindWidgetOpen, updateMatches } from './findReplace.js';
 import { setRulerVisibility, updateRulerCursor, syncRulerMetrics } from './ruler.js';
 
@@ -227,6 +227,25 @@ export function toggleIndentGuides() {
     tab.indentGuides = newIndentGuides;
     applyIndentGuides(newIndentGuides);
     console.log(`[IndentGuides] タブ "${tab.fileName}" のインデントガイド表示を ${newIndentGuides ? 'ON' : 'OFF'} に切り替えました`);
+}
+
+/**
+ * エディタの不可視文字表示設定を適用する
+ * @param {boolean} enable - 不可視文字を表示するかどうか
+ */
+export function applyInvisibleCharacters(enable) {
+    updateInvisibleCharacters(enable);
+}
+
+export function toggleInvisibleCharacters() {
+    if (!appState.currentTab) return;
+    const tab = appState.tabs.find(t => t.id === appState.currentTab);
+    if (!tab) return;
+    const currentInvisibleChars = tab.invisibleCharacters !== undefined ? tab.invisibleCharacters : appState.invisibleCharacters;
+    const newInvisibleChars = !currentInvisibleChars;
+    tab.invisibleCharacters = newInvisibleChars;
+    applyInvisibleCharacters(newInvisibleChars);
+    console.log(`[InvisibleChars] タブ "${tab.fileName}" の不可視文字表示を ${newInvisibleChars ? 'ON' : 'OFF'} に切り替えました`);
 }
 
 export function getIndentString() {

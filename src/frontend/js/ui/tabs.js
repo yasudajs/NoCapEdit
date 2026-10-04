@@ -3,7 +3,7 @@ import { appState, elements } from '../state.js';
 import { incrementUnsavedTabCounter } from '../state.js';
 import { generateTabId, getFileNameFromPath, isAutoCreatedFileName } from '../utils/helpers.js';
 import { ensureTauriApi } from '../core/tauri.js';
-import { updateEditorMetrics, applyWordWrap, applyLineNumbers, applyRuler, applyIndentGuides, applyIndent } from './editor.js';
+import { updateEditorMetrics, applyWordWrap, applyLineNumbers, applyRuler, applyIndentGuides, applyInvisibleCharacters, applyIndent } from './editor.js';
 import { autoSave, shouldDeleteEmptyFile, persistTabWithRecovery } from '../core/fileSystem.js';
 import { getContent, setContent, getSelection, setSelection, focusEditor, createTabState, getEditorState, setEditorState } from './codemirror.js';
 
@@ -118,11 +118,12 @@ export async function createNewTab() {
             filePath: filePath,
             content: '',
             encoding: 'UTF-8',
-            editorState: createTabState('', { wordWrap: appState.wordWrap, lineNumbers: appState.lineNumbers, indentGuides: appState.indentGuides, tabBehavior: appState.tabBehavior }),
+            editorState: createTabState('', { wordWrap: appState.wordWrap, lineNumbers: appState.lineNumbers, indentGuides: appState.indentGuides, invisibleCharacters: appState.invisibleCharacters, tabBehavior: appState.tabBehavior }),
             wordWrap: appState.wordWrap,
             lineNumbers: appState.lineNumbers,
             ruler: appState.ruler,
             indentGuides: appState.indentGuides,
+            invisibleCharacters: appState.invisibleCharacters,
             rulerMarkers: [],
             isDirty: false,
             isSaving: false,
@@ -169,12 +170,14 @@ export async function switchTab(tabId) {
             const lineNumbersState = tab.lineNumbers !== undefined ? tab.lineNumbers : appState.lineNumbers;
             const rulerState = tab.ruler !== undefined ? tab.ruler : appState.ruler;
             const indentGuidesState = tab.indentGuides !== undefined ? tab.indentGuides : appState.indentGuides;
+            const invisibleCharactersState = tab.invisibleCharacters !== undefined ? tab.invisibleCharacters : appState.invisibleCharacters;
 
             if (!tab.editorState) {
                 tab.editorState = createTabState(tab.content || '', {
                     wordWrap: wrapState,
                     lineNumbers: lineNumbersState,
                     indentGuides: indentGuidesState,
+                    invisibleCharacters: invisibleCharactersState,
                     tabBehavior: appState.tabBehavior
                 });
             }
@@ -185,6 +188,7 @@ export async function switchTab(tabId) {
             applyLineNumbers(lineNumbersState);
             applyRuler(rulerState);
             applyIndentGuides(indentGuidesState);
+            applyInvisibleCharacters(invisibleCharactersState);
             applyIndent(appState.tabBehavior);
             renderTabs();
             updateEditorMetrics();

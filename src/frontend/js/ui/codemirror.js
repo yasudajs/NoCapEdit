@@ -24,6 +24,7 @@ export const DEFAULT_TAB_SIZE = 4;
 export const wrapCompartment = new Compartment();
 export const lineNumbersCompartment = new Compartment();
 export const indentGuidesCompartment = new Compartment();
+export const invisibleCharsCompartment = new Compartment();
 export const indentCompartment = new Compartment();
 export const themeCompartment = new Compartment();
 export const languageCompartment = new Compartment();
@@ -257,6 +258,79 @@ export const indentGuidesPlugin = ViewPlugin.fromClass(class {
 });
 
 /**
+ * 改行記号描画用ウィジェット
+ */
+class NewlineWidget extends WidgetType {
+    toDOM() {
+        const span = document.createElement('span');
+        span.className = 'cm-invisible-newline';
+        span.textContent = '↵';
+        span.setAttribute('aria-hidden', 'true');
+        return span;
+    }
+
+    eq(other) {
+        return true;
+    }
+
+    ignoreEvent() {
+        return true;
+    }
+}
+
+const spaceDeco = Decoration.mark({ class: 'cm-invisible-space' });
+const fullwidthDeco = Decoration.mark({ class: 'cm-invisible-fullwidth' });
+const tabDeco = Decoration.mark({ class: 'cm-invisible-tab' });
+const newlineWidgetDeco = Decoration.widget({ widget: new NewlineWidget(), side: 1 });
+
+/**
+ * 不可視文字（空白・タブ・改行記号）描画用 ViewPlugin
+ */
+export const invisibleCharactersPlugin = ViewPlugin.fromClass(class {
+    constructor(view) {
+        this.decorations = this.buildDecorations(view);
+    }
+
+    update(update) {
+        if (update.docChanged || update.viewportChanged) {
+            this.decorations = this.buildDecorations(update.view);
+        }
+    }
+
+    buildDecorations(view) {
+        const builder = new RangeSetBuilder();
+        const doc = view.state.doc;
+        const docLines = doc.lines;
+
+        for (const { from, to } of view.visibleRanges) {
+            let pos = from;
+            while (pos <= to) {
+                const line = doc.lineAt(pos);
+                const text = line.text;
+                for (let i = 0; i < text.length; i++) {
+                    const ch = text[i];
+                    if (ch === ' ') {
+                        builder.add(line.from + i, line.from + i + 1, spaceDeco);
+                    } else if (ch === '\u3000') {
+                        builder.add(line.from + i, line.from + i + 1, fullwidthDeco);
+                    } else if (ch === '\t') {
+                        builder.add(line.from + i, line.from + i + 1, tabDeco);
+                    }
+                }
+                if (line.number < docLines) {
+                    builder.add(line.to, line.to, newlineWidgetDeco);
+                }
+                pos = line.to + 1;
+            }
+        }
+
+        return builder.finish();
+    }
+}, {
+    decorations: v => v.decorations
+});
+
+/**
  * 基本テーマ（CSS変数連動）
  */
 export const baseTheme = EditorView.theme({
@@ -443,6 +517,7 @@ export function getDefaultExtensions(options = {}) {
     const wrap = options.wordWrap !== undefined ? options.wordWrap : true;
     const lineNumbersEnabled = options.lineNumbers !== undefined ? options.lineNumbers : false;
     const indentGuidesEnabled = options.indentGuides !== undefined ? options.indentGuides : false;
+    const invisibleCharsEnabled = options.invisibleCharacters !== undefined ? options.invisibleCharacters : false;
     const tabBehavior = options.tabBehavior || 'tab4';
     const languageSupport = options.languageSupport || [];
 
@@ -458,6 +533,7 @@ export function getDefaultExtensions(options = {}) {
         wrapCompartment.of(wrap ? EditorView.lineWrapping : []),
         lineNumbersCompartment.of(lineNumbersEnabled ? lineNumbers() : []),
         indentGuidesCompartment.of(indentGuidesEnabled ? indentGuidesPlugin : []),
+        invisibleCharsCompartment.of(invisibleCharsEnabled ? invisibleCharactersPlugin : []),
         indentCompartment.of(getIndentExtension(tabBehavior)),
         keymap.of([
             ...customEditorKeymap,
@@ -541,6 +617,7 @@ export function initCodeMirror(parentEl, options = {}) {
         wordWrap: options.wordWrap,
         lineNumbers: options.lineNumbers,
         indentGuides: options.indentGuides,
+        invisibleCharacters: options.invisibleCharacters,
         tabBehavior: options.tabBehavior,
     });
 
@@ -622,6 +699,17 @@ export function updateIndentGuides(enable) {
     if (!editorView) return;
     editorView.dispatch({
         effects: indentGuidesCompartment.reconfigure(enable ? indentGuidesPlugin : [])
+    });
+}
+
+/**
+ * 不可視文字（Invisible Characters）の動的更新
+ * @param {boolean} enable
+ */
+export function updateInvisibleCharacters(enable) {
+    if (!editorView) return;
+    editorView.dispatch({
+        effects: invisibleCharsCompartment.reconfigure(enable ? invisibleCharactersPlugin : [])
     });
 }
 

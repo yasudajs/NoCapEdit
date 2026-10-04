@@ -2,7 +2,7 @@ import { t } from '../../i18n.js';
 import { appState, elements, savedEditorCursor, setSavedEditorCursor, DEFAULT_MONOSPACE_FONTS } from '../state.js';
 import { invoke, openDialog, ensureTauriApi, appWindow, emit } from '../core/tauri.js';
 import { updateStatus, renderTabs, createNewTab, getCurrentTab, updateTabStatus } from './tabs.js';
-import { updateEditorMetrics, applyWordWrap, applyLineNumbers, applyRuler, applyIndentGuides, applyFontSize, applyLineHeight } from './editor.js';
+import { updateEditorMetrics, applyWordWrap, applyLineNumbers, applyRuler, applyIndentGuides, applyInvisibleCharacters, applyFontSize, applyLineHeight } from './editor.js';
 import { getSelection, setSelection, focusEditor, updateIndent } from './codemirror.js';
 import { autoSave, shouldDeleteEmptyFile } from '../core/fileSystem.js';
 import { applyThemeUI, applyFontFamily, loadSystemFonts } from './theme.js';
@@ -72,6 +72,9 @@ export function openSettingsDialog(isMissingFolder = false) {
     if (elements.indentGuidesSelectModal) {
         elements.indentGuidesSelectModal.value = appState.indentGuides ? 'true' : 'false';
     }
+    if (elements.invisibleCharactersSelectModal) {
+        elements.invisibleCharactersSelectModal.value = appState.invisibleCharacters ? 'true' : 'false';
+    }
     if (elements.folderHint) {
         elements.folderHint.textContent = isMissingFolder
             ? t('settings.folder.hint.missing')
@@ -140,6 +143,7 @@ export function setupSettingsNavigation() {
                 elements.lineNumbersSelectModal,
                 elements.rulerSelectModal,
                 elements.indentGuidesSelectModal,
+                elements.invisibleCharactersSelectModal,
                 elements.themeSelectModal
             ].filter(el => el && !el.disabled && el.offsetParent !== null);
 
@@ -177,6 +181,7 @@ export async function saveSettings() {
     const lineNumbers = elements.lineNumbersSelectModal ? (elements.lineNumbersSelectModal.value === 'true') : appState.lineNumbers;
     const ruler = elements.rulerSelectModal ? (elements.rulerSelectModal.value === 'true') : appState.ruler;
     const indentGuides = elements.indentGuidesSelectModal ? (elements.indentGuidesSelectModal.value === 'true') : appState.indentGuides;
+    const invisibleCharacters = elements.invisibleCharactersSelectModal ? (elements.invisibleCharactersSelectModal.value === 'true') : appState.invisibleCharacters;
     const previousSaveMode = appState.saveMode;
 
     if (!homeFolder) {
@@ -189,6 +194,7 @@ export async function saveSettings() {
         const lineNumbersChanged = (appState.lineNumbers !== lineNumbers);
         const rulerChanged = (appState.ruler !== ruler);
         const indentGuidesChanged = (appState.indentGuides !== indentGuides);
+        const invisibleCharactersChanged = (appState.invisibleCharacters !== invisibleCharacters);
 
         appState.homeFolder = homeFolder;
         appState.savedFontSize = fontSize;
@@ -202,6 +208,7 @@ export async function saveSettings() {
         appState.lineNumbers = lineNumbers;
         appState.ruler = ruler;
         appState.indentGuides = indentGuides;
+        appState.invisibleCharacters = invisibleCharacters;
 
         // 現在アクティブなタブの一時設定は、設定ドックで明示的に変更された項目のみ更新して即時反映
         if (appState.currentTab) {
@@ -211,12 +218,14 @@ export async function saveSettings() {
                 if (lineNumbersChanged) currentTab.lineNumbers = lineNumbers;
                 if (rulerChanged) currentTab.ruler = ruler;
                 if (indentGuidesChanged) currentTab.indentGuides = indentGuides;
+                if (invisibleCharactersChanged) currentTab.invisibleCharacters = invisibleCharacters;
             }
         }
         if (wordWrapChanged) applyWordWrap(wordWrap);
         if (lineNumbersChanged) applyLineNumbers(lineNumbers);
         if (rulerChanged) applyRuler(ruler);
         if (indentGuidesChanged) applyIndentGuides(indentGuides);
+        if (invisibleCharactersChanged) applyInvisibleCharacters(invisibleCharacters);
         applyFontSize();
         applyLineHeight();
         updateIndent(tabBehavior);
