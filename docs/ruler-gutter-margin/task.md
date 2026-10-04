@@ -16,13 +16,13 @@
   - [x] `src/frontend/js/ui/codemirror.js` のテーマ設定およびクラス制御更新 <!-- id: phase3-cm -->
   - [x] `src/frontend/js/ui/ruler.js` のフォールバック計算更新 <!-- id: phase3-ruler -->
 
-- [ ] **フェーズ 4: 検証** <!-- id: phase4-verify -->
-  - [ ] 行番号 ON / ルーラー ON 時の表示および境界線・目盛りの一致確認 <!-- id: phase4-verify-on -->
-  - [ ] 行番号 OFF / ルーラー ON 時の左余白維持確認 <!-- id: phase4-verify-off -->
-  - [ ] 行番号トグル切り替え時の動的追従確認 <!-- id: phase4-verify-toggle -->
-  - [ ] ビルド検証（`cargo check` 等） <!-- id: phase4-verify-build -->
+- [x] **フェーズ 4: 検証** <!-- id: phase4-verify -->
+  - [x] 行番号 ON / ルーラー ON 時の表示および境界線・目盛りの一致確認 <!-- id: phase4-verify-on -->
+  - [x] 行番号 OFF / ルーラー ON 時の左余白維持確認 <!-- id: phase4-verify-off -->
+  - [x] 行番号トグル切り替え時の動的追従確認 <!-- id: phase4-verify-toggle -->
+  - [x] ビルド検証（`npm run build`, `cargo check`, `cargo test`） <!-- id: phase4-verify-build -->
 
 - [ ] **フェーズ 5: 完了報告・ドキュメント作成** <!-- id: phase5-report -->
-  - [ ] `docs/ruler-gutter-margin/walkthrough.md` の作成 <!-- id: phase5-walkthrough -->
-  - [ ] `docs/history.md` に v2.12.1 の変更履歴追記 <!-- id: phase5-history -->
-  - [ ] コミット＆プッシュおよびユーザーへの完了報告 <!-- id: phase5-push -->
+  - [x] `docs/ruler-gutter-margin/walkthrough.md` の作成 <!-- id: phase5-walkthrough -->
+  - [x] `docs/history.md` に v2.12.1 の変更履歴追記 <!-- id: phase5-history -->
+  - [x] コミット＆プッシュおよびユーザーへの完了報告 <!-- id: phase5-push -->
