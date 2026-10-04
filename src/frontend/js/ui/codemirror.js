@@ -363,6 +363,9 @@ export const baseTheme = EditorView.theme({
         padding: "0 16px",
         position: "relative",
     },
+    "&.has-line-numbers .cm-line, &:has(.cm-gutters) .cm-line": {
+        padding: "0 16px 0 0",
+    },
     ".cm-indent-guides": {
         position: "absolute",
         top: "0",
@@ -647,6 +650,13 @@ export function initCodeMirror(parentEl, options = {}) {
         });
     }
 
+    const hasLineNumbers = !!(options.lineNumbers !== undefined ? options.lineNumbers : (options.state && options.state.facet(EditorView.lineWrapping)));
+    const initialLineNumbers = options.lineNumbers !== undefined ? options.lineNumbers : false;
+    editorView.dom.classList.toggle('has-line-numbers', initialLineNumbers);
+    if (parentEl) {
+        parentEl.classList.toggle('has-line-numbers', initialLineNumbers);
+    }
+
     return editorView;
 }
 
@@ -697,6 +707,13 @@ export function updateLineNumbers(enable) {
     editorView.dispatch({
         effects: lineNumbersCompartment.reconfigure(enable ? lineNumbers() : [])
     });
+    if (editorView.dom) {
+        editorView.dom.classList.toggle('has-line-numbers', !!enable);
+        const container = editorView.dom.closest('.editor');
+        if (container) {
+            container.classList.toggle('has-line-numbers', !!enable);
+        }
+    }
 }
 
 /**

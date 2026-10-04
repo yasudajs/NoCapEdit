@@ -77,12 +77,12 @@ export function getGutterOffset() {
         }
     }
 
-    // フォールバック計算（ガター幅 + 16px padding）
+    // フォールバック計算（行番号非表示時は16px、行番号表示時は余白なしのためガター幅そのもの）
     let fallback = 16;
     if (view && view.dom) {
         const gutters = view.dom.querySelector('.cm-gutters');
         if (gutters && gutters.offsetWidth > 0) {
-            fallback = gutters.offsetWidth + 16;
+            fallback = gutters.offsetWidth;
         }
     }
     cachedGutterOffset = fallback;

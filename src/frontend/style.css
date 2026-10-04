@@ -684,6 +684,12 @@ body.ruler-marker-dragging * {
     padding: 0 16px;
 }
 
+/* 行番号表示時は境界線との余白を無し（0px）にし、ルーラー目盛り0と一直線に揃える */
+.editor.has-line-numbers .cm-line,
+.editor:has(.cm-gutters) .cm-line {
+    padding: 0 16px 0 0;
+}
+
 .editor .cm-cursor {
     border-left-color: var(--accent, #4daafc);
     border-left-width: 2px;
