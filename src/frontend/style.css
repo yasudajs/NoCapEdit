@@ -54,7 +54,7 @@
     --indent-guide-color: rgba(255, 255, 255, 0.20);
 
     /* 不可視文字 (空白・タブ・改行記号) */
-    --invisible-char-color: rgba(255, 255, 255, 0.15);
+    --invisible-char-color: rgba(255, 255, 255, 0.22);
 }
 
 body.light-theme {
