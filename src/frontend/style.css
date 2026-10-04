@@ -52,6 +52,9 @@
 
     /* インデントガイド (補助線) */
     --indent-guide-color: rgba(255, 255, 255, 0.20);
+
+    /* 不可視文字 (空白・タブ・改行記号) */
+    --invisible-char-color: rgba(255, 255, 255, 0.30);
 }
 
 body.light-theme {
@@ -86,6 +89,9 @@ body.light-theme {
 
     /* インデントガイド (補助線) */
     --indent-guide-color: rgba(0, 0, 0, 0.12);
+
+    /* 不可視文字 (空白・タブ・改行記号) */
+    --invisible-char-color: rgba(0, 0, 0, 0.28);
 }
 
 body.soft-dark-theme {
@@ -118,6 +124,9 @@ body.soft-dark-theme {
 
     /* インデントガイド (補助線) */
     --indent-guide-color: rgba(255, 255, 255, 0.14);
+
+    /* 不可視文字 (空白・タブ・改行記号) */
+    --invisible-char-color: rgba(255, 255, 255, 0.28);
 }
 
 body {
@@ -545,6 +554,58 @@ body.ruler-marker-dragging * {
     background-color: var(--indent-guide-color);
     pointer-events: none;
     user-select: none;
+}
+
+/* 不可視文字 (空白・タブ・改行記号) スタイル */
+.cm-invisible-space {
+    background-image: radial-gradient(circle at 50% 55%, var(--invisible-char-color) 20%, transparent 22%);
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.cm-invisible-fullwidth {
+    position: relative;
+}
+
+.cm-invisible-fullwidth::before {
+    content: "□";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--invisible-char-color);
+    font-size: 0.82em;
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+}
+
+.cm-invisible-tab {
+    position: relative;
+}
+
+.cm-invisible-tab::before {
+    content: "→";
+    position: absolute;
+    right: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--invisible-char-color);
+    font-size: 0.85em;
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+}
+
+.cm-invisible-newline {
+    color: var(--invisible-char-color);
+    user-select: none;
+    pointer-events: none;
+    margin-left: 2px;
+    font-size: 0.85em;
+    line-height: 1;
+    display: inline-block;
+    vertical-align: middle;
 }
 
 /* テキストエディタコンテナ */

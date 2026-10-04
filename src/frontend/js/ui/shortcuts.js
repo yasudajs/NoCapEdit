@@ -1,4 +1,4 @@
-import { increaseLineHeight, decreaseLineHeight, zoomIn, zoomOut, resetZoomAndLineHeight, toggleWordWrap, toggleLineNumbers, toggleRuler, toggleIndentGuides } from './editor.js';
+import { increaseLineHeight, decreaseLineHeight, zoomIn, zoomOut, resetZoomAndLineHeight, toggleWordWrap, toggleLineNumbers, toggleRuler, toggleIndentGuides, toggleInvisibleCharacters } from './editor.js';
 import { triggerManualSave, openFileDialog } from '../core/fileSystem.js';
 import { switchTabByOffset, createNewTab, closeTab } from './tabs.js';
 import { toggleSettingsDialog } from './settings.js';
@@ -108,6 +108,15 @@ export function setupKeyboardShortcuts() {
             if (e.key === 'i' || e.key === 'I' || e.code === 'KeyI') {
                 e.preventDefault();
                 toggleIndentGuides();
+                return;
+            }
+        }
+
+        // 不可視文字の表示切り替え: Alt + W
+        if (e.altKey && !e.ctrlKey && !e.shiftKey) {
+            if (e.key === 'w' || e.key === 'W' || e.code === 'KeyW') {
+                e.preventDefault();
+                toggleInvisibleCharacters();
                 return;
             }
         }

@@ -21,7 +21,8 @@ export async function saveApplicationSettings() {
                 word_wrap: appState.wordWrap,
                 line_numbers: appState.lineNumbers,
                 ruler: appState.ruler,
-                indent_guides: appState.indentGuides
+                indent_guides: appState.indentGuides,
+                invisible_characters: appState.invisibleCharacters
             }
         });
     } catch (error) {

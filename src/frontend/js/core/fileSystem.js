@@ -288,6 +288,7 @@ export async function openExistingFile(filePath, suppressStatus = false) {
             wordWrap: appState.wordWrap,
             lineNumbers: appState.lineNumbers,
             indentGuides: appState.indentGuides,
+            invisibleCharacters: appState.invisibleCharacters,
             tabBehavior: appState.tabBehavior,
             languageSupport: languageSupport,
         });
@@ -309,6 +310,7 @@ export async function openExistingFile(filePath, suppressStatus = false) {
             firstTab.lineNumbers = appState.lineNumbers;
             firstTab.ruler = appState.ruler;
             firstTab.indentGuides = appState.indentGuides;
+            firstTab.invisibleCharacters = appState.invisibleCharacters;
             firstTab.rulerMarkers = [];
             firstTab.isDirty = false;
             firstTab.isSaving = false;
@@ -329,6 +331,7 @@ export async function openExistingFile(filePath, suppressStatus = false) {
                 lineNumbers: appState.lineNumbers,
                 ruler: appState.ruler,
                 indentGuides: appState.indentGuides,
+                invisibleCharacters: appState.invisibleCharacters,
                 rulerMarkers: [],
                 isDirty: false,
                 isSaving: false,
