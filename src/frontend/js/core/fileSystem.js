@@ -10,19 +10,41 @@ import { showSaveErrorDialog, showAlertDialog } from '../ui/dialogs.js';
 
 
 export async function saveTabAs(tab) {
-    if (!saveDialog) {
-        throw new Error(t('fs.error.noSaveDialog'));
+    let defaultPath = tab.filePath;
+    if (!defaultPath) {
+        const timestampName = `${generateTimestamp()}.${FILE_EXT_NCTX}`;
+        if (appState.homeFolder) {
+            const sep = appState.homeFolder.includes('/') ? '/' : '\\';
+            defaultPath = `${appState.homeFolder}${sep}${timestampName}`;
+        } else {
+            defaultPath = timestampName;
+        }
     }
 
-    const targetPath = await saveDialog({
-        defaultPath: tab.filePath,
-        filters: [
-            { name: `NoCapEdit Text (*.${FILE_EXT_NCTX})`, extensions: [FILE_EXT_NCTX] },
-            { name: `NoCapEdit Markdown (*.${FILE_EXT_NCMD})`, extensions: [FILE_EXT_NCMD] },
-            { name: 'Text Files (*.txt)', extensions: ['txt'] },
-            { name: 'All Files (*.*)', extensions: ['*'] }
-        ]
-    });
+    const filters = [
+        { name: t('fs.filter.nctx'), extensions: [FILE_EXT_NCTX] },
+        { name: t('fs.filter.txt'), extensions: ['txt'] },
+        { name: t('fs.filter.csv'), extensions: ['csv'] },
+        { name: t('fs.filter.all'), extensions: ['*'] }
+    ];
+
+    let targetPath = null;
+    try {
+        // 親ウィンドウを紐付けたRustカスタムコマンドを呼び出し（カーソル背面潜り込み防止）
+        targetPath = await invoke('show_save_dialog', {
+            defaultPath,
+            filters
+        });
+    } catch (e) {
+        console.warn('show_save_dialog invoke failed, fallback to saveDialog:', e);
+        if (saveDialog) {
+            targetPath = await saveDialog({
+                defaultPath,
+                filters
+            });
+        }
+    }
+
     if (!targetPath || typeof targetPath !== 'string') {
         return false;
     }
@@ -40,7 +62,7 @@ export async function saveTabAs(tab) {
     if (tab.id === appState.currentTab) {
         await updateLanguageForFileName(getEditorView(), tab.fileName);
     }
-    updateStatus(t('fs.status.savedAs'), 'saved');
+    updateStatus(t('fs.status.savedAs', { fileName: tab.fileName }), 'saved', true);
     return true;
 }
 
@@ -254,6 +276,36 @@ export async function triggerManualSave() {
     } catch (error) {
         console.error('Manual save failed:', error);
         updateTabStatus(tab, t('fs.status.saveFailed'), 'error');
+    }
+}
+
+export async function triggerManualSaveAs() {
+    if (!appState.currentTab) return;
+
+    syncCurrentEditorToState();
+
+    // 自動保存タイマーがあればクリアする
+    if (appState.autosaveTimer) {
+        clearTimeout(appState.autosaveTimer);
+        appState.autosaveTimer = null;
+    }
+
+    const tab = appState.tabs.find(t => t.id === appState.currentTab);
+    if (!tab) return;
+
+    try {
+        const saved = await saveTabAs(tab);
+        if (saved) {
+            renderTabs();
+        }
+    } catch (error) {
+        console.error('Manual Save As failed:', error);
+        updateTabStatus(tab, t('fs.status.saveFailed'), 'error');
+    } finally {
+        const view = getEditorView();
+        if (view) {
+            view.focus();
+        }
     }
 }
 

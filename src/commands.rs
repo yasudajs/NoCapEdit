@@ -1,4 +1,4 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -286,6 +286,78 @@ pub fn apply_theme(window: tauri::Window, theme: String) -> Result<(), String> {
 #[tauri::command]
 pub fn is_debug() -> bool {
     cfg!(debug_assertions)
+}
+
+#[cfg(target_os = "windows")]
+fn wake_up_mouse_cursor() {
+    #[repr(C)]
+    struct POINT {
+        x: i32,
+        y: i32,
+    }
+    extern "system" {
+        fn GetCursorPos(lpPoint: *mut POINT) -> i32;
+        fn SetCursorPos(x: i32, y: i32) -> i32;
+    }
+    unsafe {
+        let mut pt = POINT { x: 0, y: 0 };
+        if GetCursorPos(&mut pt) != 0 {
+            SetCursorPos(pt.x, pt.y);
+        }
+    }
+}
+
+#[cfg(not(target_os = "windows"))]
+fn wake_up_mouse_cursor() {}
+
+#[derive(Debug, Deserialize)]
+pub struct DialogFilterInput {
+    pub name: String,
+    pub extensions: Vec<String>,
+}
+
+#[tauri::command]
+pub async fn show_save_dialog(
+    window: tauri::Window,
+    default_path: Option<String>,
+    filters: Vec<DialogFilterInput>,
+) -> Result<Option<String>, String> {
+    let (tx, rx) = tokio::sync::oneshot::channel();
+
+    let mut builder = tauri::api::dialog::FileDialogBuilder::new().set_parent(&window);
+
+    if let Some(ref path_str) = default_path {
+        let p = Path::new(path_str);
+        if let Some(parent) = p.parent() {
+            if parent.exists() {
+                builder = builder.set_directory(parent);
+            }
+        }
+        if let Some(file_name) = p.file_name() {
+            if let Some(file_name_str) = file_name.to_str() {
+                builder = builder.set_file_name(file_name_str);
+            }
+        }
+    }
+
+    for filter in &filters {
+        let ext_refs: Vec<&str> = filter.extensions.iter().map(|s| s.as_str()).collect();
+        builder = builder.add_filter(&filter.name, &ext_refs);
+    }
+
+    // Windows の「文字の入力中にポインターを非表示にする」状態を強制解除するため、
+    // ダイアログ起動直前およびダイアログ表示後にカーソル位置を再セットして可視化を促す
+    wake_up_mouse_cursor();
+    tokio::spawn(async {
+        tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
+        wake_up_mouse_cursor();
+    });
+
+    builder.save_file(move |file_path| {
+        let _ = tx.send(file_path.map(|p| p.to_string_lossy().to_string()));
+    });
+
+    rx.await.map_err(|e| e.to_string())
 }
 
 #[cfg(test)]

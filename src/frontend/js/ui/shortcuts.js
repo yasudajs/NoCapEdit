@@ -1,5 +1,5 @@
 import { increaseLineHeight, decreaseLineHeight, zoomIn, zoomOut, resetZoomAndLineHeight, toggleWordWrap, toggleLineNumbers, toggleRuler, toggleIndentGuides, toggleInvisibleCharacters } from './editor.js';
-import { triggerManualSave, openFileDialog } from '../core/fileSystem.js';
+import { triggerManualSave, triggerManualSaveAs, openFileDialog } from '../core/fileSystem.js';
 import { switchTabByOffset, createNewTab, closeTab } from './tabs.js';
 import { toggleSettingsDialog } from './settings.js';
 import { openFind, openReplace, closeFind, isFindWidgetOpen } from './findReplace.js';
@@ -140,8 +140,15 @@ export function setupKeyboardShortcuts() {
                 return;
             }
 
-            // Shift キーが押されている場合は行間の変更
+            // Shift キーが押されている場合
             if (e.shiftKey) {
+                // 名前をつけて保存: Ctrl + Shift + S
+                if (e.key === 's' || e.key === 'S' || e.code === 'KeyS') {
+                    e.preventDefault();
+                    triggerManualSaveAs();
+                    return;
+                }
+
                 if (e.code === 'NumpadAdd' || e.code === 'Equal' || e.code === 'Semicolon' || e.key === '+') {
                     e.preventDefault();
                     increaseLineHeight();

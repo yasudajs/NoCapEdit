@@ -75,7 +75,8 @@ fn main() {
             commands::get_launch_file,
             commands::apply_theme,
             commands::get_system_fonts,
-            commands::is_debug
+            commands::is_debug,
+            commands::show_save_dialog
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
