@@ -16,8 +16,8 @@
 - [x] `docs/spec.md` の更新
 
 ### 2. バックエンド（Rust）実装
-- [ ] `src/settings.rs` に `invisible_characters` 設定項目を追加
-- [ ] `src/settings.rs` に単体テストを追加し `cargo test` で検証
+- [x] `src/settings.rs` に `invisible_characters` 設定項目を追加
+- [x] `src/settings.rs` に単体テストを追加し `cargo test` で検証
 
 ### 3. フロントエンド基本設定・状態管理
 - [ ] `src/frontend/i18n.js` に不可視文字表示関連の多言語テキストを定義
