@@ -11,10 +11,10 @@
   - [x] バージョン番号の更新（v2.12.0 → v2.12.1、管理5ファイル） <!-- id: phase2-version -->
   - [x] `spec.md` を最新版に更新 <!-- id: phase2-spec -->
 
-- [ ] **フェーズ 3: 実装** <!-- id: phase3-impl -->
-  - [ ] `src/frontend/style.css` のスタイル定義更新（行数表示時の左余白 0px） <!-- id: phase3-css -->
-  - [ ] `src/frontend/js/ui/codemirror.js` のテーマ設定およびクラス制御更新 <!-- id: phase3-cm -->
-  - [ ] `src/frontend/js/ui/ruler.js` のフォールバック計算更新 <!-- id: phase3-ruler -->
+- [x] **フェーズ 3: 実装** <!-- id: phase3-impl -->
+  - [x] `src/frontend/style.css` のスタイル定義更新（行数表示時の左余白 0px） <!-- id: phase3-css -->
+  - [x] `src/frontend/js/ui/codemirror.js` のテーマ設定およびクラス制御更新 <!-- id: phase3-cm -->
+  - [x] `src/frontend/js/ui/ruler.js` のフォールバック計算更新 <!-- id: phase3-ruler -->
 
 - [ ] **フェーズ 4: 検証** <!-- id: phase4-verify -->
   - [ ] 行番号 ON / ルーラー ON 時の表示および境界線・目盛りの一致確認 <!-- id: phase4-verify-on -->
