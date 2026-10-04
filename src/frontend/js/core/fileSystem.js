@@ -293,12 +293,6 @@ export async function triggerManualSaveAs() {
     const tab = appState.tabs.find(t => t.id === appState.currentTab);
     if (!tab) return;
 
-    // キー入力直後のポインタキャプチャや入力中カーソル非表示を確実に解除するため、フォーカスを外しイベント完了を待機
-    if (document.activeElement && typeof document.activeElement.blur === 'function') {
-        document.activeElement.blur();
-    }
-    await new Promise(resolve => setTimeout(resolve, 50));
-
     try {
         const saved = await saveTabAs(tab);
         if (saved) {
