@@ -604,7 +604,7 @@ body.ruler-marker-dragging * {
     user-select: none;
     pointer-events: none;
     margin-left: 2px;
-    font-size: 0.75em;
+    font-size: 0.85em;
     line-height: 1;
     display: inline-block;
     vertical-align: middle;
