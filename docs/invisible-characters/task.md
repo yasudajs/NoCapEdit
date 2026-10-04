@@ -12,8 +12,8 @@
 ### 1. 準備と環境設定
 - [x] `master` ブランチから作業用ブランチ（例: `feature/invisible-characters`）の作成
 - [x] ドキュメントを `docs/wip/invisible-characters/` から `docs/invisible-characters/` へ移動・コミット＆プッシュ
-- [ ] バージョン番号の更新（`v2.10.3` → `v2.11.0`: 5ファイルセット）
-- [ ] `docs/spec.md` の更新
+- [x] バージョン番号の更新（`v2.10.3` → `v2.11.0`: 5ファイルセット）
+- [x] `docs/spec.md` の更新
 
 ### 2. バックエンド（Rust）実装
 - [ ] `src/settings.rs` に `invisible_characters` 設定項目を追加
