@@ -295,12 +295,14 @@ pub struct DialogFilterInput {
 }
 
 #[tauri::command]
-pub fn show_save_dialog(
+pub async fn show_save_dialog(
     window: tauri::Window,
     default_path: Option<String>,
     filters: Vec<DialogFilterInput>,
-) -> Option<String> {
-    let mut builder = tauri::api::dialog::blocking::FileDialogBuilder::new().set_parent(&window);
+) -> Result<Option<String>, String> {
+    let (tx, rx) = tokio::sync::oneshot::channel();
+
+    let mut builder = tauri::api::dialog::FileDialogBuilder::new().set_parent(&window);
 
     if let Some(ref path_str) = default_path {
         let p = Path::new(path_str);
@@ -321,7 +323,11 @@ pub fn show_save_dialog(
         builder = builder.add_filter(&filter.name, &ext_refs);
     }
 
-    builder.save_file().map(|p| p.to_string_lossy().to_string())
+    builder.save_file(move |file_path| {
+        let _ = tx.send(file_path.map(|p| p.to_string_lossy().to_string()));
+    });
+
+    rx.await.map_err(|e| e.to_string())
 }
 
 #[cfg(test)]
