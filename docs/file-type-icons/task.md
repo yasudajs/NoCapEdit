@@ -20,8 +20,8 @@
 - [x] 全対応拡張子（47種）のマルチ解像度ICOおよびPNGアイコンの生成（`icons/documents/` 配下）
 - [x] NSISインストーラー（`nsis/installer.nsi`）の更新（各拡張子ごとのProgID、DefaultIcon、アンインストール処理の登録）
 - [x] WiX設定（`wix/file-association.wxs`）の更新
-- [ ] 動作確認・検証（アイコン生成、解像度チェック、NSIS構文・ビルド確認）
-- [ ] `docs/file-type-icons/walkthrough.md`（ウォークスルー）の作成
-- [ ] `docs/history.md` に変更履歴を追記
-- [ ] 実装・ドキュメントの最終コミット＆プッシュ
+- [x] 動作確認・検証（アイコン生成、解像度チェック、NSIS構文・ビルド確認）
+- [x] `docs/file-type-icons/walkthrough.md`（ウォークスルー）の作成
+- [x] `docs/history.md` に変更履歴を追記
+- [x] 実装・ドキュメントの最終コミット＆プッシュ
 - [ ] ユーザーへの完了報告とクリーンアップ・マージ指示待ち
