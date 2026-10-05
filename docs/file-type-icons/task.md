@@ -9,13 +9,13 @@
 ## フェーズ 2: 実装作業の開始（※ユーザーの作業開始指示後）
 - [x] Gitブランチ作成 (`feature/file-type-icons`)
 - [x] 作業ドキュメントを `docs/wip/file-type-icons/` から `docs/file-type-icons/` へ移動・コミット
-- [ ] バージョン番号の更新（MINOR: `v2.12.1` -> `v2.13.0`）
-  - [ ] `Cargo.toml`
-  - [ ] `package.json`
-  - [ ] `tauri.conf.json`
-  - [ ] `nsis/installer.nsi`
-  - [ ] `docs/DEVELOPMENT.md`
-- [ ] `spec.md` の仕様更新
+- [x] バージョン番号の更新（MINOR: `v2.12.1` -> `v2.13.0`）
+  - [x] `Cargo.toml`
+  - [x] `package.json`
+  - [x] `tauri.conf.json`
+  - [x] `nsis/installer.nsi`
+  - [x] `docs/DEVELOPMENT.md`
+- [x] `spec.md` の仕様更新
 - [ ] アイコン自動生成スクリプトの作成（`scripts/generate_document_icons.py`）
 - [ ] 全対応拡張子（47種）のマルチ解像度ICOおよびPNGアイコンの生成（`icons/documents/` 配下）
 - [ ] NSISインストーラー（`nsis/installer.nsi`）の更新（各拡張子ごとのProgID、DefaultIcon、アンインストール処理の登録）
