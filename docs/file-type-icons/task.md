@@ -16,10 +16,10 @@
   - [x] `nsis/installer.nsi`
   - [x] `docs/DEVELOPMENT.md`
 - [x] `spec.md` の仕様更新
-- [ ] アイコン自動生成スクリプトの作成（`scripts/generate_document_icons.py`）
-- [ ] 全対応拡張子（47種）のマルチ解像度ICOおよびPNGアイコンの生成（`icons/documents/` 配下）
-- [ ] NSISインストーラー（`nsis/installer.nsi`）の更新（各拡張子ごとのProgID、DefaultIcon、アンインストール処理の登録）
-- [ ] WiX設定（`wix/file-association.wxs`）の更新
+- [x] アイコン自動生成スクリプトの作成（`scripts/generate_document_icons.py`）
+- [x] 全対応拡張子（47種）のマルチ解像度ICOおよびPNGアイコンの生成（`icons/documents/` 配下）
+- [x] NSISインストーラー（`nsis/installer.nsi`）の更新（各拡張子ごとのProgID、DefaultIcon、アンインストール処理の登録）
+- [x] WiX設定（`wix/file-association.wxs`）の更新
 - [ ] 動作確認・検証（アイコン生成、解像度チェック、NSIS構文・ビルド確認）
 - [ ] `docs/file-type-icons/walkthrough.md`（ウォークスルー）の作成
 - [ ] `docs/history.md` に変更履歴を追記
