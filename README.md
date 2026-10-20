@@ -28,11 +28,11 @@
 
 用途やユーザー環境に合わせて以下から選択してください。
 
-- **[ポータブル版（ZIP形式 / インストール不要）](https://github.com/yasudajs/NoCapEdit/releases/download/v2.13.1/NoCapEdit_v2.13.1_x64_portable.zip)**
+- **[ポータブル版（ZIP形式 / インストール不要）](https://github.com/yasudajs/NoCapEdit/releases/download/v2.13.2/NoCapEdit_v2.13.2_x64_portable.zip)**
   - ダウンロードしたフォルダを解凍するだけで、すぐに使い始められます。USBメモリなどに入れて持ち運ぶことも可能です。
-- **[標準インストーラー（EXE形式 / 推奨）](https://github.com/yasudajs/NoCapEdit/releases/download/v2.13.1/NoCapEdit_2.13.1_x64-setup.exe)**
+- **[標準インストーラー（EXE形式 / 推奨）](https://github.com/yasudajs/NoCapEdit/releases/download/v2.13.2/NoCapEdit_2.13.2_x64-setup.exe)**
   - パソコンの個人用エリアにインストールするため、管理者権限（パスワード入力等）なしで簡単に導入できます。迷ったらこちらがおすすめです。
-- **[システム全体用インストーラー（MSI形式）](https://github.com/yasudajs/NoCapEdit/releases/download/v2.13.1/NoCapEdit_2.13.1_x64_ja-JP.msi)**
+- **[システム全体用インストーラー（MSI形式）](https://github.com/yasudajs/NoCapEdit/releases/download/v2.13.2/NoCapEdit_2.13.2_x64_ja-JP.msi)**
   - 学校や職場などで、1台のパソコンを複数のユーザーで使う場合に適しています。（※インストールには管理者権限が必要です）
 
 > [!IMPORTANT]
@@ -105,9 +105,9 @@
     - タブやスペースによる字下げ構造に合わせて薄い縦補助線を描画します。
     - 空行でも途切れず自然に繋がり、プログラムや階層箇条書きのインデント構造がひと目で把握できます。
 
-11. **空白・タブ・改行記号の可視化 (`Alt + Shift + I`)**
+11. **空白・タブ・改行記号の可視化 (`Alt + W`)**
     - 半角スペース（微小ドット）、全角スペース（四角記号）、タブ文字（右矢印）、改行マーク（下向き左折れ矢印）を控えめに可視化します。
-    - 編集作業やIME入力を邪魔しない薄型デザインを採用し、ショートカット `Alt + Shift + I` で即座に切り替え可能です。
+    - 編集作業やIME入力を邪魔しない薄型デザインを採用し、ショートカット `Alt + W` で即座に切り替え可能です。
 
 ### ⌨️ 便利な編集・検索・ジャンプ機能
 
