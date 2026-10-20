@@ -21,12 +21,12 @@
 - [x] ステップ2の動作確認とコミット＆プッシュ
 
 ## ステップ3: 「名前をつけて保存（Save As）」周りの安全性・排他制御強化（#2, #3, #8, #9, #10）
-- [ ] **#2**: `triggerManualSaveAs` でキャンセルされた際に自動保存タイマーを再スケジュール（`fileSystem.js`）
-- [ ] **#3**: `saveTabAs` で進行中の保存処理（`tab.savePromise`）の完了待機を追加（`fileSystem.js`）
-- [ ] **#9**: 別タブで開いているファイルと同じパスへの Save As をエラーダイアログでブロック（`fileSystem.js`, `i18n.js`）
-- [ ] **#10**: `Ctrl + Shift + S` 長押し・連打時の二重実行防止ガードを追加（`shortcuts.js`, `fileSystem.js`）
-- [ ] **#8**: 未使用の `FILE_EXT_NCMD` import および `fs.error.noSaveDialog` 翻訳キーを削除（`fileSystem.js`, `i18n.js`）
-- [ ] ステップ3の動作確認とコミット＆プッシュ
+- [x] **#2**: `triggerManualSaveAs` でキャンセルされた際に自動保存タイマーを再スケジュール（`fileSystem.js`）
+- [x] **#3**: `saveTabAs` で進行中の保存処理（`tab.savePromise`）の完了待機を追加（`fileSystem.js`）
+- [x] **#9**: 別タブで開いているファイルと同じパスへの Save As をエラーダイアログでブロック（`fileSystem.js`, `i18n.js`）
+- [x] **#10**: `Ctrl + Shift + S` 長押し・連打時の二重実行防止ガードを追加（`shortcuts.js`, `fileSystem.js`）
+- [x] **#8**: 未使用の `FILE_EXT_NCMD` import および `fs.error.noSaveDialog` 翻訳キーを削除（`fileSystem.js`, `i18n.js`）
+- [x] ステップ3の動作確認とコミット＆プッシュ
 
 ## ステップ4: Rust バックエンド（保存ダイアログ処理）の整理（#11）
 - [ ] **#11**: `windows-sys` に `Win32_UI_WindowsAndMessaging` を追加し、`wake_up_mouse_cursor` の手書き FFI を置き換え＆ `tauri::async_runtime::spawn` に統一（`Cargo.toml`, `src/commands.rs`）

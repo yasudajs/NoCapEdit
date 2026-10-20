@@ -145,6 +145,7 @@ export function setupKeyboardShortcuts() {
                 // 名前をつけて保存: Ctrl + Shift + S
                 if (e.key === 's' || e.key === 'S' || e.code === 'KeyS') {
                     e.preventDefault();
+                    if (e.repeat) return;
                     triggerManualSaveAs();
                     return;
                 }
