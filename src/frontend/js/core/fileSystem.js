@@ -1,5 +1,5 @@
 import { t } from '../../i18n.js';
-import { appState, FILE_EXT_NCTX, FILE_EXT_NCMD } from '../state.js';
+import { appState, FILE_EXT_NCTX, AUTOSAVE_DELAY_MS } from '../state.js';
 import { invoke, openDialog, saveDialog, appWindow, ensureTauriApi } from './tauri.js';
 import { updateStatus, updateTabStatus, renderTabs, switchTab, createNewTab } from '../ui/tabs.js';
 import { syncCurrentEditorToState } from '../ui/editor.js';
@@ -7,9 +7,15 @@ import { createTabState, getLanguageSupport, updateLanguageForFileName, getEdito
 import { getFileNameFromPath, isAutoCreatedFileName, generateTimestamp, generateTabId } from '../utils/helpers.js';
 import { showSaveErrorDialog, showAlertDialog } from '../ui/dialogs.js';
 
-
+let isSaveAsRunning = false;
 
 export async function saveTabAs(tab) {
+    if (!tab) return false;
+
+    if (tab.isSaving && tab.savePromise) {
+        await tab.savePromise;
+    }
+
     let defaultPath = tab.filePath;
     if (!defaultPath) {
         const timestampName = `${generateTimestamp()}.${FILE_EXT_NCTX}`;
@@ -49,20 +55,44 @@ export async function saveTabAs(tab) {
         return false;
     }
 
-    await invoke('save_text_file', {
-        filePath: targetPath,
-        content: tab.content,
-        encoding: tab.encoding || 'UTF-8',
-    });
-
-    tab.filePath = targetPath;
-    tab.fileName = getFileNameFromPath(targetPath);
-    tab.isDirty = false;
-    renderTabs();
-    if (tab.id === appState.currentTab) {
-        await updateLanguageForFileName(getEditorView(), tab.fileName);
+    const normalizedTarget = targetPath.replace(/\\/g, '/').toLowerCase();
+    const duplicateTab = appState.tabs.find(
+        (other) => other.id !== tab.id && other.filePath && other.filePath.replace(/\\/g, '/').toLowerCase() === normalizedTarget
+    );
+    if (duplicateTab) {
+        const targetFileName = getFileNameFromPath(targetPath);
+        await showAlertDialog(t('fs.error.alreadyOpenInTab', { fileName: targetFileName }));
+        return false;
     }
-    updateStatus(t('fs.status.savedAs', { fileName: tab.fileName }), 'saved', true);
+
+    if (tab.isSaving && tab.savePromise) {
+        await tab.savePromise;
+    }
+
+    tab.isSaving = true;
+    tab.savePromise = (async () => {
+        try {
+            await invoke('save_text_file', {
+                filePath: targetPath,
+                content: tab.content,
+                encoding: tab.encoding || 'UTF-8',
+            });
+
+            tab.filePath = targetPath;
+            tab.fileName = getFileNameFromPath(targetPath);
+            tab.isDirty = false;
+            renderTabs();
+            if (tab.id === appState.currentTab) {
+                await updateLanguageForFileName(getEditorView(), tab.fileName);
+            }
+            updateStatus(t('fs.status.savedAs', { fileName: tab.fileName }), 'saved', true);
+        } finally {
+            tab.isSaving = false;
+            tab.savePromise = null;
+        }
+    })();
+
+    await tab.savePromise;
     return true;
 }
 
@@ -280,6 +310,7 @@ export async function triggerManualSave() {
 }
 
 export async function triggerManualSaveAs() {
+    if (isSaveAsRunning) return;
     if (!appState.currentTab) return;
 
     syncCurrentEditorToState();
@@ -293,15 +324,22 @@ export async function triggerManualSaveAs() {
     const tab = appState.tabs.find(t => t.id === appState.currentTab);
     if (!tab) return;
 
+    isSaveAsRunning = true;
     try {
         const saved = await saveTabAs(tab);
         if (saved) {
             renderTabs();
+        } else if (appState.saveMode !== 'manual' && tab.isDirty) {
+            clearTimeout(appState.autosaveTimer);
+            appState.autosaveTimer = setTimeout(() => {
+                autoSave();
+            }, AUTOSAVE_DELAY_MS);
         }
     } catch (error) {
         console.error('Manual Save As failed:', error);
         updateTabStatus(tab, t('fs.status.saveFailed'), 'error');
     } finally {
+        isSaveAsRunning = false;
         const view = getEditorView();
         if (view) {
             view.focus();

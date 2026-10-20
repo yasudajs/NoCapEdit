@@ -98,7 +98,7 @@ const DICT = {
         fs: {
             error: {
                 noOpenDialog: "ファイル選択ダイアログを利用できません",
-                noSaveDialog: "別名保存ダイアログを利用できません",
+                alreadyOpenInTab: "指定されたファイル（{fileName}）は既に別のタブで開かれているため、上書き保存できません。",
                 deleteEmptyFile: "空ファイル削除失敗",
                 maxLimitReached: "同名ファイル回避の上限に達しました",
                 invalidPath: "保存先パスが不正です",
