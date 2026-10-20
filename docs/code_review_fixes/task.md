@@ -29,8 +29,8 @@
 - [x] ステップ3の動作確認とコミット＆プッシュ
 
 ## ステップ4: Rust バックエンド（保存ダイアログ処理）の整理（#11）
-- [ ] **#11**: `windows-sys` に `Win32_UI_WindowsAndMessaging` を追加し、`wake_up_mouse_cursor` の手書き FFI を置き換え＆ `tauri::async_runtime::spawn` に統一（`Cargo.toml`, `src/commands.rs`）
-- [ ] ステップ4のビルド・テスト確認（`cargo test`）とコミット＆プッシュ
+- [x] **#11**: `windows-sys` に `Win32_UI_WindowsAndMessaging` を追加し、`wake_up_mouse_cursor` の手書き FFI を置き換え＆ `tauri::async_runtime::spawn` に統一（`Cargo.toml`, `src/commands.rs`）
+- [x] ステップ4のビルド・テスト確認（`cargo test`）とコミット＆プッシュ
 
 ## ステップ5: NSIS インストーラーの関連付け処理改善（#14）
 - [ ] **#14**: 上書きインストール時の旧 `NoCapEdit.Document`（`OpenWithProgids`）削除処理追加、および全47拡張子リストのマクロ共通化（`nsis/installer.nsi`）

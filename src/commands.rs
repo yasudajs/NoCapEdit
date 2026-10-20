@@ -290,15 +290,9 @@ pub fn is_debug() -> bool {
 
 #[cfg(target_os = "windows")]
 fn wake_up_mouse_cursor() {
-    #[repr(C)]
-    struct POINT {
-        x: i32,
-        y: i32,
-    }
-    extern "system" {
-        fn GetCursorPos(lpPoint: *mut POINT) -> i32;
-        fn SetCursorPos(x: i32, y: i32) -> i32;
-    }
+    use windows_sys::Win32::Foundation::POINT;
+    use windows_sys::Win32::UI::WindowsAndMessaging::{GetCursorPos, SetCursorPos};
+
     unsafe {
         let mut pt = POINT { x: 0, y: 0 };
         if GetCursorPos(&mut pt) != 0 {
@@ -346,9 +340,10 @@ pub async fn show_save_dialog(
     }
 
     // Windows の「文字の入力中にポインターを非表示にする」状態を強制解除するため、
-    // ダイアログ起動直前およびダイアログ表示後にカーソル位置を再セットして可視化を促す
+    // ダイアログ起動直前および OS のコモンダイアログウィンドウが生成・前面化されるタイミング（100ms後）に
+    // カーソル位置を再セットして確実に可視化を促す
     wake_up_mouse_cursor();
-    tokio::spawn(async {
+    tauri::async_runtime::spawn(async {
         tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
         wake_up_mouse_cursor();
     });
