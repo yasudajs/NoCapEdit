@@ -11,10 +11,10 @@
 - [x] `docs/spec.md` を最新版（v2.13.2 仕様）に更新
 
 ## ステップ1: インデントガイドの位置ズレ修正・全角スペース対応・CSS余白整理（#1, #7, #13, #6）
-- [ ] **#1 & #7**: `--cm-line-pad-left` CSS変数を導入し、行番号表示時のインデントガイド 16px ズレを修正＆余白の重複定義を整理（`style.css`, `codemirror.js`）
-- [ ] **#13**: `getLineIndentInfo` で全角スペース（`\u3000`）を2カラム幅として計算し、全角および半角・全角・タブ混在インデントのガイド表示に対応（`codemirror.js`）
-- [ ] **#6**: `initCodeMirror` 内の未使用変数 `hasLineNumbers` を削除（`codemirror.js`）
-- [ ] ステップ1の動作確認とコミット＆プッシュ
+- [x] **#1 & #7**: `--cm-line-pad-left` CSS変数を導入し、行番号表示時のインデントガイド 16px ズレを修正＆余白の重複定義を整理（`style.css`, `codemirror.js`）
+- [x] **#13**: `getLineIndentInfo` で全角スペース（`\u3000`）を2カラム幅として計算し、全角および半角・全角・タブ混在インデントのガイド表示に対応（`codemirror.js`）
+- [x] **#6**: `initCodeMirror` 内の未使用変数 `hasLineNumbers` を削除（`codemirror.js`）
+- [x] ステップ1の動作確認とコミット＆プッシュ
 
 ## ステップ2: ファイル種類に応じた自動インデントの改善（#4）
 - [ ] **#4**: `customInsertNewlineAndIndent` にて、テキストファイル等は前行空白を維持し、プログラミング言語では構文インデント（`getIndentation`）を適用するよう改善（`codemirror.js`）

@@ -204,7 +204,7 @@ class IndentGuideWidget extends WidgetType {
         for (const col of this.levels) {
             const guide = document.createElement('span');
             guide.className = 'cm-indent-guide';
-            guide.style.left = `calc(16px + ${col}ch)`;
+            guide.style.left = `calc(var(--cm-line-pad-left, 16px) + ${col}ch)`;
             wrap.appendChild(guide);
         }
         return wrap;
@@ -232,6 +232,9 @@ function getLineIndentInfo(lineText, tabSize, indentUnitWidth) {
             index += 1;
         } else if (ch === '\t') {
             col += tabSize - (col % tabSize);
+            index += 1;
+        } else if (ch === '\u3000') {
+            col += 2;
             index += 1;
         } else {
             break;
@@ -441,11 +444,8 @@ export const baseTheme = EditorView.theme({
         caretColor: "var(--accent)",
     },
     ".cm-line": {
-        padding: "0 16px",
+        padding: "0 16px 0 var(--cm-line-pad-left, 16px)",
         position: "relative",
-    },
-    "&.has-line-numbers .cm-line, &:has(.cm-gutters) .cm-line": {
-        padding: "0 16px 0 0",
     },
     ".cm-indent-guides": {
         position: "absolute",
@@ -731,7 +731,6 @@ export function initCodeMirror(parentEl, options = {}) {
         });
     }
 
-    const hasLineNumbers = !!(options.lineNumbers !== undefined ? options.lineNumbers : (options.state && options.state.facet(EditorView.lineWrapping)));
     const initialLineNumbers = options.lineNumbers !== undefined ? options.lineNumbers : false;
     editorView.dom.classList.toggle('has-line-numbers', initialLineNumbers);
     if (parentEl) {

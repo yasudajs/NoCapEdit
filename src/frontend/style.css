@@ -613,6 +613,7 @@ body.ruler-marker-dragging * {
 
 /* テキストエディタコンテナ */
 .editor {
+    --cm-line-pad-left: 16px;
     position: relative;
     flex: 1;
     width: 100%;
@@ -621,6 +622,12 @@ body.ruler-marker-dragging * {
     border: none;
     outline: none;
     overflow: hidden;
+}
+
+/* 行番号表示時は境界線との余白を無し（0px）にし、ルーラー目盛り0およびインデントガイドと一直線に揃える */
+.editor.has-line-numbers,
+.editor:has(.cm-gutters) {
+    --cm-line-pad-left: 0px;
 }
 
 /* タブなし状態（グレーアウト・入力不可） */
@@ -681,13 +688,7 @@ body.ruler-marker-dragging * {
 }
 
 .editor .cm-line {
-    padding: 0 16px;
-}
-
-/* 行番号表示時は境界線との余白を無し（0px）にし、ルーラー目盛り0と一直線に揃える */
-.editor.has-line-numbers .cm-line,
-.editor:has(.cm-gutters) .cm-line {
-    padding: 0 16px 0 0;
+    padding: 0 16px 0 var(--cm-line-pad-left, 16px);
 }
 
 .editor .cm-cursor {
