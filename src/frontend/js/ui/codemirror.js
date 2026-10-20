@@ -7,7 +7,7 @@ import {
     copyLineUp, copyLineDown,
     deleteLine
 } from '@codemirror/commands';
-import { indentUnit, syntaxHighlighting, defaultHighlightStyle, LanguageDescription } from '@codemirror/language';
+import { indentUnit, syntaxHighlighting, defaultHighlightStyle, LanguageDescription, IndentContext, getIndentation, indentString } from '@codemirror/language';
 import { languages } from '@codemirror/language-data';
 import { search, highlightSelectionMatches } from '@codemirror/search';
 
@@ -75,8 +75,30 @@ function isBetweenMatchingBrackets(state, pos) {
 }
 
 /**
+ * 行頭空白文字列の表示カラム幅を算出（半角1、タブtabSize、全角スペース2）
+ * @param {string} indentStr
+ * @param {number} tabSize
+ * @returns {number}
+ */
+function getIndentColumnWidth(indentStr, tabSize) {
+    let col = 0;
+    for (let i = 0; i < indentStr.length; i++) {
+        const ch = indentStr[i];
+        if (ch === ' ') {
+            col += 1;
+        } else if (ch === '\t') {
+            col += tabSize - (col % tabSize);
+        } else if (ch === '\u3000') {
+            col += 2;
+        }
+    }
+    return col;
+}
+
+/**
  * VS Code準拠の自動インデント改行コマンド
- * 当該行の行頭のスペース（全角・半角）およびタブの状態をそのまま次の行に反映する
+ * テキストファイル等では当該行の行頭のスペース（全角・半角）およびタブの状態をそのまま次の行に反映し、
+ * プログラミング言語では言語の構文インデントルール（ブロック開始等でのインデント増加）も適用する
  * @param {EditorView} view
  * @returns {boolean}
  */
@@ -124,11 +146,23 @@ export function customInsertNewlineAndIndent(view) {
         }
 
         // インデントの直後、テキストの途中・末尾、または空白行の末尾で改行した場合:
-        // 改行後に前行の行頭インデント文字列をそのまま次行へ挿入
-        const insert = ["", baseIndent];
+        // 基本は前行の行頭インデント文字列を維持し、プログラミング言語等で構文上インデントが深くなる場合は追加インデントを付与
+        let nextIndent = baseIndent;
+        const isBlankLine = indentEndPos === line.to;
+        if (!isBlankLine) {
+            const tabSize = state.tabSize || DEFAULT_TAB_SIZE;
+            const baseCol = getIndentColumnWidth(baseIndent, tabSize);
+            const cx = new IndentContext(state, { simulateBreak: from });
+            const langIndent = getIndentation(cx, from);
+            if (langIndent !== null && langIndent > baseCol) {
+                nextIndent = baseIndent + indentString(state, langIndent - baseCol);
+            }
+        }
+
+        const insert = ["", nextIndent];
         return {
             changes: { from, to, insert: Text.of(insert) },
-            range: EditorSelection.cursor(from + 1 + baseIndent.length)
+            range: EditorSelection.cursor(from + 1 + nextIndent.length)
         };
     });
 
