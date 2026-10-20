@@ -1,0 +1,26 @@
+# タスクリスト: 自動インデントのVS Code準拠化および全角スペース不具合修正
+
+- [x] 1. 作業用ブランチの作成 (`fix/auto-indent-vs-code`)
+- [x] 2. ドキュメントの移動 (`docs/wip/auto-indent-fix/` -> `docs/auto-indent-fix/`)
+- [ ] 3. バージョン番号の更新 (`v2.13.0` -> `v2.13.1`)
+  - [ ] `Cargo.toml`
+  - [ ] `package.json`
+  - [ ] `tauri.conf.json`
+  - [ ] `nsis/installer.nsi`
+  - [ ] `docs/DEVELOPMENT.md`
+- [ ] 4. 仕様書 (`docs/spec.md`) の更新
+- [ ] 5. 自動インデント処理の実装 (`src/frontend/js/ui/codemirror.js`)
+  - [ ] `customInsertNewlineAndIndent` の実装
+  - [ ] `customEditorKeymap` への Enter キーバインド登録
+- [ ] 6. 動作確認・検証
+  - [ ] 全角スペース改行テスト
+  - [ ] タブ改行テスト
+  - [ ] 半角スペース改行テスト
+  - [ ] 混在インデント改行テスト
+  - [ ] カーソル位置別挙動テスト (行頭・行末・途中・インデント途中・空白行)
+  - [ ] IME確定Enter・Undo/Redo確認
+  - [ ] フロントエンドビルドおよび型/構文チェック
+- [ ] 7. ドキュメント作成・更新
+  - [ ] `docs/auto-indent-fix/walkthrough.md` の作成
+  - [ ] `docs/history.md` へのバージョン変更履歴追記
+- [ ] 8. コミット・プッシュ
