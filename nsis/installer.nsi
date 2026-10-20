@@ -721,73 +721,93 @@ Section Install
     WriteRegStr SHCTX "Software\Classes\Applications\${MAINBINARYNAME}.exe\SupportedTypes" "${EXT}" ""
     WriteRegStr SHCTX "Software\${MANUFACTURER}\${PRODUCTNAME}\Capabilities\FileAssociations" "${EXT}" "${PROGID}"
     WriteRegStr SHCTX "Software\Classes\${EXT}\OpenWithProgids" "${PROGID}" ""
+    DeleteRegValue SHCTX "Software\Classes\${EXT}\OpenWithProgids" "NoCapEdit.Document"
   !macroend
 
-  ; 専用形式の登録
+  !macro UnregisterFileType EXT PROGID
+    DeleteRegKey SHCTX "Software\Classes\${PROGID}"
+    DeleteRegValue SHCTX "Software\Classes\${EXT}\OpenWithProgids" "${PROGID}"
+    DeleteRegValue SHCTX "Software\Classes\${EXT}\OpenWithProgids" "NoCapEdit.Document"
+  !macroend
+
+  !macro ProcessFileType MODE EXT PROGID NAME ICONKEY
+    !if "${MODE}" == "register"
+      !insertmacro RegisterFileType "${EXT}" "${PROGID}" "${NAME}" "${ICONKEY}"
+    !else
+      !insertmacro UnregisterFileType "${EXT}" "${PROGID}"
+    !endif
+  !macroend
+
+  ; 全47拡張子の一括処理マクロ（登録・解除共通）
+  !macro ProcessAllFileTypes MODE
+    ; 専用形式
+    !insertmacro ProcessFileType "${MODE}" ".nctx" "NoCapEdit.nctx" "NoCapEdit Text File" "nctx"
+    !insertmacro ProcessFileType "${MODE}" ".ncmd" "NoCapEdit.ncmd" "NoCapEdit Markdown File" "ncmd"
+
+    ; 汎用テキスト・ログ
+    !insertmacro ProcessFileType "${MODE}" ".txt" "NoCapEdit.txt" "Text Document" "txt"
+    !insertmacro ProcessFileType "${MODE}" ".text" "NoCapEdit.text" "Text Document" "txt"
+    !insertmacro ProcessFileType "${MODE}" ".log" "NoCapEdit.log" "Log File" "log"
+
+    ; ドキュメント
+    !insertmacro ProcessFileType "${MODE}" ".md" "NoCapEdit.md" "Markdown Document" "md"
+    !insertmacro ProcessFileType "${MODE}" ".markdown" "NoCapEdit.markdown" "Markdown Document" "md"
+
+    ; 表計算・データ
+    !insertmacro ProcessFileType "${MODE}" ".csv" "NoCapEdit.csv" "CSV Spreadsheet" "csv"
+    !insertmacro ProcessFileType "${MODE}" ".tsv" "NoCapEdit.tsv" "TSV Spreadsheet" "tsv"
+
+    ; データ・設定・マークアップ
+    !insertmacro ProcessFileType "${MODE}" ".json" "NoCapEdit.json" "JSON Document" "json"
+    !insertmacro ProcessFileType "${MODE}" ".jsonl" "NoCapEdit.jsonl" "JSON Lines Document" "json"
+    !insertmacro ProcessFileType "${MODE}" ".xml" "NoCapEdit.xml" "XML Document" "xml"
+    !insertmacro ProcessFileType "${MODE}" ".yaml" "NoCapEdit.yaml" "YAML Document" "yaml"
+    !insertmacro ProcessFileType "${MODE}" ".yml" "NoCapEdit.yml" "YAML Document" "yaml"
+    !insertmacro ProcessFileType "${MODE}" ".ini" "NoCapEdit.ini" "Configuration Settings" "ini"
+    !insertmacro ProcessFileType "${MODE}" ".conf" "NoCapEdit.conf" "Configuration File" "conf"
+    !insertmacro ProcessFileType "${MODE}" ".cfg" "NoCapEdit.cfg" "Configuration File" "cfg"
+    !insertmacro ProcessFileType "${MODE}" ".env" "NoCapEdit.env" "Environment File" "env"
+
+    ; Web標準
+    !insertmacro ProcessFileType "${MODE}" ".html" "NoCapEdit.html" "HTML Document" "html"
+    !insertmacro ProcessFileType "${MODE}" ".htm" "NoCapEdit.htm" "HTML Document" "html"
+    !insertmacro ProcessFileType "${MODE}" ".css" "NoCapEdit.css" "CSS Stylesheet" "css"
+    !insertmacro ProcessFileType "${MODE}" ".scss" "NoCapEdit.scss" "Sass Stylesheet" "scss"
+    !insertmacro ProcessFileType "${MODE}" ".js" "NoCapEdit.js" "JavaScript File" "js"
+    !insertmacro ProcessFileType "${MODE}" ".mjs" "NoCapEdit.mjs" "JavaScript Module" "js"
+    !insertmacro ProcessFileType "${MODE}" ".ts" "NoCapEdit.ts" "TypeScript File" "ts"
+    !insertmacro ProcessFileType "${MODE}" ".tsx" "NoCapEdit.tsx" "TypeScript JSX File" "tsx"
+    !insertmacro ProcessFileType "${MODE}" ".jsx" "NoCapEdit.jsx" "JSX File" "jsx"
+
+    ; プログラミング言語
+    !insertmacro ProcessFileType "${MODE}" ".py" "NoCapEdit.py" "Python File" "py"
+    !insertmacro ProcessFileType "${MODE}" ".pyw" "NoCapEdit.pyw" "Python File" "py"
+    !insertmacro ProcessFileType "${MODE}" ".java" "NoCapEdit.java" "Java Source File" "java"
+    !insertmacro ProcessFileType "${MODE}" ".c" "NoCapEdit.c" "C Source File" "c"
+    !insertmacro ProcessFileType "${MODE}" ".h" "NoCapEdit.h" "C Header File" "h"
+    !insertmacro ProcessFileType "${MODE}" ".cpp" "NoCapEdit.cpp" "C++ Source File" "cpp"
+    !insertmacro ProcessFileType "${MODE}" ".hpp" "NoCapEdit.hpp" "C++ Header File" "hpp"
+    !insertmacro ProcessFileType "${MODE}" ".cs" "NoCapEdit.cs" "C# Source File" "cs"
+    !insertmacro ProcessFileType "${MODE}" ".rs" "NoCapEdit.rs" "Rust Source File" "rs"
+    !insertmacro ProcessFileType "${MODE}" ".go" "NoCapEdit.go" "Go Source File" "go"
+    !insertmacro ProcessFileType "${MODE}" ".php" "NoCapEdit.php" "PHP Source File" "php"
+    !insertmacro ProcessFileType "${MODE}" ".rb" "NoCapEdit.rb" "Ruby Source File" "rb"
+    !insertmacro ProcessFileType "${MODE}" ".lua" "NoCapEdit.lua" "Lua Source File" "lua"
+    !insertmacro ProcessFileType "${MODE}" ".sql" "NoCapEdit.sql" "SQL File" "sql"
+    !insertmacro ProcessFileType "${MODE}" ".sh" "NoCapEdit.sh" "Shell Script" "sh"
+    !insertmacro ProcessFileType "${MODE}" ".bash" "NoCapEdit.bash" "Bash Script" "sh"
+    !insertmacro ProcessFileType "${MODE}" ".ps1" "NoCapEdit.ps1" "PowerShell Script" "ps1"
+
+    ; バックアップ・一時
+    !insertmacro ProcessFileType "${MODE}" ".bak" "NoCapEdit.bak" "Backup File" "bak"
+    !insertmacro ProcessFileType "${MODE}" ".tmp" "NoCapEdit.tmp" "Temporary File" "tmp"
+    !insertmacro ProcessFileType "${MODE}" ".temp" "NoCapEdit.temp" "Temporary File" "tmp"
+  !macroend
+
+  ; 専用形式の既定関連付けおよび全拡張子の登録
   WriteRegStr SHCTX "Software\Classes\.nctx" "" "NoCapEdit.nctx"
-  !insertmacro RegisterFileType ".nctx" "NoCapEdit.nctx" "NoCapEdit Text File" "nctx"
-
   WriteRegStr SHCTX "Software\Classes\.ncmd" "" "NoCapEdit.ncmd"
-  !insertmacro RegisterFileType ".ncmd" "NoCapEdit.ncmd" "NoCapEdit Markdown File" "ncmd"
-
-  ; 汎用テキスト・ログ
-  !insertmacro RegisterFileType ".txt" "NoCapEdit.txt" "Text Document" "txt"
-  !insertmacro RegisterFileType ".text" "NoCapEdit.text" "Text Document" "txt"
-  !insertmacro RegisterFileType ".log" "NoCapEdit.log" "Log File" "log"
-
-  ; ドキュメント
-  !insertmacro RegisterFileType ".md" "NoCapEdit.md" "Markdown Document" "md"
-  !insertmacro RegisterFileType ".markdown" "NoCapEdit.markdown" "Markdown Document" "md"
-
-  ; 表計算・データ
-  !insertmacro RegisterFileType ".csv" "NoCapEdit.csv" "CSV Spreadsheet" "csv"
-  !insertmacro RegisterFileType ".tsv" "NoCapEdit.tsv" "TSV Spreadsheet" "tsv"
-
-  ; データ・設定・マークアップ
-  !insertmacro RegisterFileType ".json" "NoCapEdit.json" "JSON Document" "json"
-  !insertmacro RegisterFileType ".jsonl" "NoCapEdit.jsonl" "JSON Lines Document" "json"
-  !insertmacro RegisterFileType ".xml" "NoCapEdit.xml" "XML Document" "xml"
-  !insertmacro RegisterFileType ".yaml" "NoCapEdit.yaml" "YAML Document" "yaml"
-  !insertmacro RegisterFileType ".yml" "NoCapEdit.yml" "YAML Document" "yaml"
-  !insertmacro RegisterFileType ".ini" "NoCapEdit.ini" "Configuration Settings" "ini"
-  !insertmacro RegisterFileType ".conf" "NoCapEdit.conf" "Configuration File" "conf"
-  !insertmacro RegisterFileType ".cfg" "NoCapEdit.cfg" "Configuration File" "cfg"
-  !insertmacro RegisterFileType ".env" "NoCapEdit.env" "Environment File" "env"
-
-  ; Web標準
-  !insertmacro RegisterFileType ".html" "NoCapEdit.html" "HTML Document" "html"
-  !insertmacro RegisterFileType ".htm" "NoCapEdit.htm" "HTML Document" "html"
-  !insertmacro RegisterFileType ".css" "NoCapEdit.css" "CSS Stylesheet" "css"
-  !insertmacro RegisterFileType ".scss" "NoCapEdit.scss" "Sass Stylesheet" "scss"
-  !insertmacro RegisterFileType ".js" "NoCapEdit.js" "JavaScript File" "js"
-  !insertmacro RegisterFileType ".mjs" "NoCapEdit.mjs" "JavaScript Module" "js"
-  !insertmacro RegisterFileType ".ts" "NoCapEdit.ts" "TypeScript File" "ts"
-  !insertmacro RegisterFileType ".tsx" "NoCapEdit.tsx" "TypeScript JSX File" "tsx"
-  !insertmacro RegisterFileType ".jsx" "NoCapEdit.jsx" "JSX File" "jsx"
-
-  ; プログラミング言語
-  !insertmacro RegisterFileType ".py" "NoCapEdit.py" "Python File" "py"
-  !insertmacro RegisterFileType ".pyw" "NoCapEdit.pyw" "Python File" "py"
-  !insertmacro RegisterFileType ".java" "NoCapEdit.java" "Java Source File" "java"
-  !insertmacro RegisterFileType ".c" "NoCapEdit.c" "C Source File" "c"
-  !insertmacro RegisterFileType ".h" "NoCapEdit.h" "C Header File" "h"
-  !insertmacro RegisterFileType ".cpp" "NoCapEdit.cpp" "C++ Source File" "cpp"
-  !insertmacro RegisterFileType ".hpp" "NoCapEdit.hpp" "C++ Header File" "hpp"
-  !insertmacro RegisterFileType ".cs" "NoCapEdit.cs" "C# Source File" "cs"
-  !insertmacro RegisterFileType ".rs" "NoCapEdit.rs" "Rust Source File" "rs"
-  !insertmacro RegisterFileType ".go" "NoCapEdit.go" "Go Source File" "go"
-  !insertmacro RegisterFileType ".php" "NoCapEdit.php" "PHP Source File" "php"
-  !insertmacro RegisterFileType ".rb" "NoCapEdit.rb" "Ruby Source File" "rb"
-  !insertmacro RegisterFileType ".lua" "NoCapEdit.lua" "Lua Source File" "lua"
-  !insertmacro RegisterFileType ".sql" "NoCapEdit.sql" "SQL File" "sql"
-  !insertmacro RegisterFileType ".sh" "NoCapEdit.sh" "Shell Script" "sh"
-  !insertmacro RegisterFileType ".bash" "NoCapEdit.bash" "Bash Script" "sh"
-  !insertmacro RegisterFileType ".ps1" "NoCapEdit.ps1" "PowerShell Script" "ps1"
-
-  ; バックアップ・一時
-  !insertmacro RegisterFileType ".bak" "NoCapEdit.bak" "Backup File" "bak"
-  !insertmacro RegisterFileType ".tmp" "NoCapEdit.tmp" "Temporary File" "tmp"
-  !insertmacro RegisterFileType ".temp" "NoCapEdit.temp" "Temporary File" "tmp"
+  !insertmacro ProcessAllFileTypes "register"
 
   ; 右クリックメニュー（「NoCapEdit で開く」）の登録
   ${If} $ContextMenuCheckboxState != 0
@@ -926,59 +946,7 @@ Section Uninstall
   DeleteRegValue SHCTX "Software\RegisteredApplications" "${PRODUCTNAME}"
   DeleteRegKey SHCTX "Software\Classes\*\shell\NoCapEdit"
 
-  !macro UnregisterFileType EXT PROGID
-    DeleteRegKey SHCTX "Software\Classes\${PROGID}"
-    DeleteRegValue SHCTX "Software\Classes\${EXT}\OpenWithProgids" "${PROGID}"
-    DeleteRegValue SHCTX "Software\Classes\${EXT}\OpenWithProgids" "NoCapEdit.Document"
-  !macroend
-
-  !insertmacro UnregisterFileType ".nctx" "NoCapEdit.nctx"
-  !insertmacro UnregisterFileType ".ncmd" "NoCapEdit.ncmd"
-  !insertmacro UnregisterFileType ".txt" "NoCapEdit.txt"
-  !insertmacro UnregisterFileType ".text" "NoCapEdit.text"
-  !insertmacro UnregisterFileType ".log" "NoCapEdit.log"
-  !insertmacro UnregisterFileType ".md" "NoCapEdit.md"
-  !insertmacro UnregisterFileType ".markdown" "NoCapEdit.markdown"
-  !insertmacro UnregisterFileType ".csv" "NoCapEdit.csv"
-  !insertmacro UnregisterFileType ".tsv" "NoCapEdit.tsv"
-  !insertmacro UnregisterFileType ".json" "NoCapEdit.json"
-  !insertmacro UnregisterFileType ".jsonl" "NoCapEdit.jsonl"
-  !insertmacro UnregisterFileType ".xml" "NoCapEdit.xml"
-  !insertmacro UnregisterFileType ".yaml" "NoCapEdit.yaml"
-  !insertmacro UnregisterFileType ".yml" "NoCapEdit.yml"
-  !insertmacro UnregisterFileType ".ini" "NoCapEdit.ini"
-  !insertmacro UnregisterFileType ".conf" "NoCapEdit.conf"
-  !insertmacro UnregisterFileType ".cfg" "NoCapEdit.cfg"
-  !insertmacro UnregisterFileType ".env" "NoCapEdit.env"
-  !insertmacro UnregisterFileType ".html" "NoCapEdit.html"
-  !insertmacro UnregisterFileType ".htm" "NoCapEdit.htm"
-  !insertmacro UnregisterFileType ".css" "NoCapEdit.css"
-  !insertmacro UnregisterFileType ".scss" "NoCapEdit.scss"
-  !insertmacro UnregisterFileType ".js" "NoCapEdit.js"
-  !insertmacro UnregisterFileType ".mjs" "NoCapEdit.mjs"
-  !insertmacro UnregisterFileType ".ts" "NoCapEdit.ts"
-  !insertmacro UnregisterFileType ".tsx" "NoCapEdit.tsx"
-  !insertmacro UnregisterFileType ".jsx" "NoCapEdit.jsx"
-  !insertmacro UnregisterFileType ".py" "NoCapEdit.py"
-  !insertmacro UnregisterFileType ".pyw" "NoCapEdit.pyw"
-  !insertmacro UnregisterFileType ".java" "NoCapEdit.java"
-  !insertmacro UnregisterFileType ".c" "NoCapEdit.c"
-  !insertmacro UnregisterFileType ".h" "NoCapEdit.h"
-  !insertmacro UnregisterFileType ".cpp" "NoCapEdit.cpp"
-  !insertmacro UnregisterFileType ".hpp" "NoCapEdit.hpp"
-  !insertmacro UnregisterFileType ".cs" "NoCapEdit.cs"
-  !insertmacro UnregisterFileType ".rs" "NoCapEdit.rs"
-  !insertmacro UnregisterFileType ".go" "NoCapEdit.go"
-  !insertmacro UnregisterFileType ".php" "NoCapEdit.php"
-  !insertmacro UnregisterFileType ".rb" "NoCapEdit.rb"
-  !insertmacro UnregisterFileType ".lua" "NoCapEdit.lua"
-  !insertmacro UnregisterFileType ".sql" "NoCapEdit.sql"
-  !insertmacro UnregisterFileType ".sh" "NoCapEdit.sh"
-  !insertmacro UnregisterFileType ".bash" "NoCapEdit.bash"
-  !insertmacro UnregisterFileType ".ps1" "NoCapEdit.ps1"
-  !insertmacro UnregisterFileType ".bak" "NoCapEdit.bak"
-  !insertmacro UnregisterFileType ".tmp" "NoCapEdit.tmp"
-  !insertmacro UnregisterFileType ".temp" "NoCapEdit.temp"
+  !insertmacro ProcessAllFileTypes "unregister"
 
   System::Call 'Shell32::SHChangeNotify(i 0x08000000, i 0, i 0, i 0)'
 
