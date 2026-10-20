@@ -9,18 +9,18 @@
   - [x] `nsis/installer.nsi`
   - [x] `docs/DEVELOPMENT.md`
 - [x] 4. 仕様書 (`docs/spec.md`) の更新
-- [ ] 5. 自動インデント処理の実装 (`src/frontend/js/ui/codemirror.js`)
-  - [ ] `customInsertNewlineAndIndent` の実装
-  - [ ] `customEditorKeymap` への Enter キーバインド登録
-- [ ] 6. 動作確認・検証
-  - [ ] 全角スペース改行テスト
-  - [ ] タブ改行テスト
-  - [ ] 半角スペース改行テスト
-  - [ ] 混在インデント改行テスト
-  - [ ] カーソル位置別挙動テスト (行頭・行末・途中・インデント途中・空白行)
-  - [ ] IME確定Enter・Undo/Redo確認
-  - [ ] フロントエンドビルドおよび型/構文チェック
-- [ ] 7. ドキュメント作成・更新
-  - [ ] `docs/auto-indent-fix/walkthrough.md` の作成
-  - [ ] `docs/history.md` へのバージョン変更履歴追記
-- [ ] 8. コミット・プッシュ
+- [x] 5. 自動インデント処理の実装 (`src/frontend/js/ui/codemirror.js`)
+  - [x] `customInsertNewlineAndIndent` の実装
+  - [x] `customEditorKeymap` への Enter キーバインド登録
+- [x] 6. 動作確認・検証
+  - [x] 全角スペース改行テスト
+  - [x] タブ改行テスト
+  - [x] 半角スペース改行テスト
+  - [x] 混在インデント改行テスト
+  - [x] カーソル位置別挙動テスト (行頭・行末・途中・インデント途中・空白行)
+  - [x] IME確定Enter・Undo/Redo確認
+  - [x] フロントエンドビルドおよび型/構文チェック
+- [x] 7. ドキュメント作成・更新
+  - [x] `docs/auto-indent-fix/walkthrough.md` の作成
+  - [x] `docs/history.md` へのバージョン変更履歴追記
+- [x] 8. コミット・プッシュ

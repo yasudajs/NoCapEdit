@@ -1,5 +1,5 @@
 import { EditorView, keymap, placeholder as cmPlaceholder, drawSelection, dropCursor, lineNumbers, ViewPlugin, Decoration, WidgetType } from '@codemirror/view';
-import { EditorState, Compartment, RangeSetBuilder } from '@codemirror/state';
+import { EditorState, Compartment, RangeSetBuilder, Text, EditorSelection } from '@codemirror/state';
 import {
     defaultKeymap, history, historyKeymap,
     indentWithTab,
@@ -57,6 +57,86 @@ export async function getLanguageSupport(fileName) {
 }
 
 /**
+ * 括弧ペアの間にあるかを判定 (例: () [] {})
+ * @param {EditorState} state
+ * @param {number} pos
+ * @returns {{ from: number, to: number } | null}
+ */
+function isBetweenMatchingBrackets(state, pos) {
+    if (pos <= 0 || pos >= state.doc.length) return null;
+    const prev = state.sliceDoc(pos - 1, pos);
+    const next = state.sliceDoc(pos, pos + 1);
+    if ((prev === '(' && next === ')') ||
+        (prev === '[' && next === ']') ||
+        (prev === '{' && next === '}')) {
+        return { from: pos, to: pos };
+    }
+    return null;
+}
+
+/**
+ * VS Code準拠の自動インデント改行コマンド
+ * 当該行の行頭のスペース（全角・半角）およびタブの状態をそのまま次の行に反映する
+ * @param {EditorView} view
+ * @returns {boolean}
+ */
+export function customInsertNewlineAndIndent(view) {
+    if (view.state.readOnly) return false;
+    if (view.composing) return false;
+
+    const { state, dispatch } = view;
+    const changes = state.changeByRange(range => {
+        const { from, to } = range;
+        const line = state.doc.lineAt(from);
+        const lineText = line.text;
+
+        // 行頭の空白（半角スペース、タブ、全角スペース）をそのまま抽出
+        const match = /^[ \t\u3000]*/.exec(lineText);
+        const baseIndent = match ? match[0] : '';
+        const indentEndPos = line.from + baseIndent.length;
+
+        // 括弧の間での改行 (bracket explosion)
+        const explode = from === to && isBetweenMatchingBrackets(state, from);
+        if (explode) {
+            const unit = state.facet(indentUnit) || '    ';
+            const indentStr = baseIndent + unit;
+            const insert = ["", indentStr, baseIndent];
+            return {
+                changes: { from: explode.from, to: explode.to, insert: Text.of(insert) },
+                range: EditorSelection.cursor(explode.from + 1 + indentStr.length)
+            };
+        }
+
+        // 行頭（インデントの手前）で改行した場合: 上に空行を挿入（VS Code準拠）
+        if (from === line.from && to === line.from) {
+            return {
+                changes: { from, to, insert: Text.of(["", ""]) },
+                range: EditorSelection.cursor(from + 1)
+            };
+        }
+
+        // 行頭インデント文字の途中にカーソルがある場合: その位置でそのまま分割して改行（VS Code準拠）
+        if (line.from < from && from < indentEndPos) {
+            return {
+                changes: { from, to, insert: Text.of(["", ""]) },
+                range: EditorSelection.cursor(from + 1)
+            };
+        }
+
+        // インデントの直後、テキストの途中・末尾、または空白行の末尾で改行した場合:
+        // 改行後に前行の行頭インデント文字列をそのまま次行へ挿入
+        const insert = ["", baseIndent];
+        return {
+            changes: { from, to, insert: Text.of(insert) },
+            range: EditorSelection.cursor(from + 1 + baseIndent.length)
+        };
+    });
+
+    dispatch(state.update(changes, { scrollIntoView: true, userEvent: "input" }));
+    return true;
+}
+
+/**
  * タイムスタンプ挿入コマンド (F5)
  * @param {EditorView} view
  * @returns {boolean}
@@ -86,6 +166,7 @@ export function insertTimestampCommand(view) {
  */
 export const customEditorKeymap = [
     indentWithTab,
+    { key: "Enter", run: customInsertNewlineAndIndent },
     { key: "Alt-ArrowUp", run: moveLineUp },
     { key: "Alt-ArrowDown", run: moveLineDown },
     { key: "Shift-Alt-ArrowUp", run: copyLineUp },
