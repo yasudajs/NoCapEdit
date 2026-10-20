@@ -2,13 +2,13 @@
 
 - [x] 1. 作業用ブランチの作成 (`fix/auto-indent-vs-code`)
 - [x] 2. ドキュメントの移動 (`docs/wip/auto-indent-fix/` -> `docs/auto-indent-fix/`)
-- [ ] 3. バージョン番号の更新 (`v2.13.0` -> `v2.13.1`)
-  - [ ] `Cargo.toml`
-  - [ ] `package.json`
-  - [ ] `tauri.conf.json`
-  - [ ] `nsis/installer.nsi`
-  - [ ] `docs/DEVELOPMENT.md`
-- [ ] 4. 仕様書 (`docs/spec.md`) の更新
+- [x] 3. バージョン番号の更新 (`v2.13.0` -> `v2.13.1`)
+  - [x] `Cargo.toml`
+  - [x] `package.json`
+  - [x] `tauri.conf.json`
+  - [x] `nsis/installer.nsi`
+  - [x] `docs/DEVELOPMENT.md`
+- [x] 4. 仕様書 (`docs/spec.md`) の更新
 - [ ] 5. 自動インデント処理の実装 (`src/frontend/js/ui/codemirror.js`)
   - [ ] `customInsertNewlineAndIndent` の実装
   - [ ] `customEditorKeymap` への Enter キーバインド登録
