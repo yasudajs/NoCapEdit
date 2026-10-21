@@ -28,11 +28,11 @@
 
 用途やユーザー環境に合わせて以下から選択してください。
 
-- **[ポータブル版（ZIP形式 / インストール不要）](https://github.com/yasudajs/NoCapEdit/releases/download/v2.13.2/NoCapEdit_v2.13.2_x64_portable.zip)**
+- **[ポータブル版（ZIP形式 / インストール不要）](https://github.com/yasudajs/NoCapEdit/releases/download/v2.14.0/NoCapEdit_v2.14.0_x64_portable.zip)**
   - ダウンロードしたフォルダを解凍するだけで、すぐに使い始められます。USBメモリなどに入れて持ち運ぶことも可能です。
-- **[標準インストーラー（EXE形式 / 推奨）](https://github.com/yasudajs/NoCapEdit/releases/download/v2.13.2/NoCapEdit_2.13.2_x64-setup.exe)**
+- **[標準インストーラー（EXE形式 / 推奨）](https://github.com/yasudajs/NoCapEdit/releases/download/v2.14.0/NoCapEdit_2.14.0_x64-setup.exe)**
   - パソコンの個人用エリアにインストールするため、管理者権限（パスワード入力等）なしで簡単に導入できます。迷ったらこちらがおすすめです。
-- **[システム全体用インストーラー（MSI形式）](https://github.com/yasudajs/NoCapEdit/releases/download/v2.13.2/NoCapEdit_2.13.2_x64_ja-JP.msi)**
+- **[システム全体用インストーラー（MSI形式）](https://github.com/yasudajs/NoCapEdit/releases/download/v2.14.0/NoCapEdit_2.14.0_x64_ja-JP.msi)**
   - 学校や職場などで、1台のパソコンを複数のユーザーで使う場合に適しています。（※インストールには管理者権限が必要です）
 
 > [!IMPORTANT]
@@ -118,8 +118,9 @@
 13. **検索・置換 (`Ctrl + F` / `Ctrl + H`)**
     - コンパクトな検索・置換バーを展開し、すばやくテキストの検索や一括置換が行えます。
 
-14. **タブ幅・インデント設定**
+14. **タブ幅・自動インデント・括弧の自動補完**
     - Tabキー押下時の挙動を「タブ文字 (4文字幅)」「タブ文字 (2文字幅)」「スペース (4文字)」「スペース (2文字)」から選択できます。
+    - 半角の括弧・クォート（`{}`、`()`、`[]`、`""`、`''`、```` `` ````）を入力した際の閉じ文字の自動補完（オートクローズ）や、波括弧 `{` の直後で改行（`Enter`）した際のインデント追加＋3行目への閉じ括弧 `}` の自動挿入など、VS Code 準拠の快適なコーディング補助機能を備えています。
 
 15. **豊富なテキスト編集ショートカット**
     - **行の折り返し**: `Alt + Z` で作業中のタブのテキスト折り返し（ON/OFF）を即座に切り替えられます。
