@@ -23,10 +23,10 @@ ${StrLoc}
   !define PRODUCTNAME "NoCapEdit"
 !endif
 !ifndef VERSION
-  !define VERSION "2.14.0"
+  !define VERSION "2.15.0"
 !endif
 !ifndef VERSIONWITHBUILD
-  !define VERSIONWITHBUILD "2.14.0.0"
+  !define VERSIONWITHBUILD "2.15.0.0"
 !endif
 !ifndef INSTALLMODE
   !define INSTALLMODE "currentUser"

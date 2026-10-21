@@ -6,8 +6,8 @@
 - [ ] フェーズ2: 実装作業の開始（ユーザーの作業開始指示後）
   - [x] `master` ブランチから作業用ブランチを作成
   - [x] ドキュメントを `docs/wip/auto-indent-and-brackets-settings/` から `docs/auto-indent-and-brackets-settings/` へ移動してコミット＆プッシュ
-  - [ ] バージョン管理ファイル（5ファイル）を `2.15.0` に更新
-  - [ ] `docs/spec.md` および `docs/USER_GUIDE.md` を最新版に更新
+  - [x] バージョン管理ファイル（5ファイル）を `2.15.0` に更新
+  - [x] `docs/spec.md` および `docs/USER_GUIDE.md` を最新版に更新
   - [ ] Rustバックエンド（`src/settings.rs`, `src/commands.rs`）の実装と単体テスト追加
   - [ ] フロントエンド多言語辞書（`src/frontend/i18n.js`）と設定画面HTML（`src/frontend/index.html`）の更新
   - [ ] フロントエンド状態管理・設定保存・CodeMirror動的制御（`state.js`, `settingsManager.js`, `codemirror.js`, `editor.js`, `tabs.js`, `fileSystem.js`, `settings.js`, `main.js`）の実装
