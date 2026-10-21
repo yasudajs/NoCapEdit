@@ -3,7 +3,7 @@ import { appState, elements } from '../state.js';
 import { MAX_FONT_SIZE, MIN_FONT_SIZE, MAX_LINE_HEIGHT, MIN_LINE_HEIGHT, LINE_HEIGHT_STEP, AUTOSAVE_DELAY_MS } from '../state.js';
 import { renderTabs, updateTabStatus } from './tabs.js';
 import { autoSave } from '../core/fileSystem.js';
-import { getContent, setContent, getCursorMetrics, getSelection, setSelection, replaceRange, focusEditor, getEditorState, updateWrap, updateLineNumbers, updateIndentGuides, updateInvisibleCharacters, updateIndent, getEditorView, insertTimestampCommand, resyncEditorPosition } from './codemirror.js';
+import { getContent, setContent, getCursorMetrics, getSelection, setSelection, replaceRange, focusEditor, getEditorState, updateWrap, updateLineNumbers, updateIndentGuides, updateInvisibleCharacters, updateIndent, updateAutoIndent, updateAutoCloseBrackets, getEditorView, insertTimestampCommand, resyncEditorPosition } from './codemirror.js';
 import { isFindWidgetOpen, updateMatches } from './findReplace.js';
 import { setRulerVisibility, updateRulerCursor, syncRulerMetrics } from './ruler.js';
 
@@ -216,6 +216,22 @@ export function applyIndentGuides(enable) {
  */
 export function applyIndent(tabBehavior) {
     updateIndent(tabBehavior);
+}
+
+/**
+ * エディタの自動インデント設定を適用する
+ * @param {boolean} enable - 自動インデントを有効にするかどうか
+ */
+export function applyAutoIndent(enable) {
+    updateAutoIndent(enable);
+}
+
+/**
+ * エディタの括弧補完設定を適用する
+ * @param {boolean} enable - 括弧の補完を有効にするかどうか
+ */
+export function applyAutoCloseBrackets(enable) {
+    updateAutoCloseBrackets(enable);
 }
 
 export function toggleIndentGuides() {

@@ -2,7 +2,7 @@ import { t } from '../../i18n.js';
 import { appState, elements, savedEditorCursor, setSavedEditorCursor, DEFAULT_MONOSPACE_FONTS } from '../state.js';
 import { invoke, openDialog, ensureTauriApi, appWindow, emit } from '../core/tauri.js';
 import { updateStatus, renderTabs, createNewTab, getCurrentTab, updateTabStatus } from './tabs.js';
-import { updateEditorMetrics, applyWordWrap, applyLineNumbers, applyRuler, applyIndentGuides, applyInvisibleCharacters, applyFontSize, applyLineHeight } from './editor.js';
+import { updateEditorMetrics, applyWordWrap, applyLineNumbers, applyRuler, applyIndentGuides, applyInvisibleCharacters, applyAutoIndent, applyAutoCloseBrackets, applyFontSize, applyLineHeight } from './editor.js';
 import { getSelection, setSelection, focusEditor, updateIndent } from './codemirror.js';
 import { autoSave, shouldDeleteEmptyFile } from '../core/fileSystem.js';
 import { applyThemeUI, applyFontFamily, loadSystemFonts } from './theme.js';
@@ -53,6 +53,12 @@ export function openSettingsDialog(isMissingFolder = false) {
             appState.tabBehavior = 'tab4';
         }
         elements.tabBehaviorSelectModal.value = appState.tabBehavior || 'tab4';
+    }
+    if (elements.autoIndentSelectModal) {
+        elements.autoIndentSelectModal.value = appState.autoIndent !== false ? 'true' : 'false';
+    }
+    if (elements.autoCloseBracketsSelectModal) {
+        elements.autoCloseBracketsSelectModal.value = appState.autoCloseBrackets !== false ? 'true' : 'false';
     }
     if (elements.saveModeSelectModal) {
         elements.saveModeSelectModal.value = appState.saveMode || 'auto';
@@ -137,6 +143,8 @@ export function setupSettingsNavigation() {
                 elements.fontSizeSelectModal,
                 elements.lineHeightSelectModal,
                 elements.tabBehaviorSelectModal,
+                elements.autoIndentSelectModal,
+                elements.autoCloseBracketsSelectModal,
                 elements.saveModeSelectModal,
                 elements.charCountModeSelectModal,
                 elements.wordWrapSelectModal,
@@ -175,6 +183,8 @@ export async function saveSettings() {
     const fontSize = elements.fontSizeSelectModal ? parseInt(elements.fontSizeSelectModal.value, 10) : (appState.savedFontSize || appState.fontSize || 20);
     const lineHeight = elements.lineHeightSelectModal ? parseFloat(elements.lineHeightSelectModal.value) : (appState.savedLineHeight || appState.lineHeight || 1.5);
     const tabBehavior = elements.tabBehaviorSelectModal ? elements.tabBehaviorSelectModal.value : appState.tabBehavior;
+    const autoIndent = elements.autoIndentSelectModal ? (elements.autoIndentSelectModal.value === 'true') : appState.autoIndent;
+    const autoCloseBrackets = elements.autoCloseBracketsSelectModal ? (elements.autoCloseBracketsSelectModal.value === 'true') : appState.autoCloseBrackets;
     const saveMode = elements.saveModeSelectModal ? elements.saveModeSelectModal.value : appState.saveMode;
     const charCountMode = elements.charCountModeSelectModal ? elements.charCountModeSelectModal.value : appState.charCountMode;
     const wordWrap = elements.wordWrapSelectModal ? (elements.wordWrapSelectModal.value === 'true') : appState.wordWrap;
@@ -209,6 +219,8 @@ export async function saveSettings() {
         appState.ruler = ruler;
         appState.indentGuides = indentGuides;
         appState.invisibleCharacters = invisibleCharacters;
+        appState.autoIndent = autoIndent;
+        appState.autoCloseBrackets = autoCloseBrackets;
 
         // 現在アクティブなタブの一時設定は、設定ドックで明示的に変更された項目のみ更新して即時反映
         if (appState.currentTab) {
@@ -229,6 +241,8 @@ export async function saveSettings() {
         applyFontSize();
         applyLineHeight();
         updateIndent(tabBehavior);
+        applyAutoIndent(autoIndent);
+        applyAutoCloseBrackets(autoCloseBrackets);
 
         await saveApplicationSettings();
 

@@ -8,11 +8,11 @@
   - [x] ドキュメントを `docs/wip/auto-indent-and-brackets-settings/` から `docs/auto-indent-and-brackets-settings/` へ移動してコミット＆プッシュ
   - [x] バージョン管理ファイル（5ファイル）を `2.15.0` に更新
   - [x] `docs/spec.md` および `docs/USER_GUIDE.md` を最新版に更新
-  - [ ] Rustバックエンド（`src/settings.rs`, `src/commands.rs`）の実装と単体テスト追加
-  - [ ] フロントエンド多言語辞書（`src/frontend/i18n.js`）と設定画面HTML（`src/frontend/index.html`）の更新
-  - [ ] フロントエンド状態管理・設定保存・CodeMirror動的制御（`state.js`, `settingsManager.js`, `codemirror.js`, `editor.js`, `tabs.js`, `fileSystem.js`, `settings.js`, `main.js`）の実装
-  - [ ] ビルドおよびテストによる動作検証（`cargo test`, `npm run build`）
-  - [ ] ウォークスルー（`docs/auto-indent-and-brackets-settings/walkthrough.md`）の作成と `docs/history.md` の更新、コミット＆プッシュ
+  - [x] Rustバックエンド（`src/settings.rs`, `src/commands.rs`）の実装と単体テスト追加
+  - [x] フロントエンド多言語辞書（`src/frontend/i18n.js`）と設定画面HTML（`src/frontend/index.html`）の更新
+  - [x] フロントエンド状態管理・設定保存・CodeMirror動的制御（`state.js`, `settingsManager.js`, `codemirror.js`, `editor.js`, `tabs.js`, `fileSystem.js`, `settings.js`, `main.js`）の実装
+  - [x] ビルドおよびテストによる動作検証（`cargo test`, `npm run build`）
+  - [x] ウォークスルー（`docs/auto-indent-and-brackets-settings/walkthrough.md`）の作成と `docs/history.md` の更新、コミット＆プッシュ
 - [ ] フェーズ3: クリーンアップ・マージ（ユーザーの承認・指示後）
   - [ ] 作業ドキュメントフォルダ（`docs/auto-indent-and-brackets-settings/`）の削除とコミット＆プッシュ
   - [ ] `master` ブランチへの非Fast-forwardマージ（`--no-ff`）とプッシュ、作業ブランチ削除

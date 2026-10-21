@@ -17,6 +17,8 @@ let currentPlaceholder = '';
 let changeListeners = [];
 let selectionListeners = [];
 let pendingImeResync = false;
+let autoIndentEnabled = true;
+let autoCloseBracketsEnabled = true;
 
 // デフォルトタブサイズ
 export const DEFAULT_TAB_SIZE = 4;
@@ -27,6 +29,7 @@ export const lineNumbersCompartment = new Compartment();
 export const indentGuidesCompartment = new Compartment();
 export const invisibleCharsCompartment = new Compartment();
 export const indentCompartment = new Compartment();
+export const closeBracketsCompartment = new Compartment();
 export const themeCompartment = new Compartment();
 export const languageCompartment = new Compartment();
 
@@ -182,6 +185,17 @@ export function customInsertNewlineAndIndent(view) {
     if (view.composing) return false;
 
     const { state, dispatch } = view;
+
+    // 自動インデントが無効な場合: インデントを引き継がず単純な改行のみを実行
+    if (!autoIndentEnabled) {
+        const changes = state.changeByRange(range => ({
+            changes: { from: range.from, to: range.to, insert: Text.of(["", ""]) },
+            range: EditorSelection.cursor(range.from + 1)
+        }));
+        dispatch(state.update(changes, { scrollIntoView: true, userEvent: "input" }));
+        return true;
+    }
+
     const changes = state.changeByRange(range => {
         const { from, to } = range;
         const line = state.doc.lineAt(from);
@@ -205,7 +219,7 @@ export function customInsertNewlineAndIndent(view) {
         }
 
         // 行末の `{` 直後（直後に `}` がない状態）での改行:
-        // 未閉じであれば 2行目にインデント、3行目に `}` を自動挿入する
+        // 括弧の補完が有効かつ未閉じであれば 2行目にインデント、3行目に `}` を自動挿入する
         if (from === to && from >= indentEndPos) {
             const beforeText = lineText.slice(0, from - line.from);
             const afterText = lineText.slice(from - line.from);
@@ -215,7 +229,7 @@ export function customInsertNewlineAndIndent(view) {
                 const tabSize = state.tabSize || DEFAULT_TAB_SIZE;
                 const baseCol = getIndentColumnWidth(baseIndent, tabSize);
 
-                if (shouldAutoInsertClosingBrace(state.doc, line.number, baseCol, tabSize)) {
+                if (autoCloseBracketsEnabled && shouldAutoInsertClosingBrace(state.doc, line.number, baseCol, tabSize)) {
                     const insert = ["", indentStr, baseIndent + "}"];
                     return {
                         changes: { from, to: line.to, insert: Text.of(insert) },
@@ -733,11 +747,26 @@ export function getIndentExtension(tabBehavior = 'tab4') {
 }
 
 /**
+ * 括弧自動補完（Close Brackets）拡張を取得
+ * @param {boolean} [enable=true]
+ * @returns {import('@codemirror/state').Extension}
+ */
+export function getCloseBracketsExtension(enable = true) {
+    if (!enable) return [];
+    return [
+        defaultCloseBracketsConfig,
+        closeBrackets(),
+        keymap.of(closeBracketsKeymap),
+    ];
+}
+
+/**
  * 共通の拡張機能（Extensions）を取得
  * @param {Object} [options]
  * @param {boolean} [options.wordWrap=true]
  * @param {boolean} [options.lineNumbers=false]
  * @param {string} [options.tabBehavior='tab4']
+ * @param {boolean} [options.autoCloseBrackets=true]
  * @param {import('@codemirror/language').LanguageSupport|Array} [options.languageSupport=[]]
  * @returns {Array}
  */
@@ -746,6 +775,7 @@ export function getDefaultExtensions(options = {}) {
     const lineNumbersEnabled = options.lineNumbers !== undefined ? options.lineNumbers : false;
     const indentGuidesEnabled = options.indentGuides !== undefined ? options.indentGuides : false;
     const invisibleCharsEnabled = options.invisibleCharacters !== undefined ? options.invisibleCharacters : false;
+    const closeBracketsEnabled = options.autoCloseBrackets !== undefined ? options.autoCloseBrackets : autoCloseBracketsEnabled;
     const tabBehavior = options.tabBehavior || 'tab4';
     const languageSupport = options.languageSupport || [];
 
@@ -753,8 +783,6 @@ export function getDefaultExtensions(options = {}) {
         history(),
         drawSelection(),
         dropCursor(),
-        defaultCloseBracketsConfig,
-        closeBrackets(),
         syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
         languageCompartment.of(languageSupport),
         search({ top: true }),
@@ -765,9 +793,9 @@ export function getDefaultExtensions(options = {}) {
         indentGuidesCompartment.of(indentGuidesEnabled ? indentGuidesPlugin : []),
         invisibleCharsCompartment.of(invisibleCharsEnabled ? invisibleCharactersPlugin : []),
         indentCompartment.of(getIndentExtension(tabBehavior)),
+        keymap.of(customEditorKeymap),
+        closeBracketsCompartment.of(getCloseBracketsExtension(closeBracketsEnabled)),
         keymap.of([
-            ...customEditorKeymap,
-            ...closeBracketsKeymap,
             ...defaultKeymap,
             ...historyKeymap,
         ]),
@@ -843,6 +871,12 @@ export function initCodeMirror(parentEl, options = {}) {
     if (options.placeholder) {
         currentPlaceholder = options.placeholder;
     }
+    if (options.autoIndent !== undefined) {
+        autoIndentEnabled = !!options.autoIndent;
+    }
+    if (options.autoCloseBrackets !== undefined) {
+        autoCloseBracketsEnabled = !!options.autoCloseBrackets;
+    }
 
     const state = options.state || createTabState(options.initialContent || '', {
         wordWrap: options.wordWrap,
@@ -850,6 +884,7 @@ export function initCodeMirror(parentEl, options = {}) {
         indentGuides: options.indentGuides,
         invisibleCharacters: options.invisibleCharacters,
         tabBehavior: options.tabBehavior,
+        autoCloseBrackets: options.autoCloseBrackets,
     });
 
     editorView = new EditorView({
@@ -965,6 +1000,26 @@ export function updateIndent(tabBehavior) {
     if (!editorView) return;
     editorView.dispatch({
         effects: indentCompartment.reconfigure(getIndentExtension(tabBehavior))
+    });
+}
+
+/**
+ * 自動インデント（Auto Indent）設定の動的更新
+ * @param {boolean} enable
+ */
+export function updateAutoIndent(enable) {
+    autoIndentEnabled = !!enable;
+}
+
+/**
+ * 括弧の補完（Auto Close Brackets）設定の動的更新
+ * @param {boolean} enable
+ */
+export function updateAutoCloseBrackets(enable) {
+    autoCloseBracketsEnabled = !!enable;
+    if (!editorView) return;
+    editorView.dispatch({
+        effects: closeBracketsCompartment.reconfigure(getCloseBracketsExtension(autoCloseBracketsEnabled))
     });
 }
 

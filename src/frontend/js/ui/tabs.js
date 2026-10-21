@@ -3,7 +3,7 @@ import { appState, elements } from '../state.js';
 import { incrementUnsavedTabCounter } from '../state.js';
 import { generateTabId, getFileNameFromPath, isAutoCreatedFileName } from '../utils/helpers.js';
 import { ensureTauriApi } from '../core/tauri.js';
-import { updateEditorMetrics, applyWordWrap, applyLineNumbers, applyRuler, applyIndentGuides, applyInvisibleCharacters, applyIndent } from './editor.js';
+import { updateEditorMetrics, applyWordWrap, applyLineNumbers, applyRuler, applyIndentGuides, applyInvisibleCharacters, applyIndent, applyAutoIndent, applyAutoCloseBrackets } from './editor.js';
 import { autoSave, shouldDeleteEmptyFile, persistTabWithRecovery } from '../core/fileSystem.js';
 import { getContent, setContent, getSelection, setSelection, focusEditor, createTabState, getEditorState, setEditorState } from './codemirror.js';
 
@@ -118,7 +118,7 @@ export async function createNewTab() {
             filePath: filePath,
             content: '',
             encoding: 'UTF-8',
-            editorState: createTabState('', { wordWrap: appState.wordWrap, lineNumbers: appState.lineNumbers, indentGuides: appState.indentGuides, invisibleCharacters: appState.invisibleCharacters, tabBehavior: appState.tabBehavior }),
+            editorState: createTabState('', { wordWrap: appState.wordWrap, lineNumbers: appState.lineNumbers, indentGuides: appState.indentGuides, invisibleCharacters: appState.invisibleCharacters, tabBehavior: appState.tabBehavior, autoCloseBrackets: appState.autoCloseBrackets }),
             wordWrap: appState.wordWrap,
             lineNumbers: appState.lineNumbers,
             ruler: appState.ruler,
@@ -178,7 +178,8 @@ export async function switchTab(tabId) {
                     lineNumbers: lineNumbersState,
                     indentGuides: indentGuidesState,
                     invisibleCharacters: invisibleCharactersState,
-                    tabBehavior: appState.tabBehavior
+                    tabBehavior: appState.tabBehavior,
+                    autoCloseBrackets: appState.autoCloseBrackets
                 });
             }
             setEditorState(tab.editorState);
@@ -190,6 +191,8 @@ export async function switchTab(tabId) {
             applyIndentGuides(indentGuidesState);
             applyInvisibleCharacters(invisibleCharactersState);
             applyIndent(appState.tabBehavior);
+            applyAutoIndent(appState.autoIndent);
+            applyAutoCloseBrackets(appState.autoCloseBrackets);
             renderTabs();
             updateEditorMetrics();
             updateTabStatus(tab);

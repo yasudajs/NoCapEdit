@@ -58,6 +58,8 @@ pub fn get_settings() -> SettingsResponse {
         ruler: settings.ruler,
         indent_guides: settings.indent_guides,
         invisible_characters: settings.invisible_characters,
+        auto_indent: settings.auto_indent,
+        auto_close_brackets: settings.auto_close_brackets,
         is_first_launch: !AppSettings::exists(),
         home_folder_exists: settings.home_folder.exists(),
         app_version: env!("CARGO_PKG_VERSION").to_string(),

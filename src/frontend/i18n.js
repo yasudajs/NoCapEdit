@@ -219,6 +219,8 @@ const DICT = {
                 fontSize: "フォントサイズを変更",
                 lineHeight: "行間を変更",
                 tabBehavior: "Tabキーの挙動を変更",
+                autoIndent: "自動インデントを変更",
+                autoCloseBrackets: "括弧の補完を変更",
                 saveMode: "保存モードを変更",
                 charCount: "文字数カウント方法を変更",
                 wordWrap: "行の折り返しを変更",
@@ -257,6 +259,16 @@ const DICT = {
                         tab2: "タブ文字 (2文字幅)",
                         space4: "スペース 4文字",
                         space2: "スペース 2文字"
+                    },
+                    autoIndent: {
+                        label: "自動インデント:",
+                        on: "有効（自動インデントする）",
+                        off: "無効（自動インデントしない）"
+                    },
+                    autoCloseBrackets: {
+                        label: "括弧の補完:",
+                        on: "有効（自動補完する）",
+                        off: "無効（自動補完しない）"
                     },
                     saveMode: {
                         label: "保存モード:",

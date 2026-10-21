@@ -3,7 +3,7 @@ import { appState, elements, initElements } from './state.js';
 import { invoke, appWindow, listen, ensureTauriApi } from './core/tauri.js';
 import { createNewTab, updateStatus, renderTabs, setupTabScrollWheel } from './ui/tabs.js';
 import { openExistingFile, openFiles, persistAllTabsBeforeExit } from './core/fileSystem.js';
-import { updateEditorMetrics, onEditorInput, applyFontSize, applyLineHeight, applyWordWrap, applyLineNumbers, applyRuler, applyIndentGuides, applyInvisibleCharacters, resyncEditorPosition } from './ui/editor.js';
+import { updateEditorMetrics, onEditorInput, applyFontSize, applyLineHeight, applyWordWrap, applyLineNumbers, applyRuler, applyIndentGuides, applyInvisibleCharacters, applyAutoIndent, applyAutoCloseBrackets, resyncEditorPosition } from './ui/editor.js';
 import { initCodeMirror } from './ui/codemirror.js';
 import { initRuler, syncRulerScroll } from './ui/ruler.js';
 import { toggleSettingsDialog, closeSettingsDialog, openSettingsDialog, onThemeChange, onFontFamilyChange, saveSettings, setupSettingsNavigation } from './ui/settings.js';
@@ -82,6 +82,8 @@ async function init() {
         appState.ruler = settings.ruler !== undefined ? settings.ruler : false;
         appState.indentGuides = settings.indent_guides !== undefined ? settings.indent_guides : false;
         appState.invisibleCharacters = settings.invisible_characters !== undefined ? settings.invisible_characters : false;
+        appState.autoIndent = settings.auto_indent !== undefined ? settings.auto_indent : true;
+        appState.autoCloseBrackets = settings.auto_close_brackets !== undefined ? settings.auto_close_brackets : true;
 
         if (elements.fontSizeSelectModal) {
             elements.fontSizeSelectModal.value = String(appState.fontSize);
@@ -91,6 +93,12 @@ async function init() {
         }
         if (elements.tabBehaviorSelectModal) {
             elements.tabBehaviorSelectModal.value = appState.tabBehavior;
+        }
+        if (elements.autoIndentSelectModal) {
+            elements.autoIndentSelectModal.value = String(appState.autoIndent);
+        }
+        if (elements.autoCloseBracketsSelectModal) {
+            elements.autoCloseBracketsSelectModal.value = String(appState.autoCloseBrackets);
         }
         if (elements.saveModeSelectModal) {
             elements.saveModeSelectModal.value = appState.saveMode;
@@ -140,6 +148,8 @@ async function init() {
         applyRuler(appState.ruler);
         applyIndentGuides(appState.indentGuides);
         applyInvisibleCharacters(appState.invisibleCharacters);
+        applyAutoIndent(appState.autoIndent);
+        applyAutoCloseBrackets(appState.autoCloseBrackets);
 
         // 前回の適用フォントが default 以外の場合、一覧をロードする前にモーダルドロップダウンに項目を追加しておく
         if (appState.fontFamily !== 'default' && elements.fontFamilySelectModal) {
@@ -159,6 +169,8 @@ async function init() {
                 indentGuides: appState.indentGuides,
                 invisibleCharacters: appState.invisibleCharacters,
                 tabBehavior: appState.tabBehavior,
+                autoIndent: appState.autoIndent,
+                autoCloseBrackets: appState.autoCloseBrackets,
                 onDocChange: () => onEditorInput(),
                 onSelectionChange: () => updateEditorMetrics(),
                 onScroll: (scrollLeft) => syncRulerScroll(scrollLeft),
@@ -269,6 +281,16 @@ function setupUIEventListeners() {
     if (elements.tabBehaviorSelectModal) {
         elements.tabBehaviorSelectModal.addEventListener('change', async (e) => {
             appState.tabBehavior = e.target.value;
+            await saveSettings();
+        });
+    }
+    if (elements.autoIndentSelectModal) {
+        elements.autoIndentSelectModal.addEventListener('change', async () => {
+            await saveSettings();
+        });
+    }
+    if (elements.autoCloseBracketsSelectModal) {
+        elements.autoCloseBracketsSelectModal.addEventListener('change', async () => {
             await saveSettings();
         });
     }
