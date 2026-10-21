@@ -380,6 +380,7 @@ export async function openExistingFile(filePath, suppressStatus = false) {
             indentGuides: appState.indentGuides,
             invisibleCharacters: appState.invisibleCharacters,
             tabBehavior: appState.tabBehavior,
+            autoCloseBrackets: appState.autoCloseBrackets,
             languageSupport: languageSupport,
         });
 

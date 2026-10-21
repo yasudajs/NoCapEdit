@@ -41,6 +41,10 @@ pub struct AppSettings {
     pub indent_guides: bool,
     #[serde(default = "default_invisible_characters")]
     pub invisible_characters: bool,
+    #[serde(default = "default_auto_indent")]
+    pub auto_indent: bool,
+    #[serde(default = "default_auto_close_brackets")]
+    pub auto_close_brackets: bool,
 }
 
 fn default_theme() -> String {
@@ -91,6 +95,14 @@ fn default_invisible_characters() -> bool {
     false
 }
 
+fn default_auto_indent() -> bool {
+    true
+}
+
+fn default_auto_close_brackets() -> bool {
+    true
+}
+
 #[derive(Debug, Serialize)]
 pub struct SettingsResponse {
     pub home_folder: String,
@@ -106,6 +118,8 @@ pub struct SettingsResponse {
     pub ruler: bool,
     pub indent_guides: bool,
     pub invisible_characters: bool,
+    pub auto_indent: bool,
+    pub auto_close_brackets: bool,
     pub is_first_launch: bool,
     pub home_folder_exists: bool,
     pub app_version: String,
@@ -180,6 +194,8 @@ impl Default for AppSettings {
             ruler: default_ruler(),
             indent_guides: default_indent_guides(),
             invisible_characters: default_invisible_characters(),
+            auto_indent: default_auto_indent(),
+            auto_close_brackets: default_auto_close_brackets(),
         }
     }
 }
@@ -319,5 +335,25 @@ mod tests {
             _ => DEFAULT_TAB_BEHAVIOR.to_string(),
         };
         assert_eq!(fallback, "tab4");
+    }
+
+    #[test]
+    fn test_auto_indent_and_brackets_default_and_deserialize() {
+        // デフォルト値はどちらも true
+        let s = AppSettings::default();
+        assert_eq!(s.auto_indent, true);
+        assert_eq!(s.auto_close_brackets, true);
+
+        // JSONから欠落していても true にフォールバック
+        let json_missing = r#"{"home_folder":"C:\\temp"}"#;
+        let parsed: AppSettings = serde_json::from_str(json_missing).unwrap();
+        assert_eq!(parsed.auto_indent, true);
+        assert_eq!(parsed.auto_close_brackets, true);
+
+        // JSONで false が指定されている場合は false としてパース
+        let json_false = r#"{"home_folder":"C:\\temp","auto_indent":false,"auto_close_brackets":false}"#;
+        let parsed_false: AppSettings = serde_json::from_str(json_false).unwrap();
+        assert_eq!(parsed_false.auto_indent, false);
+        assert_eq!(parsed_false.auto_close_brackets, false);
     }
 }

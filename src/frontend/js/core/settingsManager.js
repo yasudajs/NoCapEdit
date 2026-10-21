@@ -22,7 +22,9 @@ export async function saveApplicationSettings() {
                 line_numbers: appState.lineNumbers,
                 ruler: appState.ruler,
                 indent_guides: appState.indentGuides,
-                invisible_characters: appState.invisibleCharacters
+                invisible_characters: appState.invisibleCharacters,
+                auto_indent: appState.autoIndent,
+                auto_close_brackets: appState.autoCloseBrackets
             }
         });
     } catch (error) {

@@ -166,6 +166,18 @@
                     <option value="space2" data-i18n="ui.dialog.settings.tabBehavior.space2">スペース 2文字</option>
                 </select>
 
+                <label for="autoIndentSelectModal" data-i18n="ui.dialog.settings.autoIndent.label">自動インデント:</label>
+                <select id="autoIndentSelectModal" class="settings-select" title="自動インデントを変更" data-i18n-title="ui.tooltip.autoIndent">
+                    <option value="true" selected data-i18n="ui.dialog.settings.autoIndent.on">有効（自動インデントする）</option>
+                    <option value="false" data-i18n="ui.dialog.settings.autoIndent.off">無効（自動インデントしない）</option>
+                </select>
+
+                <label for="autoCloseBracketsSelectModal" data-i18n="ui.dialog.settings.autoCloseBrackets.label">括弧の補完:</label>
+                <select id="autoCloseBracketsSelectModal" class="settings-select" title="括弧の補完を変更" data-i18n-title="ui.tooltip.autoCloseBrackets">
+                    <option value="true" selected data-i18n="ui.dialog.settings.autoCloseBrackets.on">有効（自動補完する）</option>
+                    <option value="false" data-i18n="ui.dialog.settings.autoCloseBrackets.off">無効（自動補完しない）</option>
+                </select>
+
                 <label for="saveModeSelectModal" data-i18n="ui.dialog.settings.saveMode.label">保存モード:</label>
                 <select id="saveModeSelectModal" class="settings-select" title="保存モードを変更" data-i18n-title="ui.tooltip.saveMode">
                     <option value="auto" data-i18n="ui.dialog.settings.saveMode.auto">自動保存（推奨）</option>
