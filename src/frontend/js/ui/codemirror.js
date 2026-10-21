@@ -10,6 +10,7 @@ import {
 import { indentUnit, syntaxHighlighting, defaultHighlightStyle, LanguageDescription, IndentContext, getIndentation, indentString } from '@codemirror/language';
 import { languages } from '@codemirror/language-data';
 import { search, highlightSelectionMatches } from '@codemirror/search';
+import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
 
 let editorView = null;
 let currentPlaceholder = '';
@@ -56,20 +57,41 @@ export async function getLanguageSupport(fileName) {
     return null;
 }
 
+// 全ファイル形式共通の括弧・クォート自動補完（オートクローズ）定義（<> は比較演算子との競合防止のため除外）
+const defaultCloseBracketsConfig = EditorState.languageData.of(() => [{
+    closeBrackets: {
+        brackets: ["(", "[", "{", "'", '"', "`"]
+    }
+}]);
+
 /**
- * 括弧ペアの間にあるかを判定 (例: () [] {})
+ * 括弧ペアの間にあるかを判定 (例: () [] {}、間に空白のみがある場合も含む)
  * @param {EditorState} state
  * @param {number} pos
  * @returns {{ from: number, to: number } | null}
  */
 function isBetweenMatchingBrackets(state, pos) {
     if (pos <= 0 || pos >= state.doc.length) return null;
-    const prev = state.sliceDoc(pos - 1, pos);
-    const next = state.sliceDoc(pos, pos + 1);
+    const line = state.doc.lineAt(pos);
+    const offset = pos - line.from;
+    const text = line.text;
+
+    let left = offset - 1;
+    while (left >= 0 && (text[left] === ' ' || text[left] === '\t')) {
+        left--;
+    }
+    let right = offset;
+    while (right < text.length && (text[right] === ' ' || text[right] === '\t')) {
+        right++;
+    }
+
+    if (left < 0 || right >= text.length) return null;
+    const prev = text[left];
+    const next = text[right];
     if ((prev === '(' && next === ')') ||
         (prev === '[' && next === ']') ||
         (prev === '{' && next === '}')) {
-        return { from: pos, to: pos };
+        return { from: line.from + left + 1, to: line.from + right };
     }
     return null;
 }
@@ -96,9 +118,62 @@ function getIndentColumnWidth(indentStr, tabSize) {
 }
 
 /**
+ * 行末の `{` が未閉じであり、改行時に閉じ括弧 `}` を自動挿入すべきかを判定
+ * @param {import('@codemirror/state').Text} doc
+ * @param {number} lineNumber - 現在の行番号 (1-based)
+ * @param {number} baseCol - 現在行のインデントカラム幅
+ * @param {number} tabSize - タブ幅
+ * @returns {boolean}
+ */
+function shouldAutoInsertClosingBrace(doc, lineNumber, baseCol, tabSize) {
+    let depth = 1;
+    const maxLook = Math.min(doc.lines, lineNumber + 2000);
+
+    for (let i = lineNumber + 1; i <= maxLook; i++) {
+        const nextLine = doc.line(i);
+        const text = nextLine.text;
+        const match = /^[ \t\u3000]*/.exec(text);
+        const indentStr = match ? match[0] : '';
+
+        // 空白のみの行はスキップ
+        if (indentStr.length === text.length) {
+            continue;
+        }
+
+        const nextCol = getIndentColumnWidth(indentStr, tabSize);
+        const firstChar = text[indentStr.length];
+
+        // 現在の行より浅いインデントの閉じ括弧 `}` に到達した時点でまだ閉じていなければ未閉じ
+        if (nextCol < baseCol && firstChar === '}') {
+            return true;
+        }
+
+        // 同じインデント階層で、現在のブロックに対応する閉じ括弧 `}` が既に存在する場合
+        if (nextCol === baseCol && firstChar === '}' && depth === 1) {
+            return false;
+        }
+
+        // 行内の波括弧のネスト深さを更新
+        for (let j = indentStr.length; j < text.length; j++) {
+            const ch = text[j];
+            if (ch === '{') {
+                depth++;
+            } else if (ch === '}') {
+                depth--;
+                if (depth <= 0) {
+                    return false;
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
+/**
  * VS Code準拠の自動インデント改行コマンド
  * テキストファイル等では当該行の行頭のスペース（全角・半角）およびタブの状態をそのまま次の行に反映し、
- * プログラミング言語では言語の構文インデントルール（ブロック開始等でのインデント増加）も適用する
+ * プログラミング言語等では言語の構文インデントルール（ブロック開始等でのインデント増加）および閉じ括弧の自動挿入も適用する
  * @param {EditorView} view
  * @returns {boolean}
  */
@@ -117,7 +192,7 @@ export function customInsertNewlineAndIndent(view) {
         const baseIndent = match ? match[0] : '';
         const indentEndPos = line.from + baseIndent.length;
 
-        // 括弧の間での改行 (bracket explosion)
+        // 括弧の間での改行 (bracket explosion: () [] {})
         const explode = from === to && isBetweenMatchingBrackets(state, from);
         if (explode) {
             const unit = state.facet(indentUnit) || '    ';
@@ -127,6 +202,33 @@ export function customInsertNewlineAndIndent(view) {
                 changes: { from: explode.from, to: explode.to, insert: Text.of(insert) },
                 range: EditorSelection.cursor(explode.from + 1 + indentStr.length)
             };
+        }
+
+        // 行末の `{` 直後（直後に `}` がない状態）での改行:
+        // 未閉じであれば 2行目にインデント、3行目に `}` を自動挿入する
+        if (from === to && from >= indentEndPos) {
+            const beforeText = lineText.slice(0, from - line.from);
+            const afterText = lineText.slice(from - line.from);
+            if (/\{\s*$/.test(beforeText) && /^[ \t\u3000]*$/.test(afterText)) {
+                const unit = state.facet(indentUnit) || '    ';
+                const indentStr = baseIndent + unit;
+                const tabSize = state.tabSize || DEFAULT_TAB_SIZE;
+                const baseCol = getIndentColumnWidth(baseIndent, tabSize);
+
+                if (shouldAutoInsertClosingBrace(state.doc, line.number, baseCol, tabSize)) {
+                    const insert = ["", indentStr, baseIndent + "}"];
+                    return {
+                        changes: { from, to: line.to, insert: Text.of(insert) },
+                        range: EditorSelection.cursor(from + 1 + indentStr.length)
+                    };
+                } else {
+                    const insert = ["", indentStr];
+                    return {
+                        changes: { from, to: line.to, insert: Text.of(insert) },
+                        range: EditorSelection.cursor(from + 1 + indentStr.length)
+                    };
+                }
+            }
         }
 
         // 行頭（インデントの手前）で改行した場合: 上に空行を挿入（VS Code準拠）
@@ -651,6 +753,8 @@ export function getDefaultExtensions(options = {}) {
         history(),
         drawSelection(),
         dropCursor(),
+        defaultCloseBracketsConfig,
+        closeBrackets(),
         syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
         languageCompartment.of(languageSupport),
         search({ top: true }),
@@ -663,6 +767,7 @@ export function getDefaultExtensions(options = {}) {
         indentCompartment.of(getIndentExtension(tabBehavior)),
         keymap.of([
             ...customEditorKeymap,
+            ...closeBracketsKeymap,
             ...defaultKeymap,
             ...historyKeymap,
         ]),

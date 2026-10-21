@@ -1,6 +1,6 @@
 {
   "name": "nocapedit-frontend",
-  "version": "2.13.2",
+  "version": "2.14.0",
   "private": true,
   "scripts": {
     "dev": "vite",
@@ -11,6 +11,7 @@
     "vite": "^6.0.0"
   },
   "dependencies": {
+    "@codemirror/autocomplete": "^6.20.0",
     "@codemirror/commands": "^6.11.0",
     "@codemirror/language": "^6.12.4",
     "@codemirror/language-data": "^6.5.2",
